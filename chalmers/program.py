@@ -1,20 +1,19 @@
-'''
-Created on Jun 23, 2014
+from glob import glob
+import logging
+import multiprocessing
+from os import path
+import os
+import signal
+from subprocess import Popen, STDOUT
+import time
 
-@author: sean
-'''
+import yaml
+
 from chalmers import errors
 from chalmers.config import dirs
 from chalmers.utils.daemonize import daemonize
-from glob import glob
-from os import path
-from subprocess import Popen, STDOUT
-import logging
-import multiprocessing
-import os
-import signal
-import time
-import yaml
+
+
 log = logging.getLogger(__name__)
 
 
@@ -27,8 +26,6 @@ def str_replace(data):
     for key, value in data.items():
         if isinstance(value, str):
             data[key] = value % data
-
-
 
 class Program(object):
     OPTIONS = [('Primary Options',
@@ -101,17 +98,21 @@ class Program(object):
             os.makedirs(state_dir)
 
         with open(self.state_filename, 'w') as df:
+            log.info("Saving state of program %s to %s" % (self.name, self.state_filename))
             yaml.safe_dump(self.state, df, default_flow_style=False)
 
-    def reload(self):
+    def reload_state(self):
 
-        if not path.isfile(self.definition_filename):
-            raise errors.ChalmersError("Program %s does not exist" % self.name)
         if path.isfile(self.state_filename):
             with open(self.state_filename) as sf:
                 self.state = yaml.safe_load(sf)
         else:
             self.state = {}
+
+    def reload(self):
+
+        if not path.isfile(self.definition_filename):
+            raise errors.ChalmersError("Program %s does not exist (no definition file)" % self.name)
 
         with open(self.definition_filename) as df:
             self.raw_data = yaml.safe_load(df)
@@ -169,7 +170,7 @@ class Program(object):
         self.save()
 
     def update_state(self, *E, **F):
-        self.reload()
+        self.reload_state()
         self.state.update(*E, **F)
         self.save_state()
 
@@ -270,6 +271,9 @@ class Program(object):
 
             self.update_state(child_pid=None, exit_status=status,
                               status_message=status_message)
+
+            if status in self.data['exitcodes']:
+                break
 
     def delete(self):
         if self.is_running:

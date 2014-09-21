@@ -18,7 +18,7 @@ def main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('stop',
-                                      help='List registered commands',
+                                      help='Stop running a command',
                                       description=__doc__)
 
     parser.add_argument('-n', '--name', required=True)

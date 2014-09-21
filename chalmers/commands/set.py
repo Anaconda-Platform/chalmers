@@ -1,12 +1,11 @@
 '''
 '''
 from __future__ import unicode_literals, print_function
+
 from ast import literal_eval
-from chalmers import errors
-from chalmers.config import dirs
-from chalmers.program import Program
-from os import path
 import logging
+
+from chalmers.program import Program
 
 
 log = logging.getLogger('chalmers.set')

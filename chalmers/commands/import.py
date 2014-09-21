@@ -44,7 +44,7 @@ def main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('import',
-                                      help='Add a command to run',
+                                      help='Batch import many commands from a yaml file',
                                       description=__doc__)
 
     parser.add_argument('input', type=FileType('r'))

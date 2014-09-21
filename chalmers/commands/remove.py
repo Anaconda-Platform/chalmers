@@ -2,11 +2,8 @@
 '''
 from __future__ import unicode_literals, print_function
 
-from chalmers.config import dirs
-from os import path
-from chalmers import errors
 import logging
-import os
+
 from chalmers.program import Program
 
 log = logging.getLogger('chalmers.remove')
@@ -20,8 +17,8 @@ def main(args):
 def add_parser(subparsers):
 
     parser = subparsers.add_parser('remove',
-                                      help='Remove a command from the chalmers list',
+                                      help='Remove a command from the config',
                                       description=__doc__)
 
-    parser.add_argument('-n', '--name', required=True)
+    parser.add_argument('name')
     parser.set_defaults(main=main)

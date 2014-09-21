@@ -13,6 +13,8 @@ log = logging.getLogger('chalmers.add')
 
 def main(args):
     program_dir = path.join(dirs.user_data_dir, 'programs')
+    if not args.name:
+        args.name = args.command[0]
 
     if not path.isdir(program_dir):
         os.makedirs(program_dir)
@@ -41,15 +43,21 @@ def main(args):
     state = {'paused': args.paused}
 
     prog = Program.create(args.name, definition, state)
-
+    prog.save_state()
     if not args.paused:
-        prog.start_async(daemon=True)
 
-    log.info('Added program %s' % args.name)
+        prog.start_async(daemon=args.daemon)
+
+    if args.daemon:
+        prog.save()
+        log.info('Added program %s' % args.name)
+    else:
+        log.info('Program %s exited' % args.name)
+
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser('add',
-                                      help='Add a command to run',
+    parser = subparsers.add_parser('run',
+                                      help='Manage a command to run',
                                       description=__doc__)
     #===============================================================================
     #
@@ -61,6 +69,11 @@ def add_parser(subparsers):
                        help="Start program automatically (default)")
     group.add_argument('--paused', action='store_true', dest='paused',
                        help="don't start program automatically")
+
+    group.add_argument('--daemon', action='store_true', default=True,
+                       help="Run command in the background")
+    group.add_argument('--no-daemon', action='store_false', dest='daemon',
+                       help="Run command in the foreground")
     #===========================================================================
     #
     #===========================================================================
@@ -72,6 +85,6 @@ def add_parser(subparsers):
     #===========================================================================
     #
     #===========================================================================
-    parser.add_argument('-n', '--name', required=True)
+    parser.add_argument('-n', '--name')
     parser.add_argument('command', nargs='+', metavar='COMMAND')
     parser.set_defaults(main=main, state='pause')

@@ -49,6 +49,6 @@ def add_parser(subparsers):
                                       help='Show command',
                                       description=__doc__)
 
-    parser.add_argument('-n', '--name', required=True)
+    parser.add_argument('name')
     parser.add_argument('-r', '--raw', action='store_true')
     parser.set_defaults(main=main)

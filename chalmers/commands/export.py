@@ -1,15 +1,14 @@
 '''
 '''
 from __future__ import unicode_literals, print_function
-from ast import literal_eval
-from chalmers import errors
-from chalmers.config import dirs
-from chalmers.program import Program
-from os import path
-import logging
+
 from argparse import FileType
+import logging
 import sys
+
 import yaml
+
+from chalmers.program import Program
 
 
 log = logging.getLogger('chalmers.export')
@@ -29,7 +28,7 @@ def main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('export',
-                                      help='Add a command to run',
+                                      help='Export current configuration to be installed with the "import" command',
                                       description=__doc__)
 
     parser.add_argument('names', nargs='*')
