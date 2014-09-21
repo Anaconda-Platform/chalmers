@@ -44,6 +44,7 @@ def main(args):
 
     prog = Program.create(args.name, definition, state)
     prog.save_state()
+
     if not args.paused:
 
         prog.start_async(daemon=args.daemon)
@@ -72,7 +73,7 @@ def add_parser(subparsers):
 
     group.add_argument('--daemon', action='store_true', default=True,
                        help="Run command in the background")
-    group.add_argument('--no-daemon', action='store_false', dest='daemon',
+    group.add_argument('-w', '--wait', '--no-daemon', action='store_false', dest='daemon',
                        help="Run command in the foreground")
     #===========================================================================
     #

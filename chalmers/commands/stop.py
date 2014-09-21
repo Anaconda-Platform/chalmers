@@ -8,12 +8,12 @@ log = logging.getLogger('chalmers.stop')
 
 def main(args):
 
-    proc = Program(args.name)
+    prog = Program(args.name)
     log.info("Stopping program %s" % (args.name))
-    exit_status = proc.stop()
+    exit_status = prog.stop()
     log.debug("Program stopped with status %s" % exit_status)
-    proc.reload()
-    log.info(proc.raw_data.get('exit_message', 'Stopped'))
+    prog.reload()
+    log.info(prog.raw_data.get('exit_message', 'Stopped'))
 
 
 def add_parser(subparsers):
@@ -21,6 +21,6 @@ def add_parser(subparsers):
                                       help='Stop running a command',
                                       description=__doc__)
 
-    parser.add_argument('-n', '--name', required=True)
+    parser.add_argument('name')
 
     parser.set_defaults(main=main)

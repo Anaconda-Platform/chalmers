@@ -50,6 +50,7 @@ class Program(object):
                 'stderr': '%(log_dir)s/%(name)s.stderr.log',
                 'daemon_log': '%(log_dir)s/%(name)s.daemon.log',
                 }
+
     @property
     def definition_filename(self):
         return path.join(dirs.user_data_dir, 'programs', '%s.yaml' % self.name)
@@ -68,6 +69,8 @@ class Program(object):
 
         if load:
             self.reload()
+            self.reload_state()
+
 
     @classmethod
     def create(cls, name, defn, state=None):
@@ -197,6 +200,7 @@ class Program(object):
             target = self._start_deamon
         else:
             target = self.start
+
         p = multiprocessing.Process(target=target, args=())
         p.start()
         p.join()

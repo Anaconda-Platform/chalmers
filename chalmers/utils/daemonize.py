@@ -1,10 +1,8 @@
 '''
-Created on Jun 23, 2014
-
-@author: sean
 '''
 import os
 import sys
+
 
 def daemonize():
     """
