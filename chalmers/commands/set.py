@@ -46,7 +46,7 @@ def add_parser(subparsers):
                                       help='Add a command to run',
                                       description=__doc__)
 
-    parser.add_argument('-n', '--name', required=True)
+    parser.add_argument('name')
     parser.add_argument('key')
     parser.add_argument('value', type=smart_type)
     parser.set_defaults(main=main, state='pause')

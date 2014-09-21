@@ -14,16 +14,26 @@ def main(args):
             raise errors.ChalmersError("Option --all conflicts with option -w/--wait/--no-daemin")
 
         print("Starting all programs")
-
         for prog in Program.find_for_user():
-            if not prog.is_running:
-                print("Starting program %s" % prog.name)
-                prog.start_async(daemon=args.daemon)
+            if prog.is_paused:
+                print(" - Program %s is paused" % prog.name)
+            elif not prog.is_running:
+                print(" + Starting program %s" % prog.name)
+                prog.start(daemon=True)
             else:
-                print("Programs %s is already running" % prog.name)
+                print(" - Programs %s is already running" % prog.name)
     else:
         prog = Program(args.name)
-        prog.start_async(daemon=args.daemon)
+        print("Starting program %s" % prog.name)
+        prog.start(daemon=args.daemon)
+        if args.daemon:
+            print("args.daemon")
+            print("prog.reload_state()", prog.state_filename)
+            prog.reload_state()
+            print("prog.state", prog.state)
+        else:
+            print("Wait!")
+
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('start',

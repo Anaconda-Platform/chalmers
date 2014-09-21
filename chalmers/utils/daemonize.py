@@ -4,7 +4,7 @@ import os
 import sys
 
 
-def daemonize():
+def daemonize(target, logfile=None):
     """
     do the UNIX double-fork magic, see Stevens' "Advanced 
     Programming in the UNIX Environment" for details (ISBN 0201563177)
@@ -13,7 +13,7 @@ def daemonize():
     pid = os.fork()
     if pid > 0:
         # exit first parent
-        sys.exit(0)
+        return
 
     # decouple from parent environment
     os.chdir("/")
@@ -35,3 +35,11 @@ def daemonize():
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
+
+    if logfile:
+        sys.stdin = logfile
+        sys.stderr = logfile
+
+    # Run function as daemon
+    target()
+    sys.exit(0)

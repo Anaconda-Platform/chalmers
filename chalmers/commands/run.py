@@ -46,8 +46,9 @@ def main(args):
     prog.save_state()
 
     if not args.paused:
+        log.info('Starting program %s' % args.name)
+        prog.start(daemon=args.daemon)
 
-        prog.start_async(daemon=args.daemon)
 
     if args.daemon:
         prog.save()
