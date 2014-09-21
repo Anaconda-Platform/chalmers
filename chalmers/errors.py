@@ -2,6 +2,12 @@
 class ChalmersError(Exception):
     pass
 
+class ProgramNotFound(ChalmersError):
+    pass
+
+class StateError(ChalmersError):
+    pass
+
 
 class ShowHelp(object):
     pass

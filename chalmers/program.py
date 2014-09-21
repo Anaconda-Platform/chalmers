@@ -148,7 +148,7 @@ class Program(object):
         """
 
         if not path.isfile(self.definition_filename):
-            raise errors.ChalmersError("Program %s does not exist (no definition file)" % self.name)
+            raise errors.ProgramNotFound("Program %s does not exist (no definition file)" % self.name)
 
         with open(self.definition_filename) as df:
             self.raw_data = yaml.safe_load(df)
@@ -156,12 +156,13 @@ class Program(object):
         self.mk_data()
 
     @classmethod
-    def load_group(cls, groupname):
+    def load_template(cls, groupname):
         """
-        Load a group
+        Load a template from file
         """
 
-        group_path = path.join(dirs.user_data_dir, 'groups', '%s.yaml' % groupname)
+        group_path = path.join(dirs.user_data_dir, 'template', '%s.yaml' % groupname)
+
         if not path.isfile(group_path):
             return {}
 
@@ -174,8 +175,8 @@ class Program(object):
         the used data
         """
         self.data = self.DEFAULTS.copy()
-        for group in self.raw_data.get('groups', []):
-            group_data = self.load_group(group)
+        for template in self.raw_data.get('extends', []):
+            group_data = self.load_template(template)
             self.data.update(group_data)
 
         self.data.update(self.raw_data)
@@ -193,7 +194,7 @@ class Program(object):
         """
 
         if not self.is_running:
-            raise errors.ChalmersError("Program is not running")
+            raise errors.StateError("Program is not running")
         pid = self.state.get('pid')
         os.kill(pid, signal.SIGUSR2)
 
@@ -241,7 +242,7 @@ class Program(object):
         this will fail if the process is already running
         """
         if self.is_running:
-            raise errors.ChalmersError("Process is already running")
+            raise errors.StateError("Process is already running")
 
         if daemon:
             start = self.start_deamon
@@ -382,6 +383,29 @@ class Program(object):
             basename = path.basename(filename)
             name = path.splitext(basename)[0]
             yield cls(name)
+
+
+    @classmethod
+    def start_all(cls):
+        log.info("Starting all programs")
+
+        for prog in cls.find_for_user():
+            if prog.is_paused:
+                log.info(" - Program %s is paused" % prog.name)
+            elif not prog.is_running:
+                log.info(" + Starting program %s" % prog.name)
+                prog.start(daemon=True)
+            else:
+                log.info(" - Programs %s is already running" % prog.name)
+
+
+    @property
+    def text_status(self):
+        'A text status of the current program'
+        exit_message = self.data.get('exit_message', 'Stopped')
+        text_status = 'Running' if self.is_running else exit_message
+        return text_status
+
 
 
 

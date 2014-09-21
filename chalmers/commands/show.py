@@ -2,25 +2,12 @@
 '''
 from __future__ import unicode_literals, print_function
 
-from pprint import pformat
-from chalmers.program import Program
 import logging
+
+from chalmers.program import Program
+from chalmers.utils import print_opts
+
 log = logging.getLogger('chalmers.show')
-
-def pformat2(value):
-    pvalue = pformat(value, width=66).split('\n')
-    sep = '\n' + ' ' * 14
-    return sep.join(pvalue)
-
-def print_opts(category, data, opts):
-    if not any(opt in data for opt in opts):
-        return
-    log.info('\n%s' % category)
-    log.info('-' * len(category))
-    for opt in opts:
-        if opt in data:
-            value = data.pop(opt)
-            print("%12s: %s" % (opt, pformat2(value)))
 
 def main(args):
 
@@ -30,8 +17,6 @@ def main(args):
     print('State')
     for key, value in prog.state.items():
         print("%12s: %s" % (key, value))
-
-    # print('running' prog.is_running)
 
     if args.raw:
         data = prog.raw_data.copy()

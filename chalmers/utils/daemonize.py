@@ -1,8 +1,11 @@
 '''
 '''
+import logging
 import os
 import sys
 
+
+log = logging.getLogger(__name__)
 
 def daemonize(target, logfile=None):
     """

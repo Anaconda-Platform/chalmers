@@ -10,6 +10,7 @@ from chalmers import errors
 python_exe = sys.executable
 chalmers_script = sys.argv[0]
 chalmers_reboot = '@reboot %s %s start -a' % (python_exe, chalmers_script)
+
 log = logging.getLogger('chalmers.reboot')
 
 def main(args):
@@ -28,6 +29,7 @@ def main(args):
 
         p0 = Popen(['crontab'], stdin=PIPE)
         p0.communicate(input=new_cron_tab)
+
         log.info("All chalmers programs will not run on boot")
 
 
@@ -48,12 +50,12 @@ def remove(args):
         log.info("Chalmers crontab instruction does not exist")
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser('start-on-reboot',
-                                   help='Run chalmers programs at boot time',
+    parser = subparsers.add_parser('run-on-startup',
+                                   help='Start all chalmers programs on machine startup',
                                    description=__doc__)
     parser.set_defaults(main=main)
 
-    parser = subparsers.add_parser('remove-from-reboot',
-                                   help="Don't start chalmers on reboot",
+    parser = subparsers.add_parser('dont-run-on-startup',
+                                   help="Don't start chalmers on machine startup",
                                    description=__doc__)
     parser.set_defaults(main=remove)

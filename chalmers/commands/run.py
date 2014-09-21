@@ -1,17 +1,20 @@
 '''
 '''
 from __future__ import unicode_literals, print_function
+
+import logging
+from os import path
+import os
+
 from chalmers import errors
 from chalmers.config import dirs
 from chalmers.program import Program
-from os import path
-import logging
-import os
 
 
 log = logging.getLogger('chalmers.add')
 
 def main(args):
+
     program_dir = path.join(dirs.user_data_dir, 'programs')
     if not args.name:
         args.name = args.command[0]
@@ -19,17 +22,20 @@ def main(args):
     if not path.isdir(program_dir):
         os.makedirs(program_dir)
 
-    program_defn = path.join(program_dir, '%s.yaml' % args.name)
+    program_defn = path.join(program_dir, '{args.name}.yaml'.format(args=args))
     if path.isfile(program_defn):
-        raise errors.ChalmersError("Program with name '%s' already exists.  Run 'chalmers remove' to remove it "
-                                   "or 'chalmers set' to update the parameters" % args.name)
+        raise errors.ChalmersError("Program with name '{args.name}' already exists.  \n"
+                                   "Use the -n/--name option to change the name or \n"
+                                   "Run 'chalmers remove {args.name}' to remove it \n"
+                                   "or 'chalmers set' to update the parameters".format(args=args))
 
-    stdout = args.stdout or path.join(dirs.user_log_dir, '%s.stdout.log' % args.name)
-    daemon_log = args.daemon_log or path.join(dirs.user_log_dir, '%s.daemon.log' % args.name)
+    stdout = args.stdout or path.join(dirs.user_log_dir, '{args.name}.stdout.log'.format(args=args))
+    daemon_log = args.daemon_log or path.join(dirs.user_log_dir, '{args.name}.daemon.log'.format(args=args))
+
     if args.redirect_stderr:
         stderr = None
     else:
-        stderr = args.stderr or path.join(dirs.user_log_dir, '%s.stderr.log' % args.name)
+        stderr = args.stderr or path.join(dirs.user_log_dir, '{args.name}.stderr.log'.format(args=args))
 
     definition = {
                     'name': args.name,
@@ -46,15 +52,15 @@ def main(args):
     prog.save_state()
 
     if not args.paused:
-        log.info('Starting program %s' % args.name)
+        log.info('Starting program {args.name}'.format(args=args))
         prog.start(daemon=args.daemon)
 
 
     if args.daemon:
         prog.save()
-        log.info('Added program %s' % args.name)
+        log.info('Added program {args.name}'.format(args=args))
     else:
-        log.info('Program %s exited' % args.name)
+        log.info('Program {args.name} exited'.format(args=args))
 
 
 def add_parser(subparsers):

@@ -2,15 +2,19 @@
 '''
 from __future__ import unicode_literals, print_function
 
+import logging
+
 from chalmers.program import Program
+
+
+log = logging.getLogger(__name__)
 
 def main(args):
 
     programs = list(Program.find_for_user())
+
     for prog in programs:
-        exit_message = prog.data.get('exit_message', 'Stopped')
-        text_status = 'Running' if prog.is_running else exit_message
-        print('%s, %s' % (prog.data['name'], text_status))
+        log.info('[%s], %s' % (prog.data['name'], prog.text_status))
 
     if not programs:
         print('No programs added')

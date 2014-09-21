@@ -1,15 +1,16 @@
 '''
 '''
 from __future__ import unicode_literals, print_function
-import logging
+
 from argparse import FileType
-import yaml
-from chalmers.utils.definition import make_definition
-from chalmers.program import Program
-from pprint import pprint
+import logging
 from os import path
-from chalmers.config import dirs
 import os
+
+import yaml
+
+from chalmers.config import dirs
+from chalmers.utils.definition import make_definition
 
 
 log = logging.getLogger('chalmers.import')

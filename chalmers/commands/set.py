@@ -2,25 +2,13 @@
 '''
 from __future__ import unicode_literals, print_function
 
-from ast import literal_eval
 import logging
 
 from chalmers.program import Program
+from chalmers.utils import try_eval, set_nested_key
 
 
 log = logging.getLogger('chalmers.set')
-
-
-def set_nested_key(dct, key, value):
-    keys = key.split('.')
-    next_key = keys.pop(0)
-
-    while keys:
-        dct = dct.setdefault(next_key, {})
-        next_key = keys.pop(0)
-
-    dct[next_key] = value
-    pass
 
 
 def main(args):
@@ -35,11 +23,6 @@ def main(args):
 
     log.info("Set '%s' to %r for program %s" % (args.key, args.value, args.name))
 
-def smart_type(value):
-    try:
-        return literal_eval(value)
-    except:
-        return value
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('set',
@@ -48,5 +31,5 @@ def add_parser(subparsers):
 
     parser.add_argument('name')
     parser.add_argument('key')
-    parser.add_argument('value', type=smart_type)
+    parser.add_argument('value', type=try_eval)
     parser.set_defaults(main=main, state='pause')
