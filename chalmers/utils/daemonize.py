@@ -7,7 +7,7 @@ import sys
 
 log = logging.getLogger(__name__)
 
-def daemonize(target, logfile=None):
+def daemonize(target, stream=None):
     """
     do the UNIX double-fork magic, see Stevens' "Advanced 
     Programming in the UNIX Environment" for details (ISBN 0201563177)
@@ -39,9 +39,9 @@ def daemonize(target, logfile=None):
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
 
-    if logfile:
-        sys.stdin = logfile
-        sys.stderr = logfile
+    if stream:
+        sys.stdin = stream
+        sys.stderr = stream
 
     # Run function as daemon
     target()

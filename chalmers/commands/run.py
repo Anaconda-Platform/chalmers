@@ -16,6 +16,7 @@ log = logging.getLogger('chalmers.add')
 def main(args):
 
     program_dir = path.join(dirs.user_data_dir, 'programs')
+
     if not args.name:
         args.name = args.command[0]
 
@@ -29,22 +30,22 @@ def main(args):
                                    "Run 'chalmers remove {args.name}' to remove it \n"
                                    "or 'chalmers set' to update the parameters".format(args=args))
 
-    stdout = args.stdout or path.join(dirs.user_log_dir, '{args.name}.stdout.log'.format(args=args))
-    daemon_log = args.daemon_log or path.join(dirs.user_log_dir, '{args.name}.daemon.log'.format(args=args))
-
-    if args.redirect_stderr:
-        stderr = None
-    else:
-        stderr = args.stderr or path.join(dirs.user_log_dir, '{args.name}.stderr.log'.format(args=args))
-
     definition = {
                     'name': args.name,
                     'command': args.command,
-                    'stdout': stdout,
-                    'stderr': stderr,
-                    'daemon_log': daemon_log,
-                    'redirect_stderr': args.redirect_stderr
-                    }
+    }
+
+    if args.stdout:
+        definition['stdout'] = args.stdout
+
+    if args.daemon_log:
+        definition['daemon_log'] = args.daemon_log
+
+    if args.redirect_stderr is not None:
+        definition['redirect_stderr'] = args.redirect_stderr
+
+    if args.stderr is not None:
+        definition['stderr'] = args.stderr
 
     state = {'paused': args.paused}
 
@@ -54,7 +55,6 @@ def main(args):
     if not args.paused:
         log.info('Starting program {args.name}'.format(args=args))
         prog.start(daemon=args.daemon)
-
 
     if args.daemon:
         prog.save()

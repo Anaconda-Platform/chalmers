@@ -34,8 +34,8 @@ def str_replace(data):
     String substitution of `data` dict
     """
     for key, value in data.items():
-        if isinstance(value, str):
-            data[key] = value % data
+        if isinstance(value, (str, unicode)):
+            data[key] = value.format(**data)
 
 class Program(object):
     """
@@ -47,7 +47,7 @@ class Program(object):
     """
 
     OPTIONS = [('Primary Options',
-                ['name', 'command', 'groups']),
+                ['name', 'command', 'templates']),
                ('Output',
                 ['stdout', 'stderr', 'daemon_log', 'redirect_stderr']),
                ('Process Controll',
@@ -64,9 +64,9 @@ class Program(object):
                 'log_dir': dirs.user_log_dir,
 
                 'redirect_stderr': False,
-                'stdout': '%(log_dir)s/%(name)s.stdout.log',
-                'stderr': '%(log_dir)s/%(name)s.stderr.log',
-                'daemon_log': '%(log_dir)s/%(name)s.daemon.log',
+                'stdout': '{log_dir}/{name}.stdout.log',
+                'stderr': '{log_dir}/{name}.stderr.log',
+                'daemon_log': '{log_dir}/{name}.daemon.log',
                 }
 
     @property
@@ -156,17 +156,17 @@ class Program(object):
         self.mk_data()
 
     @classmethod
-    def load_template(cls, groupname):
+    def load_template(cls, template_name):
         """
         Load a template from file
         """
 
-        group_path = path.join(dirs.user_data_dir, 'template', '%s.yaml' % groupname)
+        template_path = path.join(dirs.user_data_dir, 'template', '%s.yaml' % template_name)
 
-        if not path.isfile(group_path):
+        if not path.isfile(template_path):
             return {}
 
-        with open(group_path, 'r') as gf:
+        with open(template_path, 'r') as gf:
             return yaml.safe_load(gf)
 
     def mk_data(self):
@@ -175,9 +175,10 @@ class Program(object):
         the used data
         """
         self.data = self.DEFAULTS.copy()
+
         for template in self.raw_data.get('extends', []):
-            group_data = self.load_template(template)
-            self.data.update(group_data)
+            template_data = self.load_template(template)
+            self.data.update(template_data)
 
         self.data.update(self.raw_data)
 
@@ -273,12 +274,14 @@ class Program(object):
         """
 
         if 'daemon_log' in self.data:
-            hdlr = logging.FileHandler(self.data['daemon_log'])
+            log_stream = open(self.data['daemon_log'], 'wa')
+            hdlr = logging.StreamHandler(log_stream)
+#             hdlr = logging.FileHandler(self.data['daemon_log'])
             fmt = logging.Formatter(logging.BASIC_FORMAT)
             hdlr.setFormatter(fmt)
             logging.getLogger('chalmers').addHandler(hdlr)
 
-        daemonize(self.start_sync)
+        daemonize(self.start_sync, stream=log_stream)
 
     def _terminate(self):
         """
@@ -366,16 +369,6 @@ class Program(object):
 
 
     @classmethod
-    def find_groups_for_user(cls):
-        """
-        Groups
-        """
-        program_glob = path.join(dirs.user_data_dir, 'groups', '*.yaml')
-        for filename in glob(program_glob):
-            with open(filename) as gf:
-                yield yaml.safe_load(gf)
-
-    @classmethod
     def find_for_user(cls):
         'Find all programs this user has defined'
         program_glob = path.join(dirs.user_data_dir, 'programs', '*.yaml')
@@ -386,11 +379,12 @@ class Program(object):
 
 
     @classmethod
-    def start_all(cls):
+    def start_all(cls, start_paused=False):
+        'Start all user defined programs'
         log.info("Starting all programs")
 
         for prog in cls.find_for_user():
-            if prog.is_paused:
+            if not start_paused and prog.is_paused:
                 log.info(" - Program %s is paused" % prog.name)
             elif not prog.is_running:
                 log.info(" + Starting program %s" % prog.name)
@@ -402,8 +396,14 @@ class Program(object):
     @property
     def text_status(self):
         'A text status of the current program'
-        exit_message = self.data.get('exit_message', 'Stopped')
-        text_status = 'Running' if self.is_running else exit_message
+
+        if self.is_running:
+            text_status = 'Running'
+        elif self.is_paused:
+            text_status = 'Paused'
+        else:
+            text_status = self.data.get('exit_message', 'Stopped')
+
         return text_status
 
 

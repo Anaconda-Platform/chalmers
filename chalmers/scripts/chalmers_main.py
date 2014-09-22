@@ -2,11 +2,13 @@
 Chalmers command line utility
 '''
 from __future__ import print_function, unicode_literals
+
 from argparse import ArgumentParser
+import logging
+
 from chalmers import __version__ as version
 from chalmers.commands import sub_commands
 from chalmers.errors import ChalmersError, ShowHelp
-import logging
 from chalmers.utils.logutil import setup_logging
 
 

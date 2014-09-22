@@ -5,47 +5,57 @@ from __future__ import unicode_literals, print_function
 import logging
 from subprocess import Popen, check_output, CalledProcessError, PIPE
 import sys
+
 from chalmers import errors
+
 
 python_exe = sys.executable
 chalmers_script = sys.argv[0]
-chalmers_reboot = '@reboot %s %s start -a' % (python_exe, chalmers_script)
+chalmers_tab_entry = '@reboot %s %s start -a' % (python_exe, chalmers_script)
 
 log = logging.getLogger('chalmers.reboot')
 
-def main(args):
+def get_crontab():
     try:
         output = check_output(['crontab', '-l']).strip()
     except CalledProcessError:
         raise errors.ChalmersError("Could not read crontab")
 
-    tab_lines = output.split('\n')
-    if chalmers_reboot in tab_lines:
+    return output.split('\n')
+
+def set_crontab(tab):
+
+    new_cron_tab = '\n'.join(tab) + '\n'
+
+    p0 = Popen(['crontab'], stdin=PIPE)
+    p0.communicate(input=new_cron_tab)
+
+
+def main(args):
+
+    tab_lines = get_crontab()
+
+    if chalmers_tab_entry in tab_lines:
         log.info("Chalmers crontab instruction already exists")
     else:
         log.info("Adding chalmers instruction to crontab")
-        tab_lines.append(chalmers_reboot)
-        new_cron_tab = '\n'.join(tab_lines) + '\n'
+        tab_lines.append(chalmers_tab_entry)
 
-        p0 = Popen(['crontab'], stdin=PIPE)
-        p0.communicate(input=new_cron_tab)
+        set_crontab(tab_lines)
 
         log.info("All chalmers programs will not run on boot")
 
 
 def remove(args):
-    try:
-        output = check_output(['crontab', '-l']).strip()
-    except CalledProcessError:
-        raise errors.ChalmersError("Could not read crontab")
 
-    tab_lines = output.split('\n')
-    if chalmers_reboot in tab_lines:
+    tab_lines = get_crontab()
+
+    if chalmers_tab_entry in tab_lines:
         log.info("Removing chalmers instruction from crontab")
-        tab_lines.remove(chalmers_reboot)
-        new_cron_tab = '\n'.join(tab_lines) + '\n'
-        p0 = Popen(['crontab'], stdin=PIPE)
-        p0.communicate(input=new_cron_tab)
+        tab_lines.remove(chalmers_tab_entry)
+
+        set_crontab(tab_lines)
+
     else:
         log.info("Chalmers crontab instruction does not exist")
 

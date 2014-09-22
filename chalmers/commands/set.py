@@ -6,6 +6,7 @@ import logging
 
 from chalmers.program import Program
 from chalmers.utils import try_eval, set_nested_key
+from chalmers import errors
 
 
 log = logging.getLogger('chalmers.set')
@@ -17,6 +18,9 @@ def main(args):
 
     if proc.is_running:
         log.warning("Program is running: Updates will not be reflected until a restart is done")
+
+    if args.key == 'name':
+        raise errors.ChalmersError("Can not set program name")
 
     set_nested_key(proc.raw_data, args.key, args.value)
     proc.save()

@@ -1,15 +1,11 @@
-'''
-Created on Jun 23, 2014
-
-@author: sean
-'''
-
-from chalmers.utils.handlers import MyStreamHandler
+import logging
 from logging.handlers import RotatingFileHandler
 from os import makedirs
 from os.path import join, exists
-import logging
+
 from chalmers.config import dirs
+from chalmers.utils.handlers import MyStreamHandler
+
 
 def setup_logging(args):
 

@@ -58,6 +58,8 @@ def add_parser(subparsers):
     parser.add_argument('-a', '--all', action='store_true',
                         help='start all programs')
 
+    parser.set_defaults(main=main)
+
     parser = subparsers.add_parser('restart',
                                       help='Restart a program',
                                       description=__doc__)

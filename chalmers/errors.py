@@ -1,3 +1,6 @@
+"""
+Chalmers error classes
+"""
 
 class ChalmersError(Exception):
     pass

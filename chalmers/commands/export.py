@@ -18,8 +18,6 @@ log = logging.getLogger('chalmers.export')
 def main(args):
 
     export_data = []
-    for group in Program.find_groups_for_user():
-        export_data.append({'group': group})
 
     for prog in Program.find_for_user():
         export_data.append({'program': prog.raw_data})
