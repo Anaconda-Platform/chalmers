@@ -1,4 +1,21 @@
+import logging
+import os
+import signal
+import time
+
+from chalmers import errors
+from chalmers.utils.daemonize import daemonize
+
 from .base import ProgramBase
+log = logging.getLogger(__name__)
+
+
+def stop_process(signum, frame):
+    """
+    Signal handler to raise StopProcess exception
+    """
+    log.debug("Process recieved signal %s" % signum)
+    raise errors.StopProcess()
 
 class Program(ProgramBase):
 
@@ -23,10 +40,10 @@ class Program(ProgramBase):
         """
 
         if 'daemon_log' in self.data:
-           self.log_to_daemonlog()
+
+            self.log_to_daemonlog()
             log_stream = open(self.data['daemon_log'], 'a')
             hdlr = logging.StreamHandler(log_stream)
-#             hdlr = logging.FileHandler(self.data['daemon_log'])
             fmt = logging.Formatter(logging.BASIC_FORMAT)
             hdlr.setFormatter(fmt)
             logging.getLogger('chalmers').addHandler(hdlr)
@@ -51,3 +68,7 @@ class Program(ProgramBase):
             time.sleep(.1)
 
         self.update_state(pid=None, paused=True)
+
+    def setup_termination(self):
+        signal.signal(signal.SIGUSR2, stop_process)
+        signal.signal(signal.SIGALRM, stop_process)

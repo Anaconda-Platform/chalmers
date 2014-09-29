@@ -16,18 +16,9 @@ import yaml
 
 from chalmers import errors
 from chalmers.config import dirs
-from chalmers.utils.daemonize import daemonize
+
 
 log = logging.getLogger(__name__)
-
-'/Users/sean/Documents/workspace/chalmers'
-
-def stop_process(signum, frame):
-    """
-    Signal handler to raise StopProcess exception
-    """
-    log.debug("Process recieved signal %s" % signum)
-    raise errors.StopProcess()
 
 
 def str_replace(data):
@@ -239,9 +230,7 @@ class ProgramBase(object):
         """
         Syncronously run this program in this process
         """
-        if os.name == 'posix':
-            signal.signal(signal.SIGUSR2, stop_process)
-            signal.signal(signal.SIGALRM, stop_process)
+        self.setup_termination()
 
         self.update_state(pid=os.getpid(), paused=False)
 
