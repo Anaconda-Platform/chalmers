@@ -3,6 +3,7 @@ Chalmers program object
 """
 from __future__ import absolute_import, unicode_literals, print_function
 
+import abc
 from glob import glob
 import logging
 from os import path
@@ -37,7 +38,7 @@ def str_replace(data):
         if isinstance(value, (str, unicode)):
             data[key] = value.format(**data)
 
-class Program(object):
+class ProgramBase(object):
     """
     Object that represents a long running process
     
@@ -45,6 +46,7 @@ class Program(object):
     running in another process
     or a program that is running in the current process.
     """
+    __metaclass__ = abc.ABCMeta
 
     OPTIONS = [('Primary Options',
                 ['name', 'command', 'templates']),
@@ -68,6 +70,12 @@ class Program(object):
                 'stderr': '{log_dir}/{name}.stderr.log',
                 'daemon_log': '{log_dir}/{name}.daemon.log',
                 }
+
+    @abc.abstractproperty
+    def is_running(self): pass
+
+    @abc.abstractmethod
+    def start_as_service(self): pass
 
     @property
     def definition_filename(self):
@@ -148,7 +156,7 @@ class Program(object):
         """
 
         if not path.isfile(self.definition_filename):
-            raise errors.ProgramNotFound("Program %s does not exist (no definition file)" % self.name)
+            raise errors.ProgramNotFound("Program %s does not exist (no definition file %s)" % (self.name, self.definition_filename))
 
         with open(self.definition_filename) as df:
             self.raw_data = yaml.safe_load(df)
@@ -187,40 +195,17 @@ class Program(object):
         if self.data.get('redirect_stderr'):
             self.data.pop('stderr')
 
+    @abc.abstractmethod
     def stop(self):
         """
         Stop this program
-        
-        Sends SIGUSR2 signal to the program's PID
         """
 
-        if not self.is_running:
-            raise errors.StateError("Program is not running")
-        pid = self.state.get('pid')
-        os.kill(pid, signal.SIGUSR2)
-
-        # TODO: not sure how to wait for the PID
-        while self.is_running:
-            time.sleep(.1)
-
-        self.update_state(pid=None, paused=True)
 
     @property
     def is_paused(self):
         return self.state.get('paused')
 
-    @property
-    def is_running(self):
-        "Check For the existence of a pid"
-        pid = self.state.get('pid')
-        if not pid:
-            return False
-        try:
-            os.kill(pid, 0)
-        except OSError:
-            return False
-        else:
-            return True
 
     def update_definition(self, *E, **F):
         'Update the program definition'
@@ -245,18 +230,18 @@ class Program(object):
         if self.is_running:
             raise errors.StateError("Process is already running")
 
-        if daemon:
-            start = self.start_deamon
+        if not daemon:
+            self.start_sync()
         else:
-            start = self.start_sync
-        start()
+            self.start_as_service()
 
     def start_sync(self):
         """
         Syncronously run this program in this process
         """
-        signal.signal(signal.SIGUSR2, stop_process)
-        signal.signal(signal.SIGALRM, stop_process)
+        if os.name == 'posix':
+            signal.signal(signal.SIGUSR2, stop_process)
+            signal.signal(signal.SIGALRM, stop_process)
 
         self.update_state(pid=os.getpid(), paused=False)
 
@@ -267,21 +252,6 @@ class Program(object):
 
         self.update_state(pid=os.getpid())
 
-
-    def start_deamon(self):
-        """
-        Run this program in a new background process
-        """
-
-        if 'daemon_log' in self.data:
-            log_stream = open(self.data['daemon_log'], 'wa')
-            hdlr = logging.StreamHandler(log_stream)
-#             hdlr = logging.FileHandler(self.data['daemon_log'])
-            fmt = logging.Formatter(logging.BASIC_FORMAT)
-            hdlr.setFormatter(fmt)
-            logging.getLogger('chalmers').addHandler(hdlr)
-
-        daemonize(self.start_sync, stream=log_stream)
 
     def _terminate(self):
         """
@@ -405,6 +375,14 @@ class Program(object):
             text_status = self.data.get('exit_message', 'Stopped')
 
         return text_status
+
+    def log_to_daemonlog(self):
+        self._log_stream = open(self.data['daemon_log'], 'a')
+        hdlr = logging.StreamHandler(self._log_stream)
+        fmt = logging.Formatter(logging.BASIC_FORMAT)
+        hdlr.setFormatter(fmt)
+        logging.getLogger('chalmers').addHandler(hdlr)
+
 
 
 
