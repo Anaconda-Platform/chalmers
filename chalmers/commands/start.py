@@ -6,6 +6,7 @@ import logging
 
 from chalmers import errors
 from chalmers.program import Program
+from chalmers.program_manager import ProgramManager
 
 
 log = logging.getLogger('chalmers.start')
@@ -14,33 +15,31 @@ log = logging.getLogger('chalmers.start')
 def main(args):
 
     if args.all:
-        if not args.daemon:
-            raise errors.ChalmersError("Option --all conflicts with option -w/--wait/--no-daemin")
-
-        Program.start_all()
-
+        programs = list(Program.find_for_user())
     else:
-        prog = Program(args.name)
-        log.info("Starting program %s (daemon:%s)" % (prog.name, args.daemon))
-        prog.start(daemon=args.daemon)
+        programs = [Program(name) for name in args.names]
 
+    mgr = ProgramManager()
+
+    for prog in programs:
+        mgr.action_start(prog.name)
+
+    for process in mgr.processes:
+        process.join()
+
+#     if len(programs) > 1 and not args.daemon:
+#         raise errors.ChalmersError("Can not use -w/--wait with multiple programs")
+#
 
 def restart_main(args):
+
     if args.all:
-        if not args.daemon:
-            raise errors.ChalmersError("Option --all conflicts with option -w/--wait/--no-daemin")
-
-        Program.start_all()
-
+        programs = Program.find_for_user()
     else:
-        prog = Program(args.name)
-        log.info(" - Stopping program %s" % prog.name)
-        try:
-            prog.stop()
-        except errors.StateError:
-            log.info(" - Program %s was not running" % prog.name)
-        log.info(" + Starting program %s" % prog.name)
-        prog.start()
+        programs = [Program(name) for name in args.names]
+
+    for prog in programs:
+        prog.restart()
 
 
 
@@ -49,8 +48,8 @@ def add_parser(subparsers):
                                       help='Start a command running',
                                       description=__doc__)
 
-    parser.add_argument('name', nargs='?',
-                        help='Name of the program to start')
+    parser.add_argument('names', nargs='*', metavar='PROG',
+                        help='Names of the programs to start')
     parser.add_argument('-w', '--wait', '--no-daemon', action='store_false', dest='daemon',
                         help='Wait for program to exit')
     parser.add_argument('-d', '--daemon', action='store_true', dest='daemon', default=True,
@@ -64,8 +63,8 @@ def add_parser(subparsers):
                                       help='Restart a program',
                                       description=__doc__)
 
-    parser.add_argument('name', nargs='?',
-                        help='Name of the program to restart')
+    parser.add_argument('names', nargs='*', metavar='PROG',
+                        help='Names of the programs to start')
     parser.add_argument('-a', '--all', action='store_true',
                         help='start all programs')
 

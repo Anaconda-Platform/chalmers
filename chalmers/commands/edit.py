@@ -2,15 +2,14 @@
 Edit a service definition
 '''
 from __future__ import unicode_literals, print_function
-from chalmers.program import Program
+
 import logging
-from argparse import FileType
-import sys
-import yaml
 import os
-from chalmers import errors
-import subprocess
 import pipes
+import subprocess
+
+from chalmers import errors
+from chalmers.program import Program
 
 
 log = logging.getLogger('chalmers.edit')
@@ -30,6 +29,8 @@ def main(args):
     if subprocess.call(cmd, shell=True):
         raise errors.ChalmersError('Command "%s" exited with non zero status' % cmd)
 
+    if prog.is_running:
+        log.info("Changes to program %s will take effect on the next restart" % prog.name)
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('edit',

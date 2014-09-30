@@ -6,6 +6,7 @@ from __future__ import absolute_import, unicode_literals, print_function
 import abc
 from glob import glob
 import logging
+from threading import Lock, Event
 from os import path
 import os
 import signal
@@ -16,10 +17,11 @@ import yaml
 
 from chalmers import errors
 from chalmers.config import dirs
+from chalmers.event_handler import EventHandler, send_action
+import sys
 
 
 log = logging.getLogger(__name__)
-
 
 def str_replace(data):
     """
@@ -29,7 +31,7 @@ def str_replace(data):
         if isinstance(value, (str, unicode)):
             data[key] = value.format(**data)
 
-class ProgramBase(object):
+class ProgramBase(EventHandler):
     """
     Object that represents a long running process
     
@@ -38,6 +40,7 @@ class ProgramBase(object):
     or a program that is running in the current process.
     """
     __metaclass__ = abc.ABCMeta
+
 
     OPTIONS = [('Primary Options',
                 ['name', 'command', 'templates']),
@@ -65,8 +68,13 @@ class ProgramBase(object):
     @abc.abstractproperty
     def is_running(self): pass
 
-    @abc.abstractmethod
-    def start_as_service(self): pass
+    def start_as_service(self):
+        """
+        Run this program in a new background process
+        
+        chalmers manager must be running
+        """
+        send_action('chalmers', 'start', self.name)
 
     @property
     def definition_filename(self):
@@ -78,9 +86,24 @@ class ProgramBase(object):
         'The file name where current program state is stored'
         return path.join(dirs.user_data_dir, 'state', '%s.yaml' % self.name)
 
+    @property
+    def lock_filename(self):
+        'The file name where current program state is stored'
+        return path.join(dirs.user_data_dir, 'lock', '%s' % self.name)
+
 
     def __init__(self, name, load=True):
-        self.name = name
+        self._name = name
+
+        lock_dir = path.dirname(self.lock_filename)
+
+        if not path.isdir(lock_dir):
+            os.makedirs(lock_dir)
+
+        self.file_lock = Lock()
+
+        EventHandler.__init__(self)
+        self.finished_event = Event()
 
         self.raw_data = {}
         self.data = {}
@@ -90,6 +113,10 @@ class ProgramBase(object):
             self.reload()
             self.reload_state()
 
+
+    @property
+    def name(self):
+        return self._name
 
     @classmethod
     def create(cls, name, defn, state=None):
@@ -134,10 +161,15 @@ class ProgramBase(object):
         Replace the state in memory with the state in the state file
         """
 
+        log.debug("Reload state from file %s" % self.state_filename)
         if path.isfile(self.state_filename):
             with open(self.state_filename) as sf:
                 self.state = yaml.safe_load(sf)
+
+                if self.state is None:
+                    log.debug("Statefile returned none")
         else:
+            log.debug("Statefile does not exist")
             self.state = {}
 
     def reload(self):
@@ -147,7 +179,8 @@ class ProgramBase(object):
         """
 
         if not path.isfile(self.definition_filename):
-            raise errors.ProgramNotFound("Program %s does not exist (no definition file %s)" % (self.name, self.definition_filename))
+            msg = "Program %s does not exist (no definition file %s)"
+            raise errors.ProgramNotFound(msg % (self.name, self.definition_filename))
 
         with open(self.definition_filename) as df:
             self.raw_data = yaml.safe_load(df)
@@ -186,13 +219,6 @@ class ProgramBase(object):
         if self.data.get('redirect_stderr'):
             self.data.pop('stderr')
 
-    @abc.abstractmethod
-    def stop(self):
-        """
-        Stop this program
-        """
-
-
     @property
     def is_paused(self):
         return self.state.get('paused')
@@ -200,16 +226,19 @@ class ProgramBase(object):
 
     def update_definition(self, *E, **F):
         'Update the program definition'
-        self.reload()
-        self.raw_data.update(*E, **F)
-        self.save()
+        with self.file_lock:
+            self.reload()
+            self.raw_data.update(*E, **F)
+            self.save()
 
     def update_state(self, *E, **F):
         'Update the program state'
-        self.reload_state()
-        self.state.update(*E, **F)
-        self.save_state()
+        with self.file_lock:
 
+            self.reload_state()
+            self.state.update(*E, **F)
+            log.debug("Update state with info: %r" % dict(*E, **F))
+            self.save_state()
 
     def start(self, daemon=True):
         """
@@ -221,26 +250,47 @@ class ProgramBase(object):
         if self.is_running:
             raise errors.StateError("Process is already running")
 
+        log.info("Starting program %s (daemon:%s)" % (self.name, daemon))
+
         if not daemon:
             self.start_sync()
         else:
+            self.update_state(paused=False)
             self.start_as_service()
 
     def start_sync(self):
         """
         Syncronously run this program in this process
         """
-        self.setup_termination()
 
-        self.update_state(pid=os.getpid(), paused=False)
+        if 'daemon_log' in self.data:
+            self.log_to_daemonlog()
+
+        self.start_listener()
+
+        self.update_state(pid=os.getpid())
 
         try:
             self.keep_alive()
         except errors.StopProcess:
             self._terminate()
+        finally:
+            self.update_state(pid=None)
+            self.finished_event.set()
+            self._running = False
+            if self._listener:
+                try:
+                    send_action(self.name, 'exitloop')
+                except:
+                    pass
 
-        self.update_state(pid=os.getpid())
 
+    def action_terminate(self, timeout=None):
+        'Action for event listener'
+        self._terminate()
+        self._running = False
+        if not self.finished_event.wait(timeout):
+            raise errors.ChalmersError("Timed out waiting for program %s to finish" % self.name)
 
     def _terminate(self):
         """
@@ -250,23 +300,10 @@ class ProgramBase(object):
          
         """
         log.info('Stop Process Requested')
+        self._terminating = True
         if self._p0:
             log.info('Sending signal %s to process %s' % (self.data['stopsignal'], self._p0.pid))
             self._p0.send_signal(self.data['stopsignal'])
-            if self.data['stopwaitsecs']:
-                signal.alarm(self.data['stopwaitsecs'])
-
-            try:
-                status = self._p0.wait()
-                log.info('Command Exited with status %s' % status)
-                status_message = 'Stopped: At user request'
-            except errors.StopProcess:
-                log.info('Process %s did not exit within %s seconds sending SIGKILL' % (self._p0.pid, self.data['stopwaitsecs']))
-                self._p0.send_signal(signal.SIGKILL)
-                status = '?'
-                status_message = 'Stopped: Terminate timed out: sent SIGKILL'
-
-            self.update_state(exit_status=status, status_message=status_message, paused=True, pid=None, child_pid=None)
         elif self._p0 is None:
             raise errors.ChalmersError("This process did not start this program, can not call _terminate")
 
@@ -282,6 +319,7 @@ class ProgramBase(object):
 
         stdout = open(self.data['stdout'], 'a')
 
+        self._terminating = False
         for i in range(self.data['retries'] + 1):
             start = time.time()
             if i:
@@ -289,11 +327,21 @@ class ProgramBase(object):
             env = os.environ.copy()
             env.update(self.data.get('env', {}))
             log.info("Running Command: %s" % ' '.join(self.data['command']))
-            self._p0 = Popen(self.data['command'], stdout=stdout, stderr=stderr, env=env)
+            try:
+                self._p0 = Popen(self.data['command'], stdout=stdout, stderr=stderr, env=env)
+            except OSError as err:
+                log.error('Program %s could not be started with popen' % self.name)
+                self.update_state(child_pid=None, exit_status=1,
+                                  reason='OSError running command "%s"' % self.data['command'][0])
+                return
+
+
 
             log.info('Program started with pid %s' % self._p0.pid)
-            self.update_state(child_pid=self._p0.pid, status_message='running', exit_status=None)
+            self.update_state(child_pid=self._p0.pid, reason=None, exit_status=None,
+                              start_time=time.time())
             status = self._p0.wait()
+
 
             self._p0 = False
 
@@ -302,16 +350,26 @@ class ProgramBase(object):
             log.info('Command Exited with status %s' % status)
             log.info(' + Uptime %s' % uptime)
 
-            if uptime < self.data['startsecs']:
-                status_message = 'Error: Program could not successfully start'
+            if self._terminating:
+                reason = "Terminated at user request"
+                status = None
+            elif uptime < self.data['startsecs']:
+                reason = 'Program did not successfully start'
             elif status in self.data['exitcodes']:
-                status_message = "Stopped: Program exited gracefully"
+                reason = "Program exited gracefully"
+            else:
+                reason = "Program exited unexpectedly with code %s" % (status)
 
             self.update_state(child_pid=None, exit_status=status,
-                              status_message=status_message)
+                              reason=reason)
+
+            if self._terminating:
+                break
 
             if status in self.data['exitcodes']:
                 break
+
+        log.debug("Exiting keep alive function")
 
     def delete(self):
         """
@@ -357,22 +415,52 @@ class ProgramBase(object):
         'A text status of the current program'
 
         if self.is_running:
-            text_status = 'Running'
+            return 'RUNNING'
         elif self.is_paused:
-            text_status = 'Paused'
+            return 'PAUSED'
+        elif self.state.get('exit_status') is None:
+            return 'STOPPED'
+        elif self.state.get('exit_status') in self.data['exitcodes']:
+            return 'STOPPED'
         else:
-            text_status = self.data.get('exit_message', 'Stopped')
-
-        return text_status
+            return 'ERROR'
 
     def log_to_daemonlog(self):
         self._log_stream = open(self.data['daemon_log'], 'a')
         hdlr = logging.StreamHandler(self._log_stream)
-        fmt = logging.Formatter(logging.BASIC_FORMAT)
+        hdlr.setLevel(logging.INFO)
+        fmt = logging.Formatter("[%(asctime)s] %(levelname)s:%(message)s")
         hdlr.setFormatter(fmt)
         logging.getLogger('chalmers').addHandler(hdlr)
 
 
 
+    def stop(self):
+        """
+        Stop this program
+        """
+
+        self.update_state(paused=True)
+
+        if not self.is_running:
+            raise errors.StateError("Program is not running")
+
+        send_action(self.name, 'terminate', timeout=self.data['stopwaitsecs'])
 
 
+    def restart(self):
+        if self.is_running:
+            print("Stopping program %s ..." % self.name, end=''); sys.stdout.flush()
+            try:
+                self.stop()
+            except errors.StateError as err:
+                log.error(err.message)
+            else:
+                print("stopped ")
+        else:
+            print("Program %s is already stopped" % self.name)
+
+        print("Starting program %s ... " % self.name, end=''); sys.stdout.flush()
+        self.reload_state()
+        self.start()
+        print("restarted")

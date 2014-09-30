@@ -123,8 +123,6 @@ class ChalmersService(ServiceFramework):
                 WriteFile(pipeHandle, "Error: bad action")
                 log.error("Got empty message from named pipe")
 
-
-
             DisconnectNamedPipe(pipeHandle)
 
 

@@ -18,7 +18,7 @@ from .base import ProgramBase
 
 log = logging.getLogger(__name__)
 
-class Program(ProgramBase):
+class NTProgram(ProgramBase):
 
     @property
     def svs_name(self):

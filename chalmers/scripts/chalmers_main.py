@@ -37,6 +37,7 @@ def main(args=None, exit=True):
     args = parser.parse_args(args)
 
     setup_logging(args)
+
     try:
         return args.main(args)
 
