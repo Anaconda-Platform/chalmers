@@ -1,16 +1,20 @@
 from contextlib import contextmanager
 
+import win32console
+
+std_output_hdl = win32console.GetStdHandle(win32console.STD_OUTPUT_HANDLE)
+
 class NTColor(object):
-    WHITE = 97
-    YELLO = 93
-    BLUE = 94
-    GREEN = 92
-    RED = 91
-    BOLD = 1
+    YELLO = 14
+    BLUE = 11
+    GREEN = 10
+    RED = 12
+    BOLD = 0
+    WHITE = 15
 
-    DEFAULT = 0
+    DEFAULT = 15
 
-    BACKGROUND_COLORS = range(40, 48) + [100, 102, 104, 105, 106]
+    BACKGROUND_COLORS = [c<<4 for c in range(1,10)]
 
     def __init__(self, text, colors):
         self.text = text
@@ -18,9 +22,9 @@ class NTColor(object):
 
     @contextmanager
     def __call__(self, stream):
-        for c in self.colors:
-            pass
+        c = reduce(lambda a,b: a|b, self.colors)
+        std_output_hdl.SetConsoleTextAttribute(c)
         try:
             yield self.text
         finally:
-            pass
+            std_output_hdl.SetConsoleTextAttribute(self.DEFAULT)

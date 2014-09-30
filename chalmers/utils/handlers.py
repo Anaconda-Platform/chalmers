@@ -62,8 +62,7 @@ class ColorFormatter(object):
                 message = record.getMessage()
 
         if header:
-            if self.isatty and not sys.platform.startswith('win'):
-                header = self.color_map(header, record.levelname)
+            header = self.color_map(header, record.levelname)
             return [header, '%s' % message]
         else:
             return message

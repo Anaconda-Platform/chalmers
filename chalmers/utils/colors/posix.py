@@ -1,5 +1,4 @@
 from contextlib import contextmanager
-import os
 
 
 class PosixColor(object):
