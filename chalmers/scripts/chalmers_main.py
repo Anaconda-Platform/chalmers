@@ -29,6 +29,9 @@ def main(args=None, exit=True):
                         dest='log_level', const=logging.WARNING)
     parser.add_argument('-V', '--version', action='version',
                         version="%%(prog)s Command line client (version %s)" % (version,))
+    parser.add_argument('--color', action='store_true', help='always display with colors')
+    parser.add_argument('--no-color', action='store_false', dest='color',
+                        help='never display with colors')
     subparsers = parser.add_subparsers(help='commands')
 
     for command in sub_commands():

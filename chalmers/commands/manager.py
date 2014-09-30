@@ -16,8 +16,7 @@ def main(args):
         log.info("Manager is shutting down")
         return
     log.info("Managing processes")
-
-    mgr = ProgramManager()
+    mgr = ProgramManager(use_color=args.color)
     mgr.start_all()
     mgr.listen()
 

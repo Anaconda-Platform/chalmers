@@ -16,10 +16,15 @@ class ProgramManager(EventHandler):
 
     COLOR_CODES = range(40, 48) + [100, 102, 104, 105, 106]
     random.shuffle(COLOR_CODES)
-    def __init__(self, exit_on_first_failure=False):
+    def __init__(self, exit_on_first_failure=False, use_color=None):
         EventHandler.__init__(self)
         self.manager = Manager()
         self.processes = []
+
+        if use_color is None:
+            use_color = sys.stdout.isatty()
+
+        self.use_color = use_color
         self.bg_colors = itertools.cycle(self.COLOR_CODES)
         self.exit_on_first_failure = exit_on_first_failure
 
@@ -29,17 +34,12 @@ class ProgramManager(EventHandler):
         return 'chalmers'
 
     def action_start(self, name):
-        print(dict(target=start_program,
-                    name='start_program:%s' % name,
-
-                    args=(name,),
-                    kwargs={'color': next(self.bg_colors)})
-        )
+        log.info("Managing Program %s" % name)
         p = Process(target=start_program,
                     name='start_program:%s' % name,
 
                     args=(name,),
-                    kwargs={'color': next(self.bg_colors)})
+                    kwargs={'color': self.use_color and next(self.bg_colors)})
 
         p.start()
         self.processes.append(p)

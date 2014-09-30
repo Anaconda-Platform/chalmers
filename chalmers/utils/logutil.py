@@ -29,7 +29,7 @@ def setup_logging(args):
     hndlr.setLevel(logging.INFO)
     logger.addHandler(hndlr)
 
-    shndlr = MyStreamHandler()
+    shndlr = MyStreamHandler(color=args.color)
     shndlr.setLevel(args.log_level)
     logger.addHandler(shndlr)
 

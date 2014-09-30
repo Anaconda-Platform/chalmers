@@ -63,10 +63,14 @@ class ColorFormatter(object):
             return '%s\n' % message
 
 class MyStreamHandler(logging.Handler):
-    def __init__(self, level=logging.INFO):
+    def __init__(self, color=None, level=logging.INFO):
 
         logging.Handler.__init__(self, level=logging.INFO)
-        self.setFormatter(ColorFormatter(sys.stdout.isatty()))
+
+        if color is None:
+            color = sys.stdout.isatty()
+
+        self.setFormatter(ColorFormatter(color))
 
     def emit(self, record):
 

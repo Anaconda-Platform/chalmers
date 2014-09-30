@@ -25,7 +25,7 @@ def main(args):
             prog.start(args.daemon)
             print("started")
     else:
-        mgr = ProgramManager(exit_on_first_failure=True)
+        mgr = ProgramManager(exit_on_first_failure=True, use_color=args.color)
 
         for prog in programs:
             mgr.action_start(prog.name)
