@@ -2,11 +2,13 @@ import itertools
 import logging
 from multiprocessing import Process, Manager
 import sys
-
+from chalmers.utils.handlers import MyStreamHandler
+import random
 from chalmers.event_handler import EventHandler
 from chalmers.program import Program
 from chalmers.utils.handlers import FormatterWrapper
-import random
+from logging import StreamHandler
+
 from contextlib import contextmanager
 
 
@@ -51,26 +53,6 @@ class ProgramManager(EventHandler):
             else:
                 log.info("Not starting program %s (it is paused)" % (prog.name))
 
-    def start_program(self, name, color=None):
-
-        logger = logging.getLogger('chalmers')
-
-        prefix = '[%s]'
-        if color and sys.stdout.isatty():
-            bg_color = next(self.bg_colors)
-            prefix = '\033[97m\033[%im%s\033[49m\033[39m' % (bg_color, prefix)
-
-        prefix += ' '
-
-
-        for h in logger.handlers:
-            FormatterWrapper.wrap(h, prefix=prefix % name)
-        prog = Program(name)
-
-        with self.cleanup(prog):
-            prog.start_sync()
-
-
     @contextmanager
     def cleanup(self, prog):
         try:
@@ -93,7 +75,15 @@ def start_program(name, color=None):
     prefix += ' '
 
 
+    print("Handlers for %s" % name)
+    if not logger.handlers:
+        shndlr = StreamHandler()
+        shndlr.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
+        logger.addHandler(shndlr)
+
     for h in logger.handlers:
+        print(h)
         FormatterWrapper.wrap(h, prefix=prefix % name)
     prog = Program(name)
 

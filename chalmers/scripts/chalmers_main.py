@@ -39,7 +39,7 @@ def main(args=None, exit=True):
 
     args = parser.parse_args(args)
 
-    setup_logging(args)
+    setup_logging(args.log_level, args.color)
 
     try:
         return args.main(args)

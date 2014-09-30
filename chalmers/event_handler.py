@@ -61,6 +61,9 @@ class EventHandler(object):
     def action_exitloop(self):
         self._running = False
 
+    def action_ping(self):
+        return os.getpid()
+
     def listen(self):
 
         l = self.listener
@@ -87,13 +90,13 @@ class EventHandler(object):
 
                 if method:
                     try:
-                        method(*args, **kwargs)
+                        result = method(*args, **kwargs)
                     except Exception as err:
                         log.exception(err)
                         c.send({'error':True, 'message':'Exception in action %s - %s' % (action, err)})
                         raise
                     else:
-                        c.send({'error':False, 'message':'ok'})
+                        c.send({'error':False, 'message':'ok', 'result': result})
                 else:
                     c.send({'error':True, 'message':'No action %s' % action})
                     pass
@@ -115,7 +118,7 @@ def send_action(name, action, *args, **kwargs):
 
         if res.get('error'):
             raise errors.ChalmersError(res.get('message', 'Unknown error'))
-
+        return res.get('result')
     finally:
         c.close()
 
