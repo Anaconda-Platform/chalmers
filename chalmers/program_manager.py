@@ -29,12 +29,18 @@ class ProgramManager(EventHandler):
         return 'chalmers'
 
     def action_start(self, name):
-
-        p = Process(target=self.start_program,
+        print(dict(target=start_program,
                     name='start_program:%s' % name,
 
-                    args=(name, self.programs),
+                    args=(name,),
                     kwargs={'color': next(self.bg_colors)})
+        )
+        p = Process(target=start_program,
+                    name='start_program:%s' % name,
+
+                    args=(name,),
+                    kwargs={'color': next(self.bg_colors)})
+
         p.start()
         self.processes.append(p)
 
@@ -75,4 +81,21 @@ class ProgramManager(EventHandler):
             if not prog.is_ok:
                 log.info("Program manager letting program fail")
 
+
+def start_program(name, color=None):
+
+    logger = logging.getLogger('chalmers')
+
+    prefix = '[%s]'
+    if color and sys.stdout.isatty():
+        prefix = '\033[97m\033[%im%s\033[49m\033[39m' % (color, prefix)
+
+    prefix += ' '
+
+
+    for h in logger.handlers:
+        FormatterWrapper.wrap(h, prefix=prefix % name)
+    prog = Program(name)
+
+    prog.start_sync()
 
