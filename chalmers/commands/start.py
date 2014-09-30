@@ -4,9 +4,9 @@ from __future__ import unicode_literals, print_function
 
 import logging
 
-from chalmers import errors
 from chalmers.program import Program
 from chalmers.program_manager import ProgramManager
+import sys
 
 
 log = logging.getLogger('chalmers.start')
@@ -19,17 +19,21 @@ def main(args):
     else:
         programs = [Program(name) for name in args.names]
 
-    mgr = ProgramManager()
+    if args.daemon:
+        for prog in programs:
+            print("Starting program %s (daemon:%s) ... " % (prog.name, args.daemon), end=''); sys.stdout.flush()
+            prog.start(args.daemon)
+            print("started")
+    else:
+        mgr = ProgramManager(exit_on_first_failure=True)
 
-    for prog in programs:
-        mgr.action_start(prog.name)
+        for prog in programs:
+            mgr.action_start(prog.name)
 
-    for process in mgr.processes:
-        process.join()
 
-#     if len(programs) > 1 and not args.daemon:
-#         raise errors.ChalmersError("Can not use -w/--wait with multiple programs")
-#
+        for process in mgr.processes:
+            process.join()
+
 
 def restart_main(args):
 

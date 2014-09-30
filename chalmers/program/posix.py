@@ -5,6 +5,7 @@ from chalmers import errors
 from chalmers.event_handler import send_action
 
 from .base import ProgramBase
+from chalmers.utils.daemonize import daemonize
 
 
 log = logging.getLogger(__name__)
@@ -39,8 +40,8 @@ class PosixProgram(ProgramBase):
         posix only
         """
 
-        send_action('chalmers', 'start', self.name)
-#         daemonize(self.start_sync, stream=self._log_stream)
+#         send_action('chalmers', 'start', self.name)
+        daemonize(self.start_sync)
 
 
     def clear_socket(self):

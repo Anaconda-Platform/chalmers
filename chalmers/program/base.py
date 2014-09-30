@@ -250,12 +250,9 @@ class ProgramBase(EventHandler):
         if self.is_running:
             raise errors.StateError("Process is already running")
 
-        log.info("Starting program %s (daemon:%s)" % (self.name, daemon))
-
         if not daemon:
             self.start_sync()
         else:
-            self.update_state(paused=False)
             self.start_as_service()
 
     def start_sync(self):
@@ -336,12 +333,16 @@ class ProgramBase(EventHandler):
                 return
 
 
-
             log.info('Program started with pid %s' % self._p0.pid)
             self.update_state(child_pid=self._p0.pid, reason=None, exit_status=None,
                               start_time=time.time())
-            status = self._p0.wait()
 
+            try:
+                status = self._p0.wait()
+            except KeyboardInterrupt:
+                log.error('Program %s was interrupted by user' % self.name)
+                self.update_state(child_pid=None, exit_status=None, reason='Interrupted by user')
+                raise
 
             self._p0 = False
 
@@ -409,7 +410,15 @@ class ProgramBase(EventHandler):
             else:
                 log.info(" - Programs %s is already running" % prog.name)
 
-
+    @property
+    def is_ok(self):
+        if self.is_running:
+            return True
+        elif self.state.get('exit_status') is None:
+            return True
+        elif self.state.get('exit_status') in self.data['exitcodes']:
+            return True
+        return False
     @property
     def text_status(self):
         'A text status of the current program'
@@ -418,9 +427,7 @@ class ProgramBase(EventHandler):
             return 'RUNNING'
         elif self.is_paused:
             return 'PAUSED'
-        elif self.state.get('exit_status') is None:
-            return 'STOPPED'
-        elif self.state.get('exit_status') in self.data['exitcodes']:
+        elif self.is_ok:
             return 'STOPPED'
         else:
             return 'ERROR'
@@ -439,8 +446,6 @@ class ProgramBase(EventHandler):
         """
         Stop this program
         """
-
-        self.update_state(paused=True)
 
         if not self.is_running:
             raise errors.StateError("Program is not running")

@@ -1,6 +1,6 @@
 import itertools
 import logging
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 import sys
 
 from chalmers.event_handler import EventHandler
@@ -16,11 +16,12 @@ class ProgramManager(EventHandler):
 
     COLOR_CODES = range(40, 48) + [100, 102, 104, 105, 106]
     random.shuffle(COLOR_CODES)
-    def __init__(self, *args, **kwargs):
-        EventHandler.__init__(self, *args, **kwargs)
+    def __init__(self, exit_on_first_failure=False):
+        EventHandler.__init__(self)
+        self.manager = Manager()
         self.processes = []
-        self.programs = []
         self.bg_colors = itertools.cycle(self.COLOR_CODES)
+        self.exit_on_first_failure = exit_on_first_failure
 
 
     @property
@@ -32,7 +33,7 @@ class ProgramManager(EventHandler):
         p = Process(target=self.start_program,
                     name='start_program:%s' % name,
 
-                    args=(name,),
+                    args=(name, self.programs),
                     kwargs={'color': next(self.bg_colors)})
         p.start()
         self.processes.append(p)
@@ -41,7 +42,6 @@ class ProgramManager(EventHandler):
         for prog in Program.find_for_user():
             if not prog.is_paused:
                 self.action_start(prog.name)
-                self.programs.append(prog)
             else:
                 log.info("Not starting program %s (it is paused)" % (prog.name))
 
@@ -60,13 +60,19 @@ class ProgramManager(EventHandler):
         for h in logger.handlers:
             FormatterWrapper.wrap(h, prefix=prefix % name)
         prog = Program(name)
-        self.programs.append(prog)
-        with self.cleanup():
+
+        with self.cleanup(prog):
             prog.start_sync()
 
 
     @contextmanager
-    def cleanup(self):
-        yield
+    def cleanup(self, prog):
+        try:
+            yield
+        except KeyboardInterrupt:
+            log.error('KeyboardInterrupt')
+        finally:
+            if not prog.is_ok:
+                log.info("Program manager letting program fail")
 
 
