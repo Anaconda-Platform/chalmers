@@ -2,7 +2,7 @@ import logging
 import os
 
 from chalmers import errors
-from chalmers.event_handler import send_action
+from chalmers.event_dispatcher import send_action
 
 from .base import ProgramBase
 from chalmers.utils.daemonize import daemonize

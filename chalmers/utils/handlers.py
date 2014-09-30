@@ -1,6 +1,7 @@
 
 import sys
 import logging
+from chalmers.utils.colors import color
 
 class FormatterWrapper(object):
 
@@ -11,7 +12,14 @@ class FormatterWrapper(object):
 
     def format(self, record):
         result = self.formatter.format(record)
-        return '%s%s%s' % (self.prefix, result, self.suffix)
+        if not isinstance(result, list):
+            result = [result]
+
+        if self.prefix:
+            result.insert(0, self.prefix)
+        if self.suffix:
+            result.append(self.suffix)
+        return result
 
     @classmethod
     def wrap(cls, handler, prefix='', suffix=''):
@@ -22,19 +30,17 @@ class FormatterWrapper(object):
 
 class ColorFormatter(object):
 
-    WARNING = '\033[93m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = "\033[1m"
-    COLOR_MAP = {'ERROR': '%s%s[%%s]%s' % (BOLD, FAIL, ENDC),
-                 'WARNING': '%s%s[%%s]%s' % (BOLD, WARNING, ENDC),
-                 'DEBUG': '%s%s[%%s]%s' % (BOLD, OKBLUE, ENDC),
+    COLOR_MAP = {'ERROR': (color.BOLD, color.RED),
+                 'WARNING': (color.BOLD, color.YELLO),
+                 'DEBUG': (color.BOLD, color.BLUE),
                  }
 
     def color_map(self, header, level):
-        return self.COLOR_MAP.get(level, '[%s]') % header
+        header = '[%s]' % header
+        if level in self.COLOR_MAP:
+            return color(header, self.COLOR_MAP[level])
+        else:
+            return header
 
     def __init__(self, isatty=True):
         self.isatty = isatty
@@ -58,14 +64,14 @@ class ColorFormatter(object):
         if header:
             if self.isatty and not sys.platform.startswith('win'):
                 header = self.color_map(header, record.levelname)
-            return '%s %s\n' % (header, message)
+            return [header, '%s' % message]
         else:
-            return '%s\n' % message
+            return message
 
 class MyStreamHandler(logging.Handler):
     def __init__(self, color=None, level=logging.INFO):
 
-        logging.Handler.__init__(self, level=logging.INFO)
+        logging.Handler.__init__(self, level=level)
 
         if color is None:
             color = sys.stdout.isatty()
@@ -84,5 +90,36 @@ class MyStreamHandler(logging.Handler):
         else:
             stream = sys.stderr
 
-        stream.write(fmt)
+        if isinstance(fmt, (list, tuple)):
+            for item in fmt:
+                if isinstance(item, color):
+                    with item(stream) as text:
+                        stream.write(text)
+                else:
+                    stream.write(item)
+                stream.write(' ')
+        else:
+            stream.write(fmt)
 
+        stream.write('\n')
+
+def main():
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    h = MyStreamHandler(True, logging.DEBUG)
+    logger.addHandler(h)
+
+    logger.debug("DEBUG")
+    logger.info("INFO")
+    logger.warn("WARN")
+    logger.error("ERROR")
+
+    FormatterWrapper.wrap(h, prefix=color('prefix |', [color.WHITE, color.BACKGROUND_COLORS[0]]))
+
+    logger.debug("DEBUG")
+    logger.info("INFO")
+    logger.warn("WARN")
+    logger.error("ERROR")
+
+if __name__ == '__main__':
+    main()

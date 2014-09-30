@@ -1,50 +1,39 @@
-from win32serviceutil import ServiceFramework
+import abc
+import logging
 import os
 import sys
-import win32event, win32serviceutil, win32service, win32api
+import traceback
 
-import logging
+import servicemanager
+import win32event, win32serviceutil, win32service, win32api
+from win32file import ReadFile, WriteFile
 from win32pipe import CreateNamedPipe, ConnectNamedPipe, DisconnectNamedPipe
 from win32pipe import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE, PIPE_WAIT, PIPE_UNLIMITED_INSTANCES
-from win32file import ReadFile, WriteFile
-import abc
+from win32serviceutil import ServiceFramework
+
+
 log = logging.getLogger(__name__)
 
 class WindowsService(object, ServiceFramework):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, args):
-        sys.stdout = sys.stderr = errlog = open('C:\Users\Administrator\Desktop\service-log.err', 'a')
-        print "This is the ChalmersService %r --" % (args,)
-        sys.stdout.flush()
         try:
-            print "Got Here"; sys.stdout.flush()
 
             self._svc_name_ = args[0]
             self._svc_display_name_ = args[0]
 
             ServiceFramework.__init__(self, args)
-
-            name = args[0][9:]
-
-            sys.stdout = sys.stderr = self.errlog = errlog
-
-            log.info('log init')
             self.stop_event = win32event.CreateEvent(None, 0, 0, None)
 
-            print "finished init"; sys.stdout.flush()
-
-        except Exception as err:
-            import traceback
-            traceback.print_exc(file=errlog)
+        except Exception:
+            self.log("Error in WindowsService.__init__")
+            self.log(traceback.format_exc())
             raise
 
     def log(self, msg):
-        import servicemanager
+        'Log to the NTEventlog'
         servicemanager.LogInfoMsg(str(msg))
-        self.errlog.write('%s:%s\n' % (self._svc_name_, msg))
-        self.errlog.flush()
-
 
     def sleep(self, sec):
         win32api.Sleep(sec * 1000, True)
@@ -52,7 +41,6 @@ class WindowsService(object, ServiceFramework):
 
     def SvcDoRun(self):
         self.log('start')
-        print "starting"
 
         self.ReportServiceStatus(win32service.SERVICE_START_PENDING)
         try:
@@ -62,8 +50,9 @@ class WindowsService(object, ServiceFramework):
             self.log('wait')
             win32event.WaitForSingleObject(self.stop_event, win32event.INFINITE)
             self.log('done')
-        except Exception, x:
-            self.log('Exception : %s' % x)
+        except Exception:
+            self.log("Error in WindowsService.SvcDoRun")
+            self.log(traceback.format_exc())
             self.SvcStop()
 
 
@@ -76,4 +65,3 @@ class WindowsService(object, ServiceFramework):
         self.ReportServiceStatus(win32service.SERVICE_STOPPED)
 
 
-service_path = '%s.%s' % (os.path.splitext(__file__)[0], WindowsService.__name__)

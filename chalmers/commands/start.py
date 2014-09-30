@@ -28,7 +28,7 @@ def main(args):
         mgr = ProgramManager(exit_on_first_failure=True, use_color=args.color)
 
         for prog in programs:
-            mgr.action_start(prog.name)
+            mgr.dispatch_start(prog.name)
 
 
         for process in mgr.processes:

@@ -17,7 +17,7 @@ import yaml
 
 from chalmers import errors
 from chalmers.config import dirs
-from chalmers.event_handler import EventHandler, send_action
+from chalmers.event_dispatcher import EventDispatcher, send_action
 import sys
 
 
@@ -31,7 +31,7 @@ def str_replace(data):
         if isinstance(value, (str, unicode)):
             data[key] = value.format(**data)
 
-class ProgramBase(EventHandler):
+class ProgramBase(EventDispatcher):
     """
     Object that represents a long running process
     
@@ -102,7 +102,7 @@ class ProgramBase(EventHandler):
 
         self.file_lock = Lock()
 
-        EventHandler.__init__(self)
+        EventDispatcher.__init__(self)
         self.finished_event = Event()
 
         self.raw_data = {}
@@ -282,7 +282,7 @@ class ProgramBase(EventHandler):
                     pass
 
 
-    def action_terminate(self, timeout=None):
+    def dispatch_terminate(self, timeout=None):
         'Action for event listener'
         self._terminate()
         self._running = False

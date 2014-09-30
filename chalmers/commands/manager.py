@@ -5,7 +5,7 @@ from __future__ import unicode_literals, print_function
 import logging
 
 from chalmers.program_manager import ProgramManager
-from chalmers.event_handler import send_action
+from chalmers.event_dispatcher import send_action
 
 log = logging.getLogger('chalmers.manager')
 

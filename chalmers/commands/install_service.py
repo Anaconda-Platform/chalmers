@@ -57,7 +57,7 @@ def windows_main_status(args):
     else:
         log.error("service '%s' is not running" % service_name)
         return
-    from chalmers.event_handler import send_action    
+    from chalmers.event_dispatcher import send_action    
     pid = send_action("chalmers", "ping")
     log.info("Chalmers manger pid is %s" % pid)
 

@@ -2,17 +2,24 @@ import abc
 import logging
 from multiprocessing.connection import Listener, Client
 import os
+import socket
 from threading import Thread
 
 from chalmers import errors
 from chalmers.config import dirs
-import socket
 
 
 log = logging.getLogger(__name__)
 
 
 def get_addr(name):
+    """
+    Get the address to the multiprocessing.connection.Listener or Client objects in
+    a platform dependent way
+    
+    :param name: the name of the chalmers program to connect to
+    """
+
     if os.name == 'nt':
         return r'\\.\pipe\chalmers:%s' % name
     else:
@@ -22,8 +29,11 @@ def get_addr(name):
         sock_path = os.path.join(socdir, '%s' % name).encode()
         return sock_path
 
-class EventHandler(object):
-
+class EventDispatcher(object):
+    """
+    This dispatches events listened to from the Listener
+    
+    """
     __metaclass__ = abc.ABCMeta
     FAMILY = 'AF_PIPE' if os.name == 'nt' else 'AF_UNIX'
 
@@ -58,10 +68,10 @@ class EventHandler(object):
     def addr(self):
         return get_addr(self.name)
 
-    def action_exitloop(self):
+    def dispatch_exitloop(self):
         self._running = False
 
-    def action_ping(self):
+    def dispatch_ping(self):
         return os.getpid()
 
     def listen(self):
@@ -86,7 +96,7 @@ class EventHandler(object):
                     kwargs = action.get('kwargs') or {}
                     action = action.get('action')
 
-                method = getattr(self, 'action_%s' % action, None)
+                method = getattr(self, 'dispatch_%s' % action, None)
 
                 if method:
                     try:
@@ -110,7 +120,7 @@ class EventHandler(object):
 def send_action(name, action, *args, **kwargs):
     addr = get_addr(name)
 
-    c = Client(addr, family=EventHandler.FAMILY)
+    c = Client(addr, family=EventDispatcher.FAMILY)
 
     try:
         c.send({'action': action, 'args':args, 'kwargs':kwargs})

@@ -1,25 +1,30 @@
+from contextlib import contextmanager
 import itertools
+from logging import StreamHandler
 import logging
 from multiprocessing import Process, Manager
-import sys
-from chalmers.utils.handlers import MyStreamHandler
 import random
-from chalmers.event_handler import EventHandler
+import sys
+
+from chalmers.event_dispatcher import EventDispatcher
 from chalmers.program import Program
 from chalmers.utils.handlers import FormatterWrapper
-from logging import StreamHandler
-
-from contextlib import contextmanager
 
 
 log = logging.getLogger(__name__)
 
-class ProgramManager(EventHandler):
+class ProgramManager(EventDispatcher):
+    """
+    Manages chalmers programs with multiprocessing
+    
+    Listens to 'start' events to start new programs
+    """
 
     COLOR_CODES = range(40, 48) + [100, 102, 104, 105, 106]
     random.shuffle(COLOR_CODES)
+
     def __init__(self, exit_on_first_failure=False, use_color=None):
-        EventHandler.__init__(self)
+        EventDispatcher.__init__(self)
         self.manager = Manager()
         self.processes = []
 
@@ -35,7 +40,7 @@ class ProgramManager(EventHandler):
     def name(self):
         return 'chalmers'
 
-    def action_start(self, name):
+    def dispatch_start(self, name):
         log.info("Managing Program %s" % name)
         p = Process(target=start_program,
                     name='start_program:%s' % name,
@@ -49,7 +54,7 @@ class ProgramManager(EventHandler):
     def start_all(self):
         for prog in Program.find_for_user():
             if not prog.is_paused:
-                self.action_start(prog.name)
+                self.dispatch_start(prog.name)
             else:
                 log.info("Not starting program %s (it is paused)" % (prog.name))
 
