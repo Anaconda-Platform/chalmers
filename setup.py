@@ -1,9 +1,10 @@
-'''
-@author: sean
-'''
+from setuptools import setup
+import os
 
-from setuptools import setup, find_packages
-# from distutils.core import setup
+install_requires = ['psutil']
+
+if os.name == 'nt':
+    install_requires.append('pywin32')
 
 setup(
     name='Chalmers',
@@ -12,6 +13,7 @@ setup(
     author_email='srossross@gmail.com',
     url='http://github.com/srossross/chalmers',
     packages=['chalmers'],
+    install_requires=install_requires,
     entry_points={
           'console_scripts': [
               'chalmers = chalmers.scripts.chalmers_main:main',
