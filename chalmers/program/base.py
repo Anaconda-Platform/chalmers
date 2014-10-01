@@ -19,6 +19,7 @@ from chalmers import errors
 from chalmers.config import dirs
 from chalmers.event_dispatcher import EventDispatcher, send_action
 import sys
+import psutil
 
 
 log = logging.getLogger(__name__)
@@ -317,7 +318,7 @@ class ProgramBase(EventDispatcher):
         self._terminating = True
         if self._p0:
             log.info('Sending signal %s to process %s' % (stopsignal, self._p0.pid))
-            self._p0.send_signal(stopsignal)
+            kill_tree(self._p0.pid, stopsignal)
         elif self._p0 is None:
             raise errors.ChalmersError("This process did not start this program, can not call _terminate")
 
@@ -339,7 +340,7 @@ class ProgramBase(EventDispatcher):
             if i:
                 log.info('Retry command (%i of %i)' % (i, self.data['retries']))
             env = os.environ.copy()
-            env.update(self.data.get('env', {}))
+            env.update({k:str(v) for (k, v) in self.data.get('env', {}).items()})
             log.info("Running Command: %s" % ' '.join(self.data['command']))
             try:
                 self._p0 = Popen(self.data['command'], stdout=stdout, stderr=stderr, env=env)
@@ -348,6 +349,12 @@ class ProgramBase(EventDispatcher):
                 self.update_state(child_pid=None, exit_status=1,
                                   reason='OSError running command "%s"' % self.data['command'][0])
                 return
+            except:
+                log.exception('Exception in keep_alive')
+                self.update_state(child_pid=None, exit_status=1,
+                                  reason='There was an unknown exception opening command (check logs)')
+                return
+
 
 
             log.info('Program started with pid %s' % self._p0.pid)
@@ -358,6 +365,7 @@ class ProgramBase(EventDispatcher):
                 status = self._p0.wait()
             except KeyboardInterrupt:
                 log.error('Program %s was interrupted by user' % self.name)
+                kill_tree(self._p0.pid, signal.SIGTERM)
                 self.update_state(child_pid=None, exit_status=None, reason='Interrupted by user')
                 raise
 
@@ -486,3 +494,14 @@ class ProgramBase(EventDispatcher):
         self.reload_state()
         self.start()
         print("restarted")
+
+def kill_tree(pid, sig):
+    'Kill all processes and child processes'
+
+    parent = psutil.Process(pid)
+    children = parent.get_children(recursive=True)
+    os.kill(pid, sig)
+
+    for child in children:
+        if child.is_running():
+            child.kill()

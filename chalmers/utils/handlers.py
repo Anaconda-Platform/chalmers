@@ -2,6 +2,7 @@
 import sys
 import logging
 from chalmers.utils.colors import color
+import traceback
 
 class FormatterWrapper(object):
 
@@ -53,10 +54,18 @@ class ColorFormatter(object):
             if record.exc_info:
                 err = record.exc_info[1]
                 header = type(err).__name__
+                result = [self.color_map(header, record.levelname)]
+
+                if hasattr(err, 'message'):
+                    result.append(str(err.message))
                 if err.args:
-                    message = err.args[0]
-                else:
-                    message = str(err)
+                    result.append(str(err.args[0]))
+
+                message = ''.join(traceback.format_exception(*record.exc_info))
+                result.append('\n' + message)
+                return result
+#                 else:
+#                     message = str(err)
             else:
                 header = record.levelname.lower()
                 message = record.getMessage()
