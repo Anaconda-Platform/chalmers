@@ -105,8 +105,9 @@ class EventDispatcher(object):
                     kwargs = action.get('kwargs') or {}
                     action = action.get('action')
 
-                method = getattr(self, 'dispatch_%s' % action, None)
 
+                log.info('Dispatch action "%s"' % action)
+                method = getattr(self, 'dispatch_%s' % action, None)
                 if method:
                     try:
                         result = method(*args, **kwargs)
@@ -117,6 +118,7 @@ class EventDispatcher(object):
                     else:
                         c.send({'error':False, 'message':'ok', 'result': result})
                 else:
+                    log.warn('No action %s' % action)
                     c.send({'error':True, 'message':'No action %s' % action})
                     pass
                 c.close()
