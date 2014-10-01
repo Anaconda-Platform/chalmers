@@ -4,12 +4,14 @@ Superintendent Chalmers
 Chalmers is an application that allows its users to monitor and control a 
 number of processes on ***any*** operating system (Posix and Win32 included)
 
-## Running chalmers on system boot
+## Quickstart
+
+### Running chalmers on system boot
 
     chalmers install-service
 
 
-## Adding a Program
+### Adding a Program
 
     chalmers run -- sleep 10
 
