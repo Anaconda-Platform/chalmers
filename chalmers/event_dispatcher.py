@@ -11,6 +11,10 @@ from chalmers.config import dirs
 
 log = logging.getLogger(__name__)
 
+try:
+    WindowsError
+except NameError:
+    WindowsError = SystemError
 
 def get_addr(name):
     """
@@ -136,7 +140,7 @@ def send_action(name, action, *args, **kwargs):
     addr = get_addr(name)
     try:
         c = Client(addr, family=EventDispatcher.FAMILY)
-    except socket.error:
+    except (socket.error, WindowsError):
         raise errors.ChalmersError("Could not connect to chalmers program %s" % name)
 
     try:
