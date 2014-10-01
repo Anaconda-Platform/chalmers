@@ -11,20 +11,66 @@ from chalmers.windows.install import instart
 from win32com.shell import shell
 from win32serviceutil import RemoveService, StopService
 from chalmers.program_manager import ProgramManager
-
+from subprocess import Popen
 
 log = logging.getLogger(__name__)
+
+try:
+    input = raw_input
+except NameError:
+    pass
+def bool_input(prompt, default=True):
+        default_str = '[Y|n]' if default else '[y|N]'
+        while 1:
+            inpt = input('%s %s: ' % (prompt, default_str))
+            if inpt.lower() in ['y', 'yes'] and not default:
+                return True
+            elif inpt.lower() in ['', 'n', 'no'] and not default:
+                return False
+            elif inpt.lower() in ['', 'y', 'yes']:
+                return True
+            elif inpt.lower() in ['n', 'no']:
+                return False
+            else:
+                sys.stderr.write('please enter yes or no\n')
+
+def run_as_admin(args, cmd):
+
+
+    if args.username and args.username.lower() != getpass.getuser().lower():
+        raise errors.ChalmersError("Can not use --username option when not an admin")
+
+    admin_user= "Administrator"
+    log.warning("Manging windows services requires admin privleges")
+    if not bool_input("would you like to run this command as user '%s'" % admin_user):
+        log.error("Exiting")
+        return 
+
+    cmd = ["runas", "/noprofile", "/env", "/user:%s" % admin_user, 
+          cmd]
+
+    p0 = Popen(cmd)
+    if p0.wait():
+        raise errors.ChalmersError("Command 'runas' did not complete successfully")
+
 
 def main(args):
 
     if not shell.IsUserAnAdmin():
-        raise errors.ChalmersError("The current user is not an admin")
+        run_as_admin(args,"chalmers install-service --username %s" % getpass.getuser())
+        return  
 
+    log.info("Your password is required by the windows service manager to launch"
+             "The chalmers service at login")
     password = getpass.getpass(b"Password for %s: " % args.username)
 
     instart('.\\%s' % args.username, password)
 
 def main_uninstall(args):
+
+    if not shell.IsUserAnAdmin():
+        run_as_admin(args, "chalmers uninstall-service --username %s" % getpass.getuser())
+        return  
 
     service_name = get_service_name(args.username)
 

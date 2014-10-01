@@ -16,7 +16,7 @@ from chalmers import errors
 log = logging.getLogger('chalmers.manager')
 
 def main(args):
-
+    
     mgr = ProgramManager(use_color=args.color)
 
     if args.is_running:
