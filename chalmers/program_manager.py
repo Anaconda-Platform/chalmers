@@ -8,8 +8,8 @@ import sys
 
 from chalmers.event_dispatcher import EventDispatcher
 from chalmers.program import Program
-from chalmers.utils.handlers import FormatterWrapper
-
+from chalmers.utils.handlers import FormatterWrapper, MyStreamHandler
+from chalmers.utils.colors import color
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class ProgramManager(EventDispatcher):
             use_color = sys.stdout.isatty()
 
         self.use_color = use_color
-        self.bg_colors = itertools.cycle(self.COLOR_CODES)
+        self.bg_colors = itertools.cycle(color.BACKGROUND_COLORS)
         self.exit_on_first_failure = exit_on_first_failure
 
 
@@ -46,7 +46,7 @@ class ProgramManager(EventDispatcher):
                     name='start_program:%s' % name,
 
                     args=(name,),
-                    kwargs={'color': self.use_color and next(self.bg_colors)})
+                    kwargs={'color_id': self.use_color and next(self.bg_colors)})
 
         p.start()
         self.processes.append(p)
@@ -69,27 +69,22 @@ class ProgramManager(EventDispatcher):
                 log.info("Program manager letting program fail")
 
 
-def start_program(name, color=None):
+def start_program(name, color_id=None):
 
     logger = logging.getLogger('chalmers')
 
-    prefix = '[%s]'
-    if color and sys.stdout.isatty():
-        prefix = '\033[97m\033[%im%s\033[49m\033[39m' % (color, prefix)
+    prefix = '[%s]' % name
+    if color_id is not None:
+        prefix = color(prefix, [color_id, color.WHITE])
 
-    prefix += ' '
-
-
-    print("Handlers for %s" % name)
     if not logger.handlers:
-        shndlr = StreamHandler()
+        shndlr = MyStreamHandler(color_id is not None)
         shndlr.setLevel(logging.INFO)
         logger.setLevel(logging.INFO)
         logger.addHandler(shndlr)
 
     for h in logger.handlers:
-        print(h)
-        FormatterWrapper.wrap(h, prefix=prefix % name)
+        FormatterWrapper.wrap(h, prefix=prefix)
     prog = Program(name)
 
     prog.start_sync()
