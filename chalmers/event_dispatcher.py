@@ -42,7 +42,7 @@ class EventDispatcher(object):
     FAMILY = 'AF_PIPE' if os.name == 'nt' else 'AF_UNIX'
 
     def __init__(self):
-        self._running = True
+        self._running = False
         self._listener = None
 
     @property
@@ -61,6 +61,7 @@ class EventDispatcher(object):
 
     def start_listener(self):
         "Start listening to the listener in a new thread"
+        self._running = True
         self.listener  # Force listener to connect before running in thread
         self._listener_thread = Thread(target=self.listen)
         self._listener_thread.start()
@@ -81,12 +82,16 @@ class EventDispatcher(object):
         'return the pid of this process'
         return os.getpid()
 
+    @property 
+    def is_listening(self):
+        return self._running
+
     def listen(self):
         """Listen to incoming clients until
         self._running is set to False
         """
         l = self.listener
-
+        self._running = True
         try:
             while self._running:
                 log.debug("Accept connection")
