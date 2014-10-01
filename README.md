@@ -17,19 +17,23 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 
 | Command | Description |
 | ------- | ----------- |
-| edit               | Edit a service definition |
+| **Meta Management** | |
 | install-service    | Install chalmers as a service |
 | uninstall-service  | Uninstall chalmers as a service |
 | service-status     | Check the status of the service |
-| list               | List registered programs |
-| log                | Show program output |
 | manager            | Manage Chalmers programs |
-| remove             | Remove a program definition from chalmers |
+| **Process Control** | |
 | run                | Manage a command to run |
-| set                | Set a variable in the program definition |
-| show               | Show the definition file content |
 | start              | Start a program |
 | restart            | Restart a program |
 | stop               | Stop running a command |
 | pause              | Pause program (don't run on system boot) |
 | unpause            | Unpause program (run on system boot) |
+| remove             | Remove a program definition from chalmers |
+| **Reporting** | |
+| list               | List registered programs |
+| show               | Show the definition file content |
+| log                | Show program output |
+| **Updating** | |
+| set                | Set a variable in the program definition |
+| edit               | Edit a service definition |
