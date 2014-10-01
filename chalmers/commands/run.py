@@ -48,6 +48,7 @@ def main(args):
     definition = {
                     'name': args.name,
                     'command': args.command,
+                    'cwd': args.cwd,
     }
 
     if args.stdout:
@@ -112,6 +113,9 @@ def add_parser(subparsers):
     #===========================================================================
     parser.add_argument('-n', '--name',
                         help='Set the name of this program for future chalmers commands')
+    parser.add_argument('--cwd', default=os.curdir,
+                        help='Set working directory of the program (default: %(default)s)')
+
     parser.add_argument('command', nargs='*', metavar='COMMAND',
                         help='Command to run')
     split = lambda item: shlex.split(item, posix=os.name == 'posix')

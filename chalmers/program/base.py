@@ -342,8 +342,13 @@ class ProgramBase(EventDispatcher):
             env = os.environ.copy()
             env.update({k:str(v) for (k, v) in self.data.get('env', {}).items()})
             log.info("Running Command: %s" % ' '.join(self.data['command']))
+
+            cwd = self.data.get('cwd') or os.path.abspath(os.curdir)
+
             try:
-                self._p0 = Popen(self.data['command'], stdout=stdout, stderr=stderr, env=env)
+                self._p0 = Popen(self.data['command'],
+                                 stdout=stdout, stderr=stderr,
+                                 env=env, cwd=cwd)
             except OSError as err:
                 log.error('Program %s could not be started with popen' % self.name)
                 self.update_state(child_pid=None, exit_status=1,
@@ -501,7 +506,7 @@ def kill_tree(pid, sig):
         parent = psutil.Process(pid)
     except psutil.NoSuchProcess:
         log.warn("Kill failed, process with pid %s does not appear to be running" % pid)
-        return 
+        return
     children = parent.get_children(recursive=True)
     os.kill(pid, sig)
 
