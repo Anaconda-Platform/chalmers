@@ -350,7 +350,7 @@ class ProgramBase(EventDispatcher):
                                  stdout=stdout, stderr=stderr,
                                  env=env, cwd=cwd)
             except OSError as err:
-                log.error('Program %s could not be started with popen' % self.name)
+                log.exception('Program %s could not be started with popen' % self.name)
                 self.update_state(child_pid=None, exit_status=1,
                                   reason='OSError running command "%s"' % self.data['command'][0])
                 return
