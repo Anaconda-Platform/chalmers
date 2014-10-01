@@ -56,19 +56,6 @@ def main(args=None, exit=True):
             raise SystemExit(1)
         else:
             return 1
-#     except (Exception, KeyboardInterrupt) as err:
-#         if args.show_traceback:
-#             raise
-#         if hasattr(err, 'message'):
-#             logger.exception(err.message)
-#         elif hasattr(err, 'args'):
-#             logger.exception(err.args[0] if err.args else '')
-#         else:
-#             logger.exception(str(err))
-#         if exit:
-#             raise SystemExit(1)
-#         else:
-#             return 1
 
 if __name__ == "__main__":
     main()
