@@ -30,10 +30,10 @@ def main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('set',
-                                      help='Add a command to run',
+                                      help='Set a variable in the program definition',
                                       description=__doc__)
 
-    parser.add_argument('name')
+    parser.add_argument('name', metavar='PROG')
     parser.add_argument('key')
     parser.add_argument('value', type=try_eval)
     parser.set_defaults(main=main, state='pause')

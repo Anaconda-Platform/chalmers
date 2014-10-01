@@ -1,5 +1,3 @@
-'''
-'''
 from __future__ import unicode_literals, print_function
 
 import logging
@@ -30,9 +28,7 @@ def set_crontab(tab):
     p0 = Popen(['crontab'], stdin=PIPE)
     p0.communicate(input=new_cron_tab)
 
-
 def main(args):
-
     tab_lines = get_crontab()
 
     if chalmers_tab_entry in tab_lines:
@@ -43,10 +39,9 @@ def main(args):
 
         set_crontab(tab_lines)
 
-        log.info("All chalmers programs will not run on boot")
+        log.info("All chalmers programs will now run on boot")
 
-
-def remove(args):
+def main_uninstall(args):
 
     tab_lines = get_crontab()
 
@@ -59,13 +54,12 @@ def remove(args):
     else:
         log.info("Chalmers crontab instruction does not exist")
 
-def add_parser(subparsers):
-    parser = subparsers.add_parser('run-on-startup',
-                                   help='Start all chalmers programs on machine startup',
-                                   description=__doc__)
-    parser.set_defaults(main=main)
+def main_status(args):
 
-    parser = subparsers.add_parser('dont-run-on-startup',
-                                   help="Don't start chalmers on machine startup",
-                                   description=__doc__)
-    parser.set_defaults(main=remove)
+    tab_lines = get_crontab()
+
+    if chalmers_tab_entry in tab_lines:
+        log.info("Chalmers is setup to start on boot")
+    else:
+        log.info("Chalmers will not start on boot")
+

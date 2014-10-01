@@ -38,6 +38,9 @@ def pause_main(args):
 
     for prog in programs:
         log.info("Pausing program %s" % (prog.name))
+        if prog.is_running:
+            log.warn("%s is running and will not restart on system reboot" % (prog.name))
+
         prog.update_state(paused=True)
 
 def unpause_main(args):
@@ -50,6 +53,8 @@ def unpause_main(args):
     for prog in programs:
         log.info("Unpausing program %s" % (prog.name))
         prog.update_state(paused=False)
+        if not prog.is_running:
+            log.warn("%s is not running and will start on system reboot" % (prog.name))
 
 
 def add_parser(subparsers):
