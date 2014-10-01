@@ -65,10 +65,10 @@ number of processes on ***any*** operating system (Posix and Win32 included)
  
 #### Forever [github.com/nodejitsu/forever](https://github.com/nodejitsu/forever)
 
+  * Forever only supports nodejs applications
   * Forever does not start at system boot. 
     Chalmers does this for all platforms with `chalmers install-service`.
-  * Forever requires nodejs to be installed
-  * 
+  * Forever does have windows support, but it can not daemoninze windows processes.
    
   
 #### Honcho [honcho.readthedocs.org](https://honcho.readthedocs.org)
