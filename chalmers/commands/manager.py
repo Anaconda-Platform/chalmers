@@ -10,26 +10,29 @@ import logging
 
 from chalmers.event_dispatcher import send_action
 from chalmers.program_manager import ProgramManager
+from chalmers import errors
 
 
 log = logging.getLogger('chalmers.manager')
 
 def main(args):
 
+    mgr = ProgramManager(use_color=args.color)
+
     if args.is_running:
         try:
-            result = send_action("chalmers", "ping")
-        except:
+            result = mgr.send("ping")
+        except errors.ChalmersError:
             log.info("Manager is NOT running")
         else:
             log.info("Manager is running with pid %s" % result)
         return
     if args.shutdown:
-        send_action("chalmers", "exitloop")
+        result = mgr.send("exitloop")
         log.info("Manager is shutting down")
         return
     log.info("Managing processes")
-    mgr = ProgramManager(use_color=args.color)
+
     mgr.start_all()
     mgr.listen()
 

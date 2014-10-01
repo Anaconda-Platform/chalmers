@@ -43,6 +43,7 @@ class EventDispatcher(object):
 
     @property
     def listener(self):
+        "Return the multiprocessing Listener object"
         if self._listener is None:
             try:
                 log.info("Listening to events from: %s" % self.addr)
@@ -55,7 +56,7 @@ class EventDispatcher(object):
         return self._listener
 
     def start_listener(self):
-
+        "Start listening to the listener in a new thread"
         self.listener  # Force listener to connect before running in thread
         self._listener_thread = Thread(target=self.listen)
         self._listener_thread.start()
@@ -69,13 +70,17 @@ class EventDispatcher(object):
         return get_addr(self.name)
 
     def dispatch_exitloop(self):
+        'Exit the listener'
         self._running = False
 
     def dispatch_ping(self):
+        'return the pid of this process'
         return os.getpid()
 
     def listen(self):
-
+        """Listen to incoming clients until
+        self._running is set to False
+        """
         l = self.listener
 
         try:
@@ -117,10 +122,22 @@ class EventDispatcher(object):
 
         log.info("Exiting event loop")
 
-def send_action(name, action, *args, **kwargs):
-    addr = get_addr(name)
+    def send(self, action, *args, **kwargs):
+        'Dispatch an action to a Dispatcher'
+        return send_action(self.name, action, *args, **kwargs)
 
-    c = Client(addr, family=EventDispatcher.FAMILY)
+def send_action(name, action, *args, **kwargs):
+    """
+    Send an action to a listener
+    the listener must have a 'dispatch_{action}' method
+    or this will raise a ChalmersError
+    """
+
+    addr = get_addr(name)
+    try:
+        c = Client(addr, family=EventDispatcher.FAMILY)
+    except socket.error:
+        raise errors.ChalmersError("Could not connect to chalmers program %s" % name)
 
     try:
         c.send({'action': action, 'args':args, 'kwargs':kwargs})

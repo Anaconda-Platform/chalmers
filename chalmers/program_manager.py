@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 import itertools
-from logging import StreamHandler
 import logging
 from multiprocessing import Process, Manager
 import random
@@ -38,7 +37,7 @@ class ProgramManager(EventDispatcher):
 
     @property
     def name(self):
-        return 'chalmers'
+        return 'chalmers_manager'
 
     def dispatch_start(self, name):
         log.info("Managing Program %s" % name)
