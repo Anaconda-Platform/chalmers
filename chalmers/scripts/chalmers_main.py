@@ -65,3 +65,5 @@ def main(args=None, exit=True):
         else:
             return 1
 
+if __name__ == "__main__":
+    main()
