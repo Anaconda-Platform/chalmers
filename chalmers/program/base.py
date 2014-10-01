@@ -497,8 +497,11 @@ class ProgramBase(EventDispatcher):
 
 def kill_tree(pid, sig):
     'Kill all processes and child processes'
-
-    parent = psutil.Process(pid)
+    try:
+        parent = psutil.Process(pid)
+    except psutil.NoSuchProcess:
+        log.warn("Kill failed, process with pid %s does not appear to be running" % pid)
+        return 
     children = parent.get_children(recursive=True)
     os.kill(pid, sig)
 
