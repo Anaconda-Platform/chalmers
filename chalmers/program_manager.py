@@ -19,6 +19,8 @@ class ProgramManager(EventDispatcher):
     Listens to 'start' events to start new programs
     """
 
+    NAME = 'chalmers_manager'
+
     COLOR_CODES = range(40, 48) + [100, 102, 104, 105, 106]
     random.shuffle(COLOR_CODES)
 
@@ -37,7 +39,7 @@ class ProgramManager(EventDispatcher):
 
     @property
     def name(self):
-        return 'chalmers_manager'
+        return self.NAME
 
     def dispatch_start(self, name):
         log.info("Managing Program %s" % name)

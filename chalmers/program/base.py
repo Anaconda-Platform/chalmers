@@ -74,7 +74,8 @@ class ProgramBase(EventDispatcher):
         
         chalmers manager must be running
         """
-        send_action('chalmers', 'start', self.name)
+        from ..program_manager import ProgramManager
+        send_action(ProgramManager.NAME, 'start', self.name)
 
     @property
     def definition_filename(self):

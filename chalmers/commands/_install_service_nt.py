@@ -10,6 +10,7 @@ from chalmers.windows.install import get_service_name, is_installed, is_running
 from chalmers.windows.install import instart
 from win32com.shell import shell
 from win32serviceutil import RemoveService, StopService
+from chalmers.program_manager import ProgramManager
 
 
 log = logging.getLogger(__name__)
@@ -55,5 +56,5 @@ def main_status(args):
         log.error("service '%s' is not running" % service_name)
         return
 
-    pid = send_action("chalmers", "ping")
+    pid = send_action(ProgramManager.NAME, "ping")
     log.info("Chalmers manger pid is %s" % pid)

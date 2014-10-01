@@ -40,7 +40,6 @@ class PosixProgram(ProgramBase):
         posix only
         """
 
-#         send_action('chalmers', 'start', self.name)
         daemonize(self.start_sync)
 
 

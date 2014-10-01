@@ -27,6 +27,6 @@ class ChalmersService(WindowsService):
                 prog.stop()
 
         self.log("Sending chalmers manager exit signal")
-        send_action("chalmers", "exitloop")
+        send_action(ProgramManager.NAME, "exitloop")
 
 
