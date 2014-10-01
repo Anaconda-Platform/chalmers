@@ -7,16 +7,14 @@ from chalmers.config import dirs
 from chalmers.utils.handlers import MyStreamHandler
 
 import sys
-import traceback
 
 logger = logging.getLogger('chalmers')
 
 def log_unhandled_exception(*exc_info):
     logger.error('', exc_info=exc_info)
-    logger.error('\n' + ''.join(traceback.format_exception(*exc_info)))
     sys.exit(1)
 
-def setup_logging(level, color=None, logfile='cli.log'):
+def setup_logging(level, color=None, logfile='cli.log', short_tb=()):
 
 
     if not exists(dirs.user_log_dir): makedirs(dirs.user_log_dir)
@@ -29,7 +27,7 @@ def setup_logging(level, color=None, logfile='cli.log'):
     hndlr.setLevel(logging.INFO)
     logger.addHandler(hndlr)
 
-    shndlr = MyStreamHandler(color=color)
+    shndlr = MyStreamHandler(color=color, short_tb=short_tb)
     shndlr.setLevel(level)
     logger.addHandler(shndlr)
 

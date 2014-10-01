@@ -2,8 +2,10 @@
 Run a program
 
 eg:
-
     chalmers run --name server1 -- python /path/to/myserver.py
+or:
+    chalmers run --name server1 -c "python /path/to/myserver.py"
+    
     
 '''
 from __future__ import unicode_literals, print_function
@@ -16,11 +18,17 @@ from chalmers import errors
 from chalmers.config import dirs
 from chalmers.program import Program
 from argparse import RawDescriptionHelpFormatter
+import shlex
 
 
 log = logging.getLogger('chalmers.add')
 
 def main(args):
+
+    if args.cmd and args.command:
+        raise errors.ChalmersError('Unknow arguments %r' % args.command)
+    if args.cmd:
+        args.command = args.cmd
 
     program_dir = path.join(dirs.user_data_dir, 'programs')
 
@@ -102,6 +110,12 @@ def add_parser(subparsers):
     #===========================================================================
     #
     #===========================================================================
-    parser.add_argument('-n', '--name')
-    parser.add_argument('command', nargs='+', metavar='COMMAND')
+    parser.add_argument('-n', '--name',
+                        help='Set the name of this program for future chalmers commands')
+    parser.add_argument('command', nargs='*', metavar='COMMAND',
+                        help='Command to run')
+    split = lambda item: shlex.split(item, posix=os.name == 'posix')
+
+    parser.add_argument('-c', metavar='COMMAND', type=split, dest='cmd',
+                        help='Command to run')
     parser.set_defaults(main=main, state='pause')

@@ -29,7 +29,7 @@ def main(args=None, exit=True):
                         dest='log_level', const=logging.WARNING)
     parser.add_argument('-V', '--version', action='version',
                         version="%%(prog)s Command line client (version %s)" % (version,))
-    parser.add_argument('--color', action='store_true', default=None, 
+    parser.add_argument('--color', action='store_true', default=None,
                         help='always display with colors')
     parser.add_argument('--no-color', action='store_false', dest='color',
                         help='never display with colors')
@@ -40,7 +40,12 @@ def main(args=None, exit=True):
 
     args = parser.parse_args(args)
 
-    setup_logging(args.log_level, args.color)
+    short_tb = ()
+
+    if not args.show_traceback:
+        short_tb = (ChalmersError, KeyboardInterrupt)
+
+    setup_logging(args.log_level, args.color, short_tb=short_tb)
 
     try:
         return args.main(args)
@@ -51,20 +56,19 @@ def main(args=None, exit=True):
             raise SystemExit(1)
         else:
             return 1
-
-    except (ChalmersError, KeyboardInterrupt) as err:
-        if args.show_traceback:
-            raise
-        if hasattr(err, 'message'):
-            logger.exception(err.message)
-        elif hasattr(err, 'args'):
-            logger.exception(err.args[0] if err.args else '')
-        else:
-            logger.exception(str(err))
-        if exit:
-            raise SystemExit(1)
-        else:
-            return 1
+#     except (Exception, KeyboardInterrupt) as err:
+#         if args.show_traceback:
+#             raise
+#         if hasattr(err, 'message'):
+#             logger.exception(err.message)
+#         elif hasattr(err, 'args'):
+#             logger.exception(err.args[0] if err.args else '')
+#         else:
+#             logger.exception(str(err))
+#         if exit:
+#             raise SystemExit(1)
+#         else:
+#             return 1
 
 if __name__ == "__main__":
     main()

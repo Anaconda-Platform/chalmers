@@ -43,8 +43,9 @@ class ColorFormatter(object):
         else:
             return header
 
-    def __init__(self, isatty=True):
+    def __init__(self, isatty=True, short_tb=()):
         self.isatty = isatty
+        self.short_tb = short_tb
 
     def format(self, record):
         if record.levelno == logging.INFO:
@@ -58,11 +59,12 @@ class ColorFormatter(object):
 
                 if hasattr(err, 'message'):
                     result.append(str(err.message))
-                if err.args:
+                elif err.args:
                     result.append(str(err.args[0]))
 
-                message = ''.join(traceback.format_exception(*record.exc_info))
-                result.append('\n' + message)
+                if not isinstance(err, self.short_tb):
+                    message = ''.join(traceback.format_exception(*record.exc_info))
+                    result.append('\n' + message)
                 return result
 #                 else:
 #                     message = str(err)
@@ -77,14 +79,14 @@ class ColorFormatter(object):
             return message
 
 class MyStreamHandler(logging.Handler):
-    def __init__(self, color=None, level=logging.INFO):
+    def __init__(self, color=None, level=logging.INFO, short_tb=()):
 
         logging.Handler.__init__(self, level=level)
 
         if color is None:
             color = sys.stdout.isatty()
 
-        self.setFormatter(ColorFormatter(color))
+        self.setFormatter(ColorFormatter(color, short_tb=short_tb))
 
     def emit(self, record):
 
