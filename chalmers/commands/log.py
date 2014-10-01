@@ -25,6 +25,14 @@ def main(args):
 
     logfile = prog.data.get(args.logfile)
 
+    if args.showfile:
+        print(logfile)
+        return
+    if args.rm:
+        log.info("Removing log file '%s'" % logfile)
+        os.unlink(logfile)
+        return
+
     with open(logfile) as fd:
         if args.n:
             lines = fd.readlines()
@@ -63,6 +71,11 @@ def add_parser(subparsers):
                        help='Tail lines at end of file (default: %(default)s)',)
     parser.add_argument('--head', type=int, dest='n', metavar='N',
                        help='Print only first lines of the file')
+
+    parser.add_argument('--showfile', action='store_true',
+                       help='Print the name of the logfile')
+    parser.add_argument('--rm', '--remove', action='store_true',
+                       help='Remove the logfile')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-1', '--stdout', action='store_const', const='stdout', dest='logfile',
