@@ -1,3 +1,8 @@
+"""
+A program encapsulates all of the actions and functionality need
+to operate on and query an underlying process. 
+"""
+
 import os
 
 if os.name == 'nt':

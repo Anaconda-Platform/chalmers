@@ -1,12 +1,22 @@
 '''
-Pause program, this program will not be started
-when chalmers start -a is run
+Stop/Pause/Unpause a program
+
+Stopping a program will send a signal to the program. The signal can be set by:
+
+    chalmers set server1 stopsignal=SIGTERM
+ 
+When paused, a program will not be started at system boot 
 '''
+
 from __future__ import unicode_literals, print_function
-from chalmers.program import Program
+
+from argparse import RawDescriptionHelpFormatter
 import logging
-from chalmers import errors
 import sys
+
+from chalmers import errors
+from chalmers.program import Program
+
 
 log = logging.getLogger('chalmers.stop')
 
@@ -60,7 +70,8 @@ def unpause_main(args):
 def add_parser(subparsers):
     parser = subparsers.add_parser('stop',
                                    help='Stop running a command',
-                                   description=__doc__)
+                                   description=__doc__,
+                                   formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('names', nargs='*', metavar='PROG')
     parser.add_argument('-a', '--all', action='store_true')
@@ -68,7 +79,8 @@ def add_parser(subparsers):
 
     parser = subparsers.add_parser('pause',
                                       help='Pause program (don\'t run on system boot)',
-                                      description=__doc__)
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('names', nargs='*', metavar='PROG')
     parser.add_argument('-a', '--all', action='store_true')
@@ -77,7 +89,8 @@ def add_parser(subparsers):
 
     parser = subparsers.add_parser('unpause',
                                       help='Unpause program (run on system boot)',
-                                      description=__doc__)
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('names', nargs='*', metavar='PROG')
     parser.add_argument('-a', '--all', action='store_true')

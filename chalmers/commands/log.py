@@ -1,13 +1,21 @@
 '''
+Show log output of program:
+
+To show the chalmers program control log, run:
+
+    chalmers log server1 -3
+ 
 '''
 from __future__ import unicode_literals, print_function
 
+from argparse import RawDescriptionHelpFormatter
 import logging
+import os
+import sys
+import time
 
 from chalmers.program import Program
-import os
-import time
-import sys
+
 
 log = logging.getLogger('chalmers.log')
 
@@ -42,7 +50,8 @@ def main(args):
 def add_parser(subparsers):
     parser = subparsers.add_parser('log',
                                       help='Show program output',
-                                      description=__doc__)
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('name')
     parser.add_argument('-f', action='store_true', dest='append',
@@ -61,7 +70,7 @@ def add_parser(subparsers):
                        help='Show program stdout')
     group.add_argument('-2', '--stderr', action='store_const', const='stderr', dest='logfile',
                        help='Show program stderr')
-    group.add_argument('-3', '--process-manager', action='store_const', const='daemon_log', dest='logfile',
+    group.add_argument('-3', '--daemon', action='store_const', const='daemon_log', dest='logfile',
                        help='Show program manager log')
 
     parser.set_defaults(main=main)

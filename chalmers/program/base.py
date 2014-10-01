@@ -130,6 +130,16 @@ class ProgramBase(EventDispatcher):
 
         return prog
 
+    @property
+    def stopsignal(self):
+        stopsignal = self.data['stopsignal']
+
+        if isinstance(stopsignal, basestring) and hasattr(signal, stopsignal):
+            stopsignal = getattr(signal, stopsignal)
+        if not isinstance(stopsignal, int):
+            log.warning("Stopsignal %s is not a valid signal for this platform" % stopsignal)
+            log.warning("Signal SIGTERM (%s) will be used" % signal.SIGTERM)
+        return stopsignal
 
     def save(self):
         """
@@ -139,6 +149,9 @@ class ProgramBase(EventDispatcher):
 
         if not path.isdir(defn_dir):
             os.makedirs(defn_dir)
+
+        # Force check of stopsignal
+        self.stopsignal
 
         with open(self.definition_filename, 'w') as df:
             yaml.safe_dump(self.raw_data, df, default_flow_style=False)
@@ -296,11 +309,14 @@ class ProgramBase(EventDispatcher):
         
          
         """
+
+        stopsignal = self.stopsignal
+
         log.info('Stop Process Requested')
         self._terminating = True
         if self._p0:
-            log.info('Sending signal %s to process %s' % (self.data['stopsignal'], self._p0.pid))
-            self._p0.send_signal(self.data['stopsignal'])
+            log.info('Sending signal %s to process %s' % (stopsignal, self._p0.pid))
+            self._p0.send_signal(stopsignal)
         elif self._p0 is None:
             raise errors.ChalmersError("This process did not start this program, can not call _terminate")
 

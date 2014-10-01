@@ -1,12 +1,19 @@
 '''
+Start a program.  
+The program must be defined with the chalmers 'run' command first
+
+example:
+
+    chalmers start server1
 '''
 from __future__ import unicode_literals, print_function
 
+from argparse import RawDescriptionHelpFormatter
 import logging
+import sys
 
 from chalmers.program import Program
 from chalmers.program_manager import ProgramManager
-import sys
 
 
 log = logging.getLogger('chalmers.start')
@@ -49,8 +56,9 @@ def restart_main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('start',
-                                      help='Start a command running',
-                                      description=__doc__)
+                                      help='Start a program',
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('names', nargs='*', metavar='PROG',
                         help='Names of the programs to start')

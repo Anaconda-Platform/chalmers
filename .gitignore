@@ -3,3 +3,4 @@
 .project
 .pydevproject
 *.egg-info/
+.DS_Store

@@ -1,4 +1,5 @@
 '''
+Show the definition file content
 '''
 from __future__ import unicode_literals, print_function
 
@@ -6,6 +7,7 @@ import logging
 
 from chalmers.program import Program
 from chalmers.utils import print_opts
+from argparse import RawDescriptionHelpFormatter
 
 log = logging.getLogger('chalmers.show')
 
@@ -31,9 +33,11 @@ def main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('show',
-                                      help='Show command',
-                                      description=__doc__)
+                                      help='Show the definition file content',
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('name')
-    parser.add_argument('-r', '--raw', action='store_true')
+    parser.add_argument('-r', '--raw', action='store_true',
+                        help='Show the definition file before it is formatted and populated with defaults')
     parser.set_defaults(main=main)

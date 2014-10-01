@@ -1,3 +1,6 @@
+"""
+Install windows services
+"""
 import getpass
 import logging
 

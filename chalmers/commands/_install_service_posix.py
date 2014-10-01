@@ -1,3 +1,6 @@
+"""
+Install a crontab rule to run at system boot 
+"""
 from __future__ import unicode_literals, print_function
 
 import logging

@@ -1,5 +1,12 @@
 '''
-Edit a service definition
+Edit a program definition
+
+Open the program definition file with the 
+EDITOR environment variable
+
+for example:
+    
+    chalmers edit server1
 '''
 from __future__ import unicode_literals, print_function
 
@@ -10,6 +17,7 @@ import subprocess
 
 from chalmers import errors
 from chalmers.program import Program
+from argparse import RawDescriptionHelpFormatter
 
 
 log = logging.getLogger('chalmers.edit')
@@ -35,7 +43,8 @@ def main(args):
 def add_parser(subparsers):
     parser = subparsers.add_parser('edit',
                                       help='Edit a service definition',
-                                      description=__doc__)
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('name')
     parser.set_defaults(main=main)

@@ -1,12 +1,20 @@
-'''
+'''List the all the defined programs
+
+eg: 
+
+    $ chalmers list
+    server1                             RUNNING         pid 19278 , uptime 0:10:01
+
+    
 '''
 from __future__ import unicode_literals, print_function
 
+from argparse import RawDescriptionHelpFormatter
+from datetime import timedelta
 import logging
+import time
 
 from chalmers.program import Program
-from datetime import timedelta
-import time
 
 
 log = logging.getLogger(__name__)
@@ -39,7 +47,8 @@ def main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('list',
-                                      help='List registered commands',
-                                      description=__doc__)
+                                      help='List registered programs',
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.set_defaults(main=main)

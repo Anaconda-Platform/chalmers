@@ -1,4 +1,10 @@
 '''
+Run a program
+
+eg:
+
+    chalmers run --name server1 -- python /path/to/myserver.py
+    
 '''
 from __future__ import unicode_literals, print_function
 
@@ -9,6 +15,7 @@ import os
 from chalmers import errors
 from chalmers.config import dirs
 from chalmers.program import Program
+from argparse import RawDescriptionHelpFormatter
 
 
 log = logging.getLogger('chalmers.add')
@@ -66,7 +73,9 @@ def main(args):
 def add_parser(subparsers):
     parser = subparsers.add_parser('run',
                                       help='Manage a command to run',
-                                      description=__doc__)
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter
+                                      )
     #===============================================================================
     #
     #===============================================================================

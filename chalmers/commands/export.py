@@ -26,7 +26,7 @@ def main(args):
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('export',
-                                      help='Export current configuration to be installed with the "import" command',
+                                      help='[IN DEVELOPMENT] Export current configuration to be installed with the "import" command',
                                       description=__doc__)
 
     parser.add_argument('names', nargs='*')
