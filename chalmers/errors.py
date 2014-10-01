@@ -1,8 +1,9 @@
 """
 Chalmers error classes
 """
+from clyent.errors import ClyentError
 
-class ChalmersError(Exception):
+class ChalmersError(ClyentError):
     pass
 
 class ProgramNotFound(ChalmersError):

@@ -7,8 +7,9 @@ import sys
 
 from chalmers.event_dispatcher import EventDispatcher
 from chalmers.program import Program
-from chalmers.utils.handlers import FormatterWrapper, MyStreamHandler
-from chalmers.utils.colors import color
+from clyent.logs.handlers import ColorStreamHandler
+from clyent.logs.formatters import FormatterWrapper
+from clyent.logs.colors import color
 
 log = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ def start_program(name, color_id=None):
         prefix = color(prefix, [color_id, color.WHITE])
 
     if not logger.handlers:
-        shndlr = MyStreamHandler(color_id is not None)
+        shndlr = ColorStreamHandler(color_id is not None)
         shndlr.setLevel(logging.INFO)
         logger.setLevel(logging.INFO)
         logger.addHandler(shndlr)
