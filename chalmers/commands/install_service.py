@@ -26,6 +26,7 @@ def add_parser(subparsers):
                                       formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('-u', '--username', default=getpass.getuser(),
                         help='User account to run chalmers in (default: %(default)s)')
+    parser.add_argument('--wait', action='store_true')
     parser.set_defaults(main=svs.main)
 
     #####  #####  #####  #####  #####  #####  #####  #####  #####  #####
@@ -36,6 +37,8 @@ def add_parser(subparsers):
                                       formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('-u', '--username', default=getpass.getuser(),
                         help='User account to run chalmers in (default: %(default)s)')
+    parser.add_argument('--wait', action='store_true')
+
     parser.set_defaults(main=svs.main_uninstall)
     #####  #####  #####  #####  #####  #####  #####  #####  #####  #####
     #####  #####  #####  #####  #####  #####  #####  #####  #####  #####

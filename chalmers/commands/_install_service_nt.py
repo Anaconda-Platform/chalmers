@@ -52,37 +52,54 @@ def run_as_admin(args, cmd):
     p0 = Popen(cmd)
     if p0.wait():
         raise errors.ChalmersError("Command 'runas' did not complete successfully")
+    
+from contextlib import contextmanager
+
+@contextmanager
+def wait_for_input(args):
+
+    wait = args.wait
+    msg = "Press enter to continue"
+    try:
+        yield
+    except:
+        log.exception('Error')
+        if wait: input(msg)
+        raise SystemExit(1)
+    else: 
+        if wait: input(msg)
+
 
 
 def main(args):
+    with wait_for_input(args):
+        if not shell.IsUserAnAdmin():
+            run_as_admin(args,"chalmers install-service --wait --username %s" % getpass.getuser())
+            return  
 
-    if not shell.IsUserAnAdmin():
-        run_as_admin(args,"chalmers install-service --username %s" % getpass.getuser())
-        return  
+        log.info("Your password is required by the windows service manager to launch"
+                 "The chalmers service at login")
+        password = getpass.getpass(b"Password for %s: " % args.username)
 
-    log.info("Your password is required by the windows service manager to launch"
-             "The chalmers service at login")
-    password = getpass.getpass(b"Password for %s: " % args.username)
-
-    instart('.\\%s' % args.username, password)
+        instart('.\\%s' % args.username, password)
 
 def main_uninstall(args):
+    with wait_for_input(args):
+        if not shell.IsUserAnAdmin():
+            run_as_admin(args, "chalmers uninstall-service --wait --username %s" % getpass.getuser())
+            return  
 
-    if not shell.IsUserAnAdmin():
-        run_as_admin(args, "chalmers uninstall-service --username %s" % getpass.getuser())
-        return  
+        service_name = get_service_name(args.username)
 
-    service_name = get_service_name(args.username)
+        if is_running(args.username):
+            log.info("Service is running, stopping service %s" % service_name)
+            StopService(service_name)
 
-    if is_running(args.username):
-        log.info("Service is running, stopping service %s" % service_name)
-        StopService(service_name)
-
-    if is_installed(args.username):
-        RemoveService(service_name)
-        log.info("Uninstalled windows service '%s'" % service_name)
-    else:
-        log.error("Windows service '%s' is not insatlled" % service_name)
+        if is_installed(args.username):
+            RemoveService(service_name)
+            log.info("Uninstalled windows service '%s'" % service_name)
+        else:
+            log.error("Windows service '%s' is not insatlled" % service_name)
 
 def main_status(args):
 
