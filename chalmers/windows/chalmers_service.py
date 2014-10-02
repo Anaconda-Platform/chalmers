@@ -7,6 +7,8 @@ from chalmers.event_dispatcher import send_action
 from chalmers.program import Program
 from chalmers.program_manager import ProgramManager
 from chalmers.windows.service_base import WindowsService
+from clyent.logs import log_unhandled_exception
+import sys
 
 
 class ChalmersService(WindowsService):
@@ -25,6 +27,7 @@ class ChalmersService(WindowsService):
         hndlr.setFormatter(fmt)
         logger.addHandler(hndlr)
 
+        sys.excepthook = log_unhandled_exception(logger)
 
         self.mgr = mgr = ProgramManager(use_color=False, setup_logging=False)
         mgr.start_all()

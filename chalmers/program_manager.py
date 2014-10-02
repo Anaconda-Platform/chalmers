@@ -11,6 +11,7 @@ from clyent.logs.handlers import ColorStreamHandler
 
 from chalmers.event_dispatcher import EventDispatcher
 from chalmers.program import Program
+from clyent.logs import log_unhandled_exception
 
 
 log = logging.getLogger(__name__)
@@ -77,6 +78,7 @@ class ProgramManager(EventDispatcher):
 def start_program(name, color_id=None, setup_logging=True):
 
     logger = logging.getLogger('chalmers')
+    logger.setLevel(logging.INFO)
 
     prefix = '[%s]' % name
     if color_id is not None:
@@ -88,8 +90,16 @@ def start_program(name, color_id=None, setup_logging=True):
         logger.setLevel(logging.INFO)
         logger.addHandler(shndlr)
 
-    for h in logger.handlers:
-        FormatterWrapper.wrap(h, prefix=prefix)
+    if setup_logging:
+        for h in logger.handlers:
+            FormatterWrapper.wrap(h, prefix=prefix)
+
+
+
+    sys.excepthook = log_unhandled_exception(logger)
+
+
+
     prog = Program(name)
 
     prog.start_sync()
