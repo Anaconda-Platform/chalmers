@@ -287,7 +287,7 @@ class ProgramBase(EventDispatcher):
         except errors.StopProcess:
             self._terminate()
         finally:
-            self.update_state(pid=None)
+            self.update_state(pid=None, stop_time=time.time())
             self.finished_event.set()
             self._running = False
             if self._listener:
@@ -348,7 +348,7 @@ class ProgramBase(EventDispatcher):
             try:
                 self._p0 = Popen(self.data['command'],
                                  stdout=stdout, stderr=stderr,
-                                 env=env, cwd=cwd)
+                                 env=env, cwd=cwd, bufsize=self.data.get('bufsize', 0))
             except OSError as err:
                 log.exception('Program %s could not be started with popen' % self.name)
                 self.update_state(child_pid=None, exit_status=1,
@@ -440,6 +440,7 @@ class ProgramBase(EventDispatcher):
             else:
                 log.info(" - Programs %s is already running" % prog.name)
 
+
     @property
     def is_ok(self):
         if self.is_running:
@@ -449,6 +450,8 @@ class ProgramBase(EventDispatcher):
         elif self.state.get('exit_status') in self.data['exitcodes']:
             return True
         return False
+
+
     @property
     def text_status(self):
         'A text status of the current program'

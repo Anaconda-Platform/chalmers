@@ -19,27 +19,44 @@ from chalmers.program import Program
 
 log = logging.getLogger(__name__)
 
+def sort_key(prog):
+    return prog.text_status, prog.name
+
 def main(args):
 
-    programs = list(Program.find_for_user())
+    programs = sorted(Program.find_for_user(), key=sort_key)
 
     for prog in programs:
 
         if prog.is_running:
             start_time = prog.state.get('start_time')
-            td = str(timedelta(seconds=(time.time() - start_time))).rsplit('.', 1)[0]
-            ctx = (prog.data['name'][:35], prog.text_status,
+            if start_time:
+                td = str(timedelta(seconds=(time.time() - start_time))).rsplit('.', 1)[0]
+            else:
+                td = '?'
+            ctx = (prog.data['name'][:24], prog.text_status,
                    prog.state.get('child_pid'),
                    td,
                 )
 
-            print('%-35s %-15s pid %-6s, uptime %s' % ctx)
+            print('%-25s %-15s pid %-6s, uptime %s' % ctx)
         else:
+            stop_time = prog.state.get('stop_time')
+            if stop_time:
+                td = 'downtime ' + str(timedelta(seconds=(time.time() - stop_time))).rsplit('.', 1)[0]
+            else:
+                td = ''
+
+            reason = prog.state.get('reason', '')
             ctx = (prog.data['name'][:35], prog.text_status,
-                   prog.state.get('reason')
+                   reason
+
                   )
 
-            print('%-35s %-15s %s' % ctx)
+            print('%-25s %-15s %s' % ctx)
+
+            if td:
+                print(' ' * 41, td)
 
     if not programs:
         print('No programs added')
