@@ -1,7 +1,5 @@
 import abc
 import logging
-import os
-import sys
 import traceback
 
 import servicemanager
