@@ -6,7 +6,7 @@ from chalmers.event_dispatcher import send_action
 from chalmers.program import Program
 from chalmers.program_manager import ProgramManager
 from chalmers.windows.service_base import WindowsService
-from build.lib.chalmers.config import dirs
+from chalmers.config import dirs
 import os
 
 
