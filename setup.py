@@ -8,7 +8,7 @@ if os.name == 'nt':
 
 setup(
     name='chalmers',
-    version="0.1.5",
+    version="0.1.6",
     author='Continuum Analytics',
     author_email='srossross@gmail.com',
     url='http://github.com/binstar/chalmers',
