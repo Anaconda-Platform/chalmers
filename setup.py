@@ -12,6 +12,7 @@ setup(
     author='Continuum Analytics',
     author_email='srossross@gmail.com',
     url='http://github.com/binstar/chalmers',
+    description='Process Control System',
     packages=find_packages(),
     install_requires=install_requires,
     entry_points={
