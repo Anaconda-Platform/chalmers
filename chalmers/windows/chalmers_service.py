@@ -1,13 +1,12 @@
 import logging
+from logging.handlers import RotatingFileHandler
+import os
 
-from clyent.logs import setup_logging
-
+from chalmers.config import dirs
 from chalmers.event_dispatcher import send_action
 from chalmers.program import Program
 from chalmers.program_manager import ProgramManager
 from chalmers.windows.service_base import WindowsService
-from chalmers.config import dirs
-import os
 
 
 class ChalmersService(WindowsService):
@@ -16,9 +15,18 @@ class ChalmersService(WindowsService):
     """
     def start(self):
         logger = logging.getLogger('chalmers')
+        logger.setLevel(logging.INFO)
+
         logfile = os.path.join(dirs.user_log_dir, 'service.log')
-        setup_logging(logger, logging.INFO, False, logfile, True)
-        self.mgr = mgr = ProgramManager(use_color=False)
+
+        hndlr = RotatingFileHandler(logfile, maxBytes=10 * (1024 ** 2), backupCount=5,)
+        hndlr.setLevel(logging.INFO)
+        fmt = logging.Formatter("[%(asctime)s] %(message)s")
+        hndlr.setFormatter(fmt)
+        logger.addHandler(hndlr)
+
+
+        self.mgr = mgr = ProgramManager(use_color=False, setup_logging=False)
         mgr.start_all()
         mgr.listen()
 
