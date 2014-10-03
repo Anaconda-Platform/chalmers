@@ -1,0 +1,15 @@
+package: chalmers
+
+platform:
+  - linux-64
+  - osx-64
+  - win-64
+
+engine:
+ - python=2.7
+
+script:
+  - conda config --add channels binstar
+  - conda build conda.recipe
+
+build_targets: [conda]
