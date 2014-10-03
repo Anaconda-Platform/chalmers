@@ -9,7 +9,7 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 [![Binstar Badge](https://binstar.org/binstar/chalmers/badges/installer/conda.svg)](https://conda.binstar.org/binstar)
 
 <center>
-    <img src=http://mikeydislikesit.files.wordpress.com/2013/05/chalmers1.gif style="margin-left: auto; margin-right: auto;" align="middle" width="100px">
+    <img src=https://raw.githubusercontent.com/Binstar/chalmers/master/img/chalmers.gif style="margin-left: auto; margin-right: auto;" align="middle" width="100px">
 </center>
 
 ## Quickstart
