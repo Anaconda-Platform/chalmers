@@ -4,6 +4,10 @@ Superintendent Chalmers
 Chalmers is an application that allows its users to monitor and control a 
 number of processes on ***any*** operating system (Posix and Win32 included)
 
+[![Binstar Badge](https://binstar.org/binstar/chalmers/badges/build.svg)](https://binstar.org/binstar/chalmers/builds)
+[![Binstar Badge](https://binstar.org/binstar/chalmers/badges/version.svg)](https://binstar.org/binstar/chalmers)
+[![Binstar Badge](https://binstar.org/binstar/chalmers/badges/installer/conda.svg)](https://conda.binstar.org/binstar)
+
 <center>
     <img src=http://mikeydislikesit.files.wordpress.com/2013/05/chalmers1.gif style="margin-left: auto; margin-right: auto;" align="middle" width="100px">
 </center>
