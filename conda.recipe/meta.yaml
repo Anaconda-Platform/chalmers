@@ -17,6 +17,8 @@ requirements:
   run:
     - python
     - clyent
+    - psutil
+    - setuptools
     - pywin32 [win]
 
 about:
