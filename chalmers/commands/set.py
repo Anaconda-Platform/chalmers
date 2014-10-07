@@ -10,7 +10,7 @@ Common Config values:
 
   * startsecs: The time in seconds that the program is assumed to be starting up
     If the program exits before this time it is considered to be spinning
-  * retries: The number or times to launch a spinning program
+  * startretries: The number or times to launch a spinning program
   * stopwaitsecs: Wait this long
   * exitcodes: A list of exit codes that are accepted as a successfull exit 
   * stopsignal: The signal to sent to terminate the program. May be an int or string

@@ -53,7 +53,7 @@ class ProgramBase(EventDispatcher):
               ]
 
     DEFAULTS = {
-                'retries': 3,
+                'startretries': 3,
                 'exitcodes': [0],
                 'startsecs': 10,
                 'stopwaitsecs': 10,
@@ -335,10 +335,12 @@ class ProgramBase(EventDispatcher):
         stdout = open(self.data['stdout'], 'a')
 
         self._terminating = False
-        for i in range(self.data['retries'] + 1):
+        startretries = self.data.get('startretries', 3)
+        initial_startretries = self.data.get('startretries', 3)
+        while startretries:
             start = time.time()
-            if i:
-                log.info('Retry command (%i of %i)' % (i, self.data['retries']))
+            if startretries != initial_startretries:
+                log.info('Retry command (%i retries remain)' % startretries)
             env = os.environ.copy()
             env.update({k:str(v) for (k, v) in self.data.get('env', {}).items()})
             log.info("Running Command: %s" % ' '.join(self.data['command']))
@@ -386,10 +388,12 @@ class ProgramBase(EventDispatcher):
                 status = None
             elif uptime < self.data['startsecs']:
                 reason = 'Program did not successfully start'
+                startretries -= 1
             elif status in self.data['exitcodes']:
                 reason = "Program exited gracefully"
             else:
                 reason = "Program exited unexpectedly with code %s" % (status)
+                startretries = initial_startretries
 
             self.update_state(child_pid=None, exit_status=status,
                               reason=reason)
