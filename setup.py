@@ -9,8 +9,8 @@ if os.name == 'nt':
 
 ctx = {}
 try:
-    with open('mtq/_version.py') as fd:
-        exec(open('mtq/_version.py').read(), ctx)
+    with open('chalmers/_version.py') as fd:
+        exec(open('chalmers/_version.py').read(), ctx)
     version = ctx.get('__version__', 'dev')
 except IOError:
     version = 'dev'
