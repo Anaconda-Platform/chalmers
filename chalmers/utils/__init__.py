@@ -1,6 +1,6 @@
 '''
 '''
-from ast import literal_eval
+from yaml import safe_load
 import logging
 from pprint import pformat
 
@@ -10,10 +10,9 @@ log = logging.getLogger(__name__)
 def try_eval(value):
     "Try and evaluate a literal value, if it fails, return a string"
     try:
-        return literal_eval(value)
+        return safe_load(value)
     except:
         return value
-
 
 def set_nested_key(dct, key, value):
     """
