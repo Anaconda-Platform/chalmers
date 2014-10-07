@@ -60,7 +60,7 @@ class ProgramBase(EventDispatcher):
                 'stopsignal': signal.SIGTERM,
                 'log_dir': dirs.user_log_dir,
 
-                'redirect_stderr': False,
+                'redirect_stderr': True,
                 'stdout': '{log_dir}/{name}.stdout.log',
                 'stderr': '{log_dir}/{name}.stderr.log',
                 'daemon_log': '{log_dir}/{name}.daemon.log',
