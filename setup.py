@@ -6,9 +6,18 @@ install_requires = ['psutil', 'clyent']
 if os.name == 'nt':
     install_requires.append('pywin32')
 
+
+ctx = {}
+try:
+    with open('mtq/_version.py') as fd:
+        exec(open('mtq/_version.py').read(), ctx)
+    version = ctx.get('__version__', 'dev')
+except IOError:
+    version = 'dev'
+
 setup(
     name='chalmers',
-    version="0.1.6",
+    version=version,
     author='Continuum Analytics',
     author_email='srossross@gmail.com',
     url='http://github.com/binstar/chalmers',

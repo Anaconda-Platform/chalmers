@@ -1,4 +1,9 @@
-__version__ = '0.0.1'
+
+try:
+    from _version import __version__
+except ImportError:
+    __version__ = '0.1'
+
 import signal
 
 defaults = {
