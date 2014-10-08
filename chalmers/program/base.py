@@ -55,7 +55,7 @@ class ProgramBase(EventDispatcher):
     DEFAULTS = {
                 'startretries': 3,
                 'exitcodes': [0],
-                'startsecs': 10,
+                'startsecs': 3,
                 'stopwaitsecs': 10,
                 'stopsignal': signal.SIGTERM,
                 'log_dir': dirs.user_log_dir,
@@ -506,6 +506,19 @@ class ProgramBase(EventDispatcher):
         self.reload_state()
         self.start()
         print("restarted")
+
+    def wait_for_start(self):
+        self.reload_state()
+        startsecs = self.data['startsecs']
+        st = time.time()
+
+        while time.time() - self.state.get('start_time', st) < startsecs:
+            time.sleep(1)
+            self.reload_state()
+
+        return not self.is_ok
+
+
 
 def kill_tree(pid, sig):
     'Kill all processes and child processes'
