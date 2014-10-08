@@ -20,6 +20,7 @@ from chalmers.program import Program
 from argparse import RawDescriptionHelpFormatter
 import shlex
 import sys
+from clyent import print_colors, color
 
 
 log = logging.getLogger('chalmers.add')
@@ -80,12 +81,13 @@ def main(args):
 
     if args.daemon and not args.paused:
         message = 'Starting program {name!s:25} ... '.format(name=args.name[:25])
-        sys.stdout.write(message); sys.stdout.flush()
+        print(message, end=''); sys.stdout.flush()
         err = prog.wait_for_start()
         if err:
-            sys.stdout.write('[ERROR ]\n'); sys.stdout.flush()
+            print_colors('[{=ERROR!c:red} ]'); sys.stdout.flush()
         else:
-            sys.stdout.write('[  OK  ]\n'); sys.stdout.flush()
+
+            print_colors('[  {=OK!c:green}  ]'); sys.stdout.flush()
 
 
 def add_parser(subparsers):

@@ -14,6 +14,7 @@ import sys
 
 from chalmers.program import Program
 from chalmers.program_manager import ProgramManager
+from clyent import print_colors
 
 
 log = logging.getLogger('chalmers.start')
@@ -34,12 +35,14 @@ def main(args):
                 prog.start(args.daemon)
 
         for prog in programs:
-            print("Starting program %-25s ... " % (prog.name[:25]), end=''); sys.stdout.flush()
+            print("Starting program %-25s ... " % (prog.name[:25]), end='')
+            sys.stdout.flush()
             err = prog.wait_for_start()
             if err:
-                sys.stdout.write('[ERROR ]\n'); sys.stdout.flush()
+                print_colors('[{=ERROR!c:red} ]')
             else:
-                sys.stdout.write('[  OK  ]\n'); sys.stdout.flush()
+
+                print_colors('[  {=OK!c:green}  ]')
 
     else:
         mgr = ProgramManager(exit_on_first_failure=True, use_color=args.color)

@@ -16,7 +16,7 @@ import sys
 
 from chalmers import errors
 from chalmers.program import Program
-
+from clyent import print_colors
 
 log = logging.getLogger('chalmers.stop')
 
@@ -35,9 +35,9 @@ def main(args):
             except errors.StateError as err:
                 log.error(err.message)
             else:
-                print("[  OK  ]")
+                print_colors("[  {=OK!c:green}  ]")
         else:
-            print("Program is already stopped: %-25s " % prog.name[:25], "[ERROR ]")
+            print_colors("Program is already stopped: %-25s " % prog.name[:25], "[{=ERROR!c:red} ]")
 
 def pause_main(args):
 
