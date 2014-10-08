@@ -29,15 +29,15 @@ def main(args):
 
     for prog in programs:
         if prog.is_running:
-            print("Stopping program %s ..." % prog.name, end=''); sys.stdout.flush()
+            print("Stopping program %-25s ... " % prog.name[:25], end=''); sys.stdout.flush()
             try:
                 prog.stop()
             except errors.StateError as err:
                 log.error(err.message)
             else:
-                print("stopped ")
+                print("[  OK  ]")
         else:
-            print("Program %s is already stopped" % prog.name)
+            print("Program is already stopped: %-25s " % prog.name[:25], "[ERROR ]")
 
 def pause_main(args):
 

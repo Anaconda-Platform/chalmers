@@ -26,11 +26,21 @@ def main(args):
     else:
         programs = [Program(name) for name in args.names]
 
+    print("Starting programs %s" % ', '.join([p.name for p in programs]))
+    print()
     if args.daemon:
         for prog in programs:
-            print("Starting program %s (daemon:%s) ... " % (prog.name, args.daemon), end=''); sys.stdout.flush()
-            prog.start(args.daemon)
-            print("started")
+            if not prog.is_running:
+                prog.start(args.daemon)
+
+        for prog in programs:
+            print("Starting program %-25s ... " % (prog.name[:25]), end=''); sys.stdout.flush()
+            err = prog.wait_for_start()
+            if err:
+                sys.stdout.write('[ERROR ]\n'); sys.stdout.flush()
+            else:
+                sys.stdout.write('[  OK  ]\n'); sys.stdout.flush()
+
     else:
         mgr = ProgramManager(exit_on_first_failure=True, use_color=args.color)
 

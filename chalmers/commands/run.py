@@ -19,6 +19,7 @@ from chalmers.config import dirs
 from chalmers.program import Program
 from argparse import RawDescriptionHelpFormatter
 import shlex
+import sys
 
 
 log = logging.getLogger('chalmers.add')
@@ -69,7 +70,6 @@ def main(args):
     prog.save_state()
 
     if not args.paused:
-        log.info('Starting program {args.name}'.format(args=args))
         prog.start(daemon=args.daemon)
 
     if args.daemon:
@@ -77,6 +77,15 @@ def main(args):
         log.info('Added program {args.name}'.format(args=args))
     else:
         log.info('Program {args.name} exited'.format(args=args))
+
+    if args.daemon and not args.paused:
+        message = 'Starting program {name!s:25} ... '.format(name=args.name[:25])
+        sys.stdout.write(message); sys.stdout.flush()
+        err = prog.wait_for_start()
+        if err:
+            sys.stdout.write('[ERROR ]\n'); sys.stdout.flush()
+        else:
+            sys.stdout.write('[  OK  ]\n'); sys.stdout.flush()
 
 
 def add_parser(subparsers):
