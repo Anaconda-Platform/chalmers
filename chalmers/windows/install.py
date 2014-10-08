@@ -3,6 +3,7 @@ import logging
 from os.path import abspath
 import sys
 
+from chalmers import errors
 from chalmers.scripts import service as service_script
 import win32api, win32serviceutil, win32service
 from pywintypes import error as Win32Error
@@ -85,23 +86,34 @@ def instart(userName, password):
     display_name = 'Chalmers service manager for user %s' % simpleUserName
 
     win32api.SetConsoleCtrlHandler(lambda x: True, True)
-
-    InstallService(
-        svc_name,
-        display_name,
-        startType=win32service.SERVICE_AUTO_START,
-        userName=userName,
-        password=password,
-    )
+    try:
+        InstallService(
+            svc_name,
+            display_name,
+            startType=win32service.SERVICE_AUTO_START,
+            userName=userName,
+            password=password,
+        )
+    except Win32Error as err:
+        if err.args[0] == 1073:
+            raise errors.ChalmersError(err.args[2])
 
     log.info('Install OK')
     try:
         win32serviceutil.StartService(svc_name)
     except Win32Error as err:
-        AllUsersProfile = os.environ.get('AllUsersProfile', 'C:\\ProgramData')
-        logfile = os.path.join(AllUsersProfile, '%s-chalmers-service-log.txt' % userName)
-        log.error("Could not start the chalmers windows service for user %s" % userName)
-        log.error('Check the logfile "%s" for more details' % logfile)
+        log.error('StartService: %s' % err.args[2])
+        if err.args[0] == 1069:
+            log.error("This is usually a password error, please uninstall the service and retry")
+            log.error(" *OR*")
+            log.error("Run the command:\n\tsc config %s password= \"pass\"\nsc start %s" % (svc_name, svc_name))
+            log.error(" *OR*")
+            log.error("Open the 'Services' application and edit it there")
+        else:
+            AllUsersProfile = os.environ.get('AllUsersProfile', 'C:\\ProgramData')
+            logfile = os.path.join(AllUsersProfile, '%s-chalmers-service-log.txt' % userName.rsplit('\\',1)[-1])
+            log.error("Could not start the chalmers windows service for user %s" % userName)
+            log.error('Check the logfile "%s" for more details' % logfile)
     else:
         log.info('Start OK')
 
