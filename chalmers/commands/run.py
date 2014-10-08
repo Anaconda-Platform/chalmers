@@ -48,7 +48,7 @@ def main(args):
     definition = {
                     'name': args.name,
                     'command': args.command,
-                    'cwd': args.cwd,
+                    'cwd': os.path.abspath(args.cwd),
     }
 
     if args.stdout:
