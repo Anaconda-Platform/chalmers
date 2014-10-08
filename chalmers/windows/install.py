@@ -5,6 +5,8 @@ import sys
 
 from chalmers.scripts import service as service_script
 import win32api, win32serviceutil, win32service
+from pywintypes import error as Win32Error
+import os
 
 
 log = logging.getLogger(__name__)
@@ -93,7 +95,14 @@ def instart(userName, password):
     )
 
     log.info('Install OK')
-    win32serviceutil.StartService(svc_name)
-    log.info('Start OK')
+    try:
+        win32serviceutil.StartService(svc_name)
+    except Win32Error as err:
+        AllUsersProfile = os.environ.get('AllUsersProfile', 'C:\\ProgramData')
+        logfile = os.path.join(AllUsersProfile, '%s-chalmers-service-log.txt' % userName)
+        log.error("Could not start the chalmers windows service for user %s" % userName)
+        log.error('Check the logfile "%s" for more details' % logfile)
+    else:
+        log.info('Start OK')
 
 
