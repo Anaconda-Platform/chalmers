@@ -17,6 +17,10 @@ def InstallService(serviceName, displayName, startType=win32service.SERVICE_DEMA
     serviceType = win32service.SERVICE_WIN32_OWN_PROCESS
 
     script = abspath(service_script.__file__)
+
+    if script.endswith('.pyc') or script.endswith('.pyo'):
+        script = script[:-1]
+
     commandLine = "%s %s" % (sys.executable, script)
 
     hscm = win32service.OpenSCManager(None, None, win32service.SC_MANAGER_ALL_ACCESS)
