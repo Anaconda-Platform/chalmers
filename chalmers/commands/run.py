@@ -104,10 +104,18 @@ def add_parser(subparsers):
     #
     #===========================================================================
     group = parser.add_argument_group('Process Output:')
-    group.add_argument('--stdout')
-    group.add_argument('--stderr')
-    group.add_argument('--daemon-log')
-    group.add_argument('--redirect-stderr', action='store_true')
+    group.add_argument('--stdout',
+                       help='Filename to log stdout to')
+    group.add_argument('--stderr',
+                       help='Filename to log stderr to')
+    group.add_argument('--daemon-log',
+                       help='Filename to log meta information about this process to')
+    group.add_argument('--redirect-stderr', action='store_true', default=None,
+                       dest='redirect_stderr',
+                       help='Store stdout and stderr in the same log file')
+    group.add_argument('--dont-redirect-stderr', action='store_false',
+                       dest='redirect_stderr',
+                       help='Store stdout and stderr in seporate log files')
     #===========================================================================
     #
     #===========================================================================
