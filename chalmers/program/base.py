@@ -344,12 +344,14 @@ class ProgramBase(EventDispatcher):
         if self.pipe_output or self.data['redirect_stderr']:
             stderr = STDOUT
         else:
-            stderr = open(self.data['stderr'], 'a')
+            stderr = open(self.data['stderr'], 'a+')
+            stderr.seek(0, os.SEEK_END)
 
         if self.pipe_output:
             stdout = None
         else:
-            stdout = open(self.data['stdout'], 'a')
+            stdout = open(self.data['stdout'], 'a+')
+            stdout.seek(0, os.SEEK_END)
 
         self._terminating = False
         startretries = self.data.get('startretries', 3)
@@ -490,12 +492,16 @@ class ProgramBase(EventDispatcher):
             return 'ERROR'
 
     def log_to_daemonlog(self):
-        self._log_stream = open(self.data['daemon_log'], 'a')
+        print('log_to_daemonlog')
+        logger = logging.getLogger('chalmers')
+        self._log_stream = open(self.data['daemon_log'], 'a', 1)
+        self._log_stream.seek(0, 2)
         hdlr = logging.StreamHandler(self._log_stream)
         hdlr.setLevel(logging.INFO)
         fmt = logging.Formatter("[%(asctime)s] %(levelname)s:%(message)s")
         hdlr.setFormatter(fmt)
-        logging.getLogger('chalmers').addHandler(hdlr)
+        logger.setLevel(logging.INFO)
+        logger.addHandler(hdlr)
 
 
 

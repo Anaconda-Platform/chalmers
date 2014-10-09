@@ -40,6 +40,9 @@ class NTProgram(ProgramBase):
         """
 
         startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+
         from chalmers.scripts import runner as runner_script
 
         script = os.path.abspath(runner_script.__file__)
