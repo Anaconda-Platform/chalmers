@@ -115,6 +115,15 @@ class ProgramBase(EventDispatcher):
             self.reload()
             self.reload_state()
 
+        self._pipe_output = False
+
+    @property
+    def pipe_output(self):
+        return self._pipe_output
+
+    @pipe_output.setter
+    def pipe_output(self, value):
+        self._pipe_output = value
 
     @property
     def name(self):
@@ -223,11 +232,16 @@ class ProgramBase(EventDispatcher):
         """
         self.data = self.DEFAULTS.copy()
 
-        for template in self.raw_data.get('extends', []):
+        raw_data = self.raw_data or {}
+        if 'name' not in raw_data:
+            raw_data['name'] = self.name
+
+        for template in raw_data.get('extends', []):
             template_data = self.load_template(template)
             self.data.update(template_data)
 
-        self.data.update(self.raw_data)
+        self.data.update(raw_data)
+
 
         str_replace(self.data)
 
@@ -327,12 +341,15 @@ class ProgramBase(EventDispatcher):
         """
         self._p0 = False
 
-        if self.data['redirect_stderr']:
+        if self.pipe_output or self.data['redirect_stderr']:
             stderr = STDOUT
         else:
             stderr = open(self.data['stderr'], 'a')
 
-        stdout = open(self.data['stdout'], 'a')
+        if self.pipe_output:
+            stdout = None
+        else:
+            stdout = open(self.data['stdout'], 'a')
 
         self._terminating = False
         startretries = self.data.get('startretries', 3)

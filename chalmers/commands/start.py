@@ -15,6 +15,7 @@ import sys
 from chalmers.program import Program
 from chalmers.program_manager import ProgramManager
 from clyent import print_colors
+from chalmers import errors
 
 
 log = logging.getLogger('chalmers.start')
@@ -45,14 +46,19 @@ def main(args):
                 print_colors('[  {=OK!c:green}  ]')
 
     else:
-        mgr = ProgramManager(exit_on_first_failure=True, use_color=args.color)
-
-        for prog in programs:
-            mgr.dispatch_start(prog.name)
-
-
-        for process in mgr.processes:
-            process.join()
+        if len(programs) != 1:
+            raise errors.ChalmersError("start currently only supports running one program in -w/--no-daemon mode")
+        prog = programs[0]
+        prog.pipe_output = True
+        prog.start(daemon=False)
+#         mgr = ProgramManager(exit_on_first_failure=True, use_color=args.color)
+#
+#         for prog in programs:
+#             mgr.dispatch_start(prog.name)
+#
+#
+#         for process in mgr.processes:
+#             process.join()
 
 
 def restart_main(args):
