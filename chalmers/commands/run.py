@@ -20,7 +20,7 @@ from chalmers.program import Program
 from argparse import RawDescriptionHelpFormatter
 import shlex
 import sys
-from clyent import print_colors, color
+from clyent import print_colors
 
 
 log = logging.getLogger('chalmers.add')
@@ -46,11 +46,18 @@ def main(args):
                                    "Use the -n/--name option to change the name or \n"
                                    "Run 'chalmers remove {args.name}' to remove it \n"
                                    "or 'chalmers set' to update the parameters".format(args=args))
+    env = {}
+    for env_var in args.save_env:
+        if env_var in os.environ:
+            env[env_var] = os.environ[env_var]
+        else:
+            log.warn("Environment variable %s does not exist (from -e/--save-env)" % env_var)
 
     definition = {
                     'name': args.name,
                     'command': args.command,
                     'cwd': os.path.abspath(args.cwd),
+                    'env': env,
     }
 
     if args.stdout:
@@ -71,6 +78,7 @@ def main(args):
     prog.save_state()
 
     if not args.paused:
+        prog.pipe_output = not args.daemon
         prog.start(daemon=args.daemon)
 
     if args.daemon:
@@ -132,6 +140,7 @@ def add_parser(subparsers):
     #===========================================================================
     parser.add_argument('-n', '--name',
                         help='Set the name of this program for future chalmers commands')
+
     parser.add_argument('--cwd', default=os.curdir,
                         help='Set working directory of the program (default: %(default)s)')
 
@@ -141,4 +150,8 @@ def add_parser(subparsers):
 
     parser.add_argument('-c', metavar='COMMAND', type=split, dest='cmd',
                         help='Command to run')
+
+    parser.add_argument('-e', '--save-env', metavar='ENV_VAR', action='append', default=[],
+                        help='Save a current environment variable to be run( Eg. --save-env PATH)')
+
     parser.set_defaults(main=main, state='pause')
