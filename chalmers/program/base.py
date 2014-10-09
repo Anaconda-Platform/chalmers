@@ -359,10 +359,13 @@ class ProgramBase(EventDispatcher):
             if startretries != initial_startretries:
                 log.info('Retry command (%i retries remain)' % startretries)
             env = os.environ.copy()
-            env.update({k:str(v) for (k, v) in self.data.get('env', {}).items()})
-            log.info("Running Command: %s" % ' '.join(self.data['command']))
-
+            update_env = {k:str(v) for (k, v) in self.data.get('env', {}).items()}
+            env.update(update_env)
             cwd = self.data.get('cwd') or os.path.abspath(os.curdir)
+
+            log.info("Setting Environment: \n%s" % '\n'.join('\t%s: %r' % item for item in update_env.items()))
+            log.info("Setting Working Directory: %s" % cwd)
+            log.info("Running Command: %s" % ' '.join(self.data['command']))
 
             try:
                 self._p0 = Popen(self.data['command'],
