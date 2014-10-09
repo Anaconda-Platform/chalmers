@@ -45,8 +45,10 @@ class WindowsService(object, ServiceFramework):
             self.ReportServiceStatus(win32service.SERVICE_RUNNING)
             self.log('start')
             self.start()
-            self.log('wait')
-            win32event.WaitForSingleObject(self.stop_event, win32event.INFINITE)
+
+            self.ReportServiceStatus(win32service.SERVICE_STOPPED)
+#             self.log('wait')
+#             win32event.WaitForSingleObject(self.stop_event, win32event.INFINITE)
             self.log('done')
         except Exception:
             self.log("Error in WindowsService.SvcDoRun")
@@ -55,6 +57,7 @@ class WindowsService(object, ServiceFramework):
 
 
     def SvcStop(self):
+        pass
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
         self.log('stopping')
         self.stop()

@@ -1,12 +1,12 @@
-import sys, os
 import getpass
-import traceback
+import sys, os
 import time
+import traceback
+
 
 def main():
 
     AllUsersProfile = os.environ.get('AllUsersProfile', 'C:\\ProgramData')
-    user= getpass.getuser().rsplit('\\',1)[-1]
     logfile = os.path.join(AllUsersProfile, '%s-chalmers-service-log.txt' % getpass.getuser())
 
     try:
@@ -20,12 +20,15 @@ def main():
     print '---'
     print "Starting Chalmers Service", time.ctime()
     sys.stdout.flush()
-
-    from chalmers.windows.chalmers_service import ChalmersService
-    import servicemanager
-    servicemanager.Initialize(None, None)
-    servicemanager.PrepareToHostSingle(ChalmersService)
-    servicemanager.StartServiceCtrlDispatcher()
+    try:
+        from chalmers.windows.chalmers_service import ChalmersService
+        import servicemanager
+        servicemanager.Initialize(None, None)
+        servicemanager.PrepareToHostSingle(ChalmersService)
+        servicemanager.StartServiceCtrlDispatcher()
+    finally:
+        print "Exiting Chalmers Service", time.ctime()
+        sys.stdout.flush()
 
 
 if __name__ == "__main__":
