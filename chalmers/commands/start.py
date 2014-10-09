@@ -25,6 +25,7 @@ def main(args):
 
     if args.all:
         programs = list(Program.find_for_user())
+        programs = [p for p in programs if not p.is_paused]
     else:
         programs = [Program(name) for name in args.names]
 

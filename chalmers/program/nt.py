@@ -25,11 +25,12 @@ class NTProgram(ProgramBase):
 
         try:
             handle = OpenProcess(SYNCHRONIZE, 0, pid)
+            CloseHandle(handle)
             return True
         except Win32Error:
             return False
-        finally:
-            CloseHandle(handle)
+        
+        
 
 
     def start_as_service(self):
