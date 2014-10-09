@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 import time
+from chalmers.config import dirs
 
 from chalmers.program import Program
 
@@ -20,10 +21,13 @@ from chalmers.program import Program
 log = logging.getLogger('chalmers.log')
 
 def main(args):
+    if args.name:
+        prog = Program(args.name)
 
-    prog = Program(args.name)
+        logfile = prog.data.get(args.logfile)
+    else:
+        logfile = os.path.join(dirs.user_log_dir, 'chalmers.log')
 
-    logfile = prog.data.get(args.logfile)
 
     if args.showfile:
         print(logfile)
@@ -61,7 +65,7 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('name')
+    parser.add_argument('name', nargs='?')
     parser.add_argument('-f', action='store_true', dest='append',
                        help='The -f option causes log to not stop when end of file is reached, '
                             'but rather to wait for additional data to be appended')
