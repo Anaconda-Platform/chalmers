@@ -24,7 +24,7 @@ def main(args=None, exit=True):
     add_subparser_modules(parser, chalmers.commands)
 
     args = parser.parse_args(args)
-    logfile = join(dirs.user_log_dir, 'cli.log')
+    logfile = join(dirs.user_log_dir, 'chalmers.log')
     setup_logging(logger, args.log_level, use_color=args.color,
                   show_tb=args.show_traceback, logfile=logfile)
 

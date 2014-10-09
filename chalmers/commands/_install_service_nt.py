@@ -68,7 +68,7 @@ def main(args):
         script = script[:-1]
 
     script_args = [sys.executable, script, 'start', '-a']
-    cmd = ["schtasks", "/Create", "/SC", "ONSTART", "/TN", service_name, 
+    cmd = ["schtasks", "/Create", "/SC", "ONLOGON", "/TN", service_name, 
            "/TR", "'%s'" % "' '".join(script_args)]
 
     print("Running Windows command:")

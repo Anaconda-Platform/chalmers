@@ -51,8 +51,11 @@ class NTProgram(ProgramBase):
         if script.endswith('.pyc') or script.endswith('.pyo'):
             script = script[:-1]
 
-        p0 = subprocess.Popen([sys.executable, script, self.name],
+        cmd = [sys.executable, script, self.name]
+        p0 = subprocess.Popen(cmd,
                               creationflags=subprocess.CREATE_NEW_CONSOLE,
                               startupinfo=startupinfo)
+
+
 
 
