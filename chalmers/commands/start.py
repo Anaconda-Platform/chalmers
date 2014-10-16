@@ -13,7 +13,6 @@ import logging
 import sys
 
 from chalmers.program import Program
-from chalmers.program_manager import ProgramManager
 from clyent import print_colors
 from chalmers import errors
 
@@ -52,14 +51,6 @@ def main(args):
         prog = programs[0]
         prog.pipe_output = True
         prog.start(daemon=False)
-#         mgr = ProgramManager(exit_on_first_failure=True, use_color=args.color)
-#
-#         for prog in programs:
-#             mgr.dispatch_start(prog.name)
-#
-#
-#         for process in mgr.processes:
-#             process.join()
 
 
 def restart_main(args):
@@ -70,7 +61,23 @@ def restart_main(args):
         programs = [Program(name) for name in args.names]
 
     for prog in programs:
-        prog.restart()
+        print("Restart program %-25s ... " % (prog.name[:25]), end='')
+        sys.stdout.flush()
+
+        prog.stop()
+        print_colors('[  {=OK!c:green}  ]')
+
+        prog.start()
+
+    for prog in programs:
+        print("Waiting for program %-25s to restart ... " % (prog.name[:25]), end='')
+        sys.stdout.flush()
+        err = prog.wait_for_start()
+        if err:
+            print_colors('[{=ERROR!c:red} ]')
+        else:
+
+            print_colors('[  {=OK!c:green}  ]')
 
 
 
