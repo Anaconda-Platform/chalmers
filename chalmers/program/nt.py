@@ -9,7 +9,7 @@ from .base import ProgramBase
 import subprocess
 import sys
 import os
-
+from chalmers import errors
 
 log = logging.getLogger(__name__)
 
@@ -58,4 +58,5 @@ class NTProgram(ProgramBase):
 
 
 
-
+    def dispatch_bg(self):
+        raise errors.ChalmersError("Can not yet move a win32 process to the background")
