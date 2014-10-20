@@ -94,3 +94,7 @@ class PosixProgram(ProgramBase):
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
 
 
+    def _send_signal(self, pid, sig):
+        os.kill(pid, sig)
+
+

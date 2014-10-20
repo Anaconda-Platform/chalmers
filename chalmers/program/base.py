@@ -303,7 +303,7 @@ class ProgramBase(EventDispatcher):
         try:
             self.keep_alive()
         except errors.StopProcess:
-            self._terminate()
+            self._stop()
         finally:
             self.update_state(pid=None, stop_time=time.time())
             self.finished_event.set()
@@ -317,28 +317,59 @@ class ProgramBase(EventDispatcher):
 
     def dispatch_terminate(self, timeout=None):
         'Action for event listener'
-        self._terminate()
-        self._running = False
+        children = self._stop()
         if not self.finished_event.wait(timeout):
-            raise errors.ChalmersError("Timed out waiting for program %s to finish" % self.name)
+            if self._p0:
+                log.info('Process did not stop within %s seconds' % (timeout))
+                log.info('Hard killing process %s' % (self._p0.pid))
+                kill_tree(self._p0.pid)
 
-    def _terminate(self):
+            if not self.finished_event.wait(timeout):
+                raise errors.ChalmersError("Timed out waiting for program %s to finish" % self.name)
+        else:
+            for child in children:
+                if child.is_running():
+                    child.kill()
+
+
+
+    def _stop(self):
         """
         Terminate this process, 
         This function may only be called by the process that called 'start_sync'
         
          
         """
-
-        stopsignal = self.stopsignal
-
-        log.info('Stop Process Requested')
+        self._running = False
         self._terminating = True
-        if self._p0:
-            log.info('Sending signal %s to process %s' % (stopsignal, self._p0.pid))
-            kill_tree(self._p0.pid, stopsignal)
-        elif self._p0 is None:
-            raise errors.ChalmersError("This process did not start this program, can not call _terminate")
+
+        if not self._p0:
+            log.info("_p0 is none")
+
+        try:
+            parent = psutil.Process(self._p0.pid)
+        except psutil.NoSuchProcess:
+            log.info("psutil.NoSuchProcess %s" % self._p0.pid)
+            return
+
+        children = parent.get_children(recursive=True)
+
+        log.info('Sending signal %s to process %s' % (self.stopsignal, self._p0.pid))
+        self._send_signal(self._p0.pid, self.stopsignal)
+
+        return children
+
+#         log.info('Stop Process Requested')
+#         self._terminating = True
+#         if self._p0:
+#             log.info('Sending signal %s to process %s' % (stopsignal, self._p0.pid))
+#             kill_tree(self._p0.pid, stopsignal)
+#         elif self._p0 is None:
+#             raise errors.ChalmersError("This process did not start this program, can not call _terminate")
+
+    @abc.abstractmethod
+    def _send_signal(self, pid, signal):
+        pass
 
     @contextmanager
     def setup_output(self):
@@ -579,15 +610,19 @@ class ProgramBase(EventDispatcher):
 
 
 
-def kill_tree(pid, sig):
+def kill_tree(pid, children=None):
     'Kill all processes and child processes'
+
     try:
         parent = psutil.Process(pid)
     except psutil.NoSuchProcess:
-        log.warn("Kill failed, process with pid %s does not appear to be running" % pid)
+        log.error("NoSuchProcess pid=%s" % pid)
         return
-    children = parent.get_children(recursive=True)
-    os.kill(pid, sig)
+
+    if not children:
+        children = parent.get_children(recursive=True)
+
+    parent.kill()
 
     for child in children:
         if child.is_running():
