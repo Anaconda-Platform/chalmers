@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-install_requires = ['psutil', 'clyent']
+install_requires = ['psutil', 'clyent', 'pyyaml']
 
 if os.name == 'nt':
     install_requires.append('pywin32')
