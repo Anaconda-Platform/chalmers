@@ -45,7 +45,9 @@ def InstallService(serviceName, displayName, startType=win32service.SERVICE_DEMA
 
         if description is not None:
             try:
-                win32service.ChangeServiceConfig2(hs, win32service.SERVICE_CONFIG_DESCRIPTION, description)
+                win32service.ChangeServiceConfig2(hs,
+                                                  win32service.SERVICE_CONFIG_DESCRIPTION,
+                                                  description)
             except NotImplementedError:
                 pass  # # ChangeServiceConfig2 and description do not exist on NT
 
@@ -106,13 +108,16 @@ def instart(userName, password):
         if err.args[0] == 1069:
             log.error("This is usually a password error, please uninstall the service and retry")
             log.error(" *OR*")
-            log.error("Run the command:\n\tsc config %s password= \"pass\"\nsc start %s" % (svc_name, svc_name))
+            log.error("Run the command:\n\tsc config %s password= \"pass\"\nsc start %s" %
+                      (svc_name, svc_name))
             log.error(" *OR*")
             log.error("Open the 'Services' application and edit it there")
         else:
             AllUsersProfile = os.environ.get('AllUsersProfile', 'C:\\ProgramData')
-            logfile = os.path.join(AllUsersProfile, '%s-chalmers-service-log.txt' % userName.rsplit('\\',1)[-1])
-            log.error("Could not start the chalmers windows service for user %s" % userName)
+            logfile = os.path.join(AllUsersProfile, '%s-chalmers-service-log.txt' %
+                                   userName.rsplit('\\', 1)[-1])
+            log.error("Could not start the chalmers windows service for user %s" %
+                      userName)
             log.error('Check the logfile "%s" for more details' % logfile)
     else:
         log.info('Start OK')
