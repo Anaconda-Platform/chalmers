@@ -534,10 +534,10 @@ class ProgramBase(EventDispatcher):
         print("restarted")
 
     def wait_for_start(self):
+        time.sleep(.5)
         self.reload_state()
         startsecs = self.data['startsecs']
         st = time.time()
-
         while time.time() - self.state.get('start_time', st) < startsecs:
             time.sleep(1)
             self.reload_state()
