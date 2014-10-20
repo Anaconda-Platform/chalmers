@@ -15,6 +15,7 @@ import sys
 from chalmers.program import Program
 from clyent import print_colors
 from chalmers import errors
+import time
 
 
 log = logging.getLogger('chalmers.start')
@@ -55,22 +56,39 @@ def main(args):
 
 def restart_main(args):
 
+
     if args.all:
         programs = Program.find_for_user()
+        programs = [prog for prog in programs if not prog.is_paused]
     else:
         programs = [Program(name) for name in args.names]
+    if not (args.all or args.names):
+        raise errors.ChalmersError("Must specify at least one program to restart")
+
+    if len(programs) == 0:
+        log.warn("No programs to restart")
+        return
 
     for prog in programs:
-        print("Restart program %-25s ... " % (prog.name[:25]), end='')
+
         sys.stdout.flush()
 
-        prog.stop()
-        print_colors('[  {=OK!c:green}  ]')
+        if prog.is_running:
+            print("Stop program %-25s ... " % (prog.name[:25]), end='')
+            try:
+                prog.stop()
+            except errors.StateError:
+                print_colors('[  {=ERROR!c:red}  ]')
 
+            print_colors('[  {=OK!c:green}  ]')
+
+    time.sleep(.5)
+
+    for prog in programs:
         prog.start()
 
     for prog in programs:
-        print("Waiting for program %-25s to restart ... " % (prog.name[:25]), end='')
+        print("Starting program %-25s ... " % (prog.name[:25]), end='')
         sys.stdout.flush()
         err = prog.wait_for_start()
         if err:
