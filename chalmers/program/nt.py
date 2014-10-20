@@ -1,15 +1,17 @@
 import logging
+import os
+import subprocess
+import sys
 
 from pywintypes import error as Win32Error
 from win32api import OpenProcess
-from win32file import CloseHandle
 from win32event import SYNCHRONIZE
+from win32file import CloseHandle
+
+from chalmers import errors
 
 from .base import ProgramBase
-import subprocess
-import sys
-import os
-from chalmers import errors
+
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +31,8 @@ class NTProgram(ProgramBase):
             return True
         except Win32Error:
             return False
-        
-        
+
+
 
 
     def start_as_service(self):
