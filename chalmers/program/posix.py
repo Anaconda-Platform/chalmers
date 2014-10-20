@@ -47,7 +47,10 @@ class PosixProgram(ProgramBase):
         'Remove socket file'
         if os.path.exists(self.addr):
             log.debug("Removing socket file %s" % self.addr)
-            os.unlink(self.addr)
+            try:
+                os.unlink(self.addr)
+            except OSError as err:
+                log.warn("Error: %s" % err)
 
 
     def stop(self):
