@@ -20,6 +20,8 @@ from chalmers.config import dirs
 from chalmers.event_dispatcher import EventDispatcher, send_action
 import sys
 import psutil
+from chalmers.utils.file_echo import FileEcho
+from contextlib import contextmanager
 
 
 log = logging.getLogger(__name__)
@@ -93,6 +95,7 @@ class ProgramBase(EventDispatcher):
         'The file name where current program state is stored'
         return path.join(dirs.user_data_dir, 'lock', '%s' % self.name)
 
+    preexec_fn = None
 
     def __init__(self, name, load=True):
         self._name = name
@@ -116,6 +119,7 @@ class ProgramBase(EventDispatcher):
             self.reload_state()
 
         self._pipe_output = False
+
 
     @property
     def pipe_output(self):
@@ -336,95 +340,124 @@ class ProgramBase(EventDispatcher):
         elif self._p0 is None:
             raise errors.ChalmersError("This process did not start this program, can not call _terminate")
 
+    @contextmanager
+    def setup_output(self):
+        if self.pipe_output:
+            self.data['redirect_stderr'] = True
+
+        if self.data['redirect_stderr']:
+            stderr = STDOUT
+        else:
+            stderr = open(self.data['stderr'], 'a+', 0)
+            stderr.seek(0, os.SEEK_END)
+
+        stdout = open(self.data['stdout'], 'a+', 0)
+        stdout.seek(0, os.SEEK_END)
+
+        if self.pipe_output:
+            self._echo = FileEcho(self.data['stdout'], sys.stdout)
+            self._echo.start()
+        else:
+            self._echo = None
+
+        try:
+            yield stdout, stderr
+        finally:
+            if self._echo:
+                self._echo.stop()
+
+    def handle_signals(self):
+        pass
+
     def keep_alive(self):
         """
         """
         self._p0 = False
 
-        if self.pipe_output or self.data['redirect_stderr']:
-            stderr = STDOUT
-        else:
-            stderr = open(self.data['stderr'], 'a+')
-            stderr.seek(0, os.SEEK_END)
+        self.handle_signals()
 
-        if self.pipe_output:
-            stdout = None
-        else:
-            stdout = open(self.data['stdout'], 'a+')
-            stdout.seek(0, os.SEEK_END)
+        with self.setup_output() as (stdout, stderr):
 
-        self._terminating = False
-        startretries = self.data.get('startretries', 3)
-        initial_startretries = self.data.get('startretries', 3)
-        while startretries:
-            start = time.time()
-            if startretries != initial_startretries:
-                log.info('Retry command (%i retries remain)' % startretries)
-            env = os.environ.copy()
-            update_env = {k:str(v) for (k, v) in self.data.get('env', {}).items()}
-            env.update(update_env)
-            cwd = self.data.get('cwd') or os.path.abspath(os.curdir)
+            self._terminating = False
+            startretries = self.data.get('startretries', 3)
+            initial_startretries = self.data.get('startretries', 3)
 
-            log.info("Setting Environment: \n%s" % '\n'.join('\t%s: %r' % item for item in update_env.items()))
-            log.info("Setting Working Directory: %s" % cwd)
-            log.info("Running Command: %s" % ' '.join(self.data['command']))
+            while startretries:
+                start = time.time()
+                if startretries != initial_startretries:
+                    log.info('Retry command (%i retries remain)' % startretries)
+                env = os.environ.copy()
+                update_env = {k:str(v) for (k, v) in self.data.get('env', {}).items()}
+                env.update(update_env)
+                cwd = self.data.get('cwd') or os.path.abspath(os.curdir)
 
-            try:
-                self._p0 = Popen(self.data['command'],
-                                 stdout=stdout, stderr=stderr,
-                                 env=env, cwd=cwd, bufsize=self.data.get('bufsize', 0))
-            except OSError as err:
-                log.exception('Program %s could not be started with popen' % self.name)
-                self.update_state(child_pid=None, exit_status=1,
-                                  reason='OSError running command "%s"' % self.data['command'][0])
-                return
-            except:
-                log.exception('Exception in keep_alive')
-                self.update_state(child_pid=None, exit_status=1,
-                                  reason='There was an unknown exception opening command (check logs)')
-                return
+                log.info("Setting Environment: \n%s" % '\n'.join('\t%s: %r' % item for item in update_env.items()))
+                log.info("Setting Working Directory: %s" % cwd)
+                log.info("Running Command: %s" % ' '.join(self.data['command']))
+
+                try:
+                    self._p0 = Popen(self.data['command'],
+                                     stdout=stdout, stderr=stderr,
+                                     env=env, cwd=cwd, bufsize=self.data.get('bufsize', 0),
+                                     preexec_fn=self.preexec_fn)
+                except OSError as err:
+                    log.exception('Program %s could not be started with popen' % self.name)
+                    self.update_state(child_pid=None, exit_status=1,
+                                      reason='OSError running command "%s"' % self.data['command'][0])
+                    return
+                except:
+                    log.exception('Exception in keep_alive')
+                    self.update_state(child_pid=None, exit_status=1,
+                                      reason='There was an unknown exception opening command (check logs)')
+                    return
 
 
 
-            log.info('Program started with pid %s' % self._p0.pid)
-            self.update_state(child_pid=self._p0.pid, reason=None, exit_status=None,
-                              start_time=time.time())
+                log.info('Program started with pid %s' % self._p0.pid)
+                self.update_state(child_pid=self._p0.pid, reason=None, exit_status=None,
+                                  start_time=time.time())
 
-            try:
-                status = self._p0.wait()
-            except KeyboardInterrupt:
-                log.error('Program %s was interrupted by user' % self.name)
-                kill_tree(self._p0.pid, signal.SIGTERM)
-                self.update_state(child_pid=None, exit_status=None, reason='Interrupted by user')
-                raise
+                try:
+                    status = self._p0.wait()
+                except KeyboardInterrupt:
+                    log.error('Program %s was interrupted by user' % self.name)
+                    kill_tree(self._p0.pid, signal.SIGTERM)
+                    self.update_state(child_pid=None, exit_status=None, reason='Interrupted by user')
+                    raise
+                except BaseException as err:
+                    log.error('Program %s was interrupted' % self.name)
+                    kill_tree(self._p0.pid, signal.SIGTERM)
+                    self.update_state(child_pid=None, exit_status=None, reason='Python BaseException')
+                    log.exception(err)
+                    raise
 
-            self._p0 = False
+                self._p0 = False
 
-            uptime = time.time() - start
+                uptime = time.time() - start
 
-            log.info('Command Exited with status %s' % status)
-            log.info(' + Uptime %s' % uptime)
+                log.info('Command Exited with status %s' % status)
+                log.info(' + Uptime %s' % uptime)
 
-            if self._terminating:
-                reason = "Terminated at user request"
-                status = None
-            elif uptime < self.data['startsecs']:
-                reason = 'Program did not successfully start'
-                startretries -= 1
-            elif status in self.data['exitcodes']:
-                reason = "Program exited gracefully"
-            else:
-                reason = "Program exited unexpectedly with code %s" % (status)
-                startretries = initial_startretries
+                if self._terminating:
+                    reason = "Terminated at user request"
+                    status = None
+                elif uptime < self.data['startsecs']:
+                    reason = 'Program did not successfully start'
+                    startretries -= 1
+                elif status in self.data['exitcodes']:
+                    reason = "Program exited gracefully"
+                else:
+                    reason = "Program exited unexpectedly with code %s" % (status)
+                    startretries = initial_startretries
 
-            self.update_state(child_pid=None, exit_status=status,
-                              reason=reason)
+                self.update_state(child_pid=None, exit_status=status,
+                                  reason=reason)
 
-            if self._terminating:
-                break
+                if self._terminating:
+                    break
 
-            if status in self.data['exitcodes']:
-                break
+                if status in self.data['exitcodes']:
+                    break
 
         log.debug("Exiting keep alive function")
 

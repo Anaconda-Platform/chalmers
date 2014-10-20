@@ -20,8 +20,8 @@ def daemonize(target, stream=None):
 
     # decouple from parent environment
     os.chdir("/")
-    os.setsid()
-    os.umask(0)
+#     os.setsid()
+#     os.umask(0)
 
     # do second fork
     pid = os.fork()

@@ -33,8 +33,11 @@ def main(args):
         print(logfile)
         return
     if args.rm:
-        log.info("Removing log file '%s'" % logfile)
-        os.unlink(logfile)
+        if os.path.isfile(logfile):
+            log.info("Removing log file '%s'" % logfile)
+            os.unlink(logfile)
+        else:
+            log.warn("File '%s' does not exist" % logfile)
         return
 
     with open(logfile) as fd:
