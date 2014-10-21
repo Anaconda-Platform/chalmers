@@ -6,11 +6,55 @@
 Welcome to Chalmers's documentation!
 ====================================
 
-Contents:
+Chalmers is a process control system that has been tested on posix and win32 platforms.
+
+.. image:: https://binstar.org/binstar/chalmers/badges/build.svg 
+   :target: https://binstar.org/binstar/chalmers/builds
+   
+.. image:: https://binstar.org/binstar/chalmers/badges/version.svg 
+   :target: https://binstar.org/binstar/chalmers
+   
+.. image:: https://binstar.org/binstar/chalmers/badges/installer/conda.svg   
+   :target: https://conda.binstar.org/binstar
+
+.. image:: https://raw.githubusercontent.com/Binstar/chalmers/master/img/chalmers.gif
+   :align: center 
+   :width: 100px
+
+Quickstart
+==========
+
+Running chalmers on system boot
+--------------------------------
+ 
+::
+
+    chalmers install-service
+
+
+Adding a Program
+----------------
+
+::
+
+    chalmers run -- sleep 10
+
+
+Check the program status
+-------------------------
+
+
+::
+
+    chalmers list
+
+
 
 .. toctree::
    :maxdepth: 2
-
+   
+   config
+   logging
 
 
 Indices and tables
