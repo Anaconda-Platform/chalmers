@@ -422,7 +422,8 @@ class ProgramBase(EventDispatcher):
                 env.update(update_env)
                 cwd = self.data.get('cwd') or os.path.abspath(os.curdir)
 
-                log.info("Setting Environment: \n%s" % '\n'.join('\t%s: %r' % item for item in update_env.items()))
+                env_str = '\n'.join('\t%s: %r' % item for item in update_env.items())
+                log.info("Setting Environment: \n%s" % env_str)
                 log.info("Setting Working Directory: %s" % cwd)
                 log.info("Running Command: %s" % ' '.join(self.data['command']))
 
@@ -452,12 +453,12 @@ class ProgramBase(EventDispatcher):
                     status = self._p0.wait()
                 except KeyboardInterrupt:
                     log.error('Program %s was interrupted by user' % self.name)
-                    kill_tree(self._p0.pid, signal.SIGTERM)
+                    kill_tree(self._p0.pid)
                     self.update_state(child_pid=None, exit_status=None, reason='Interrupted by user')
                     raise
                 except BaseException as err:
                     log.error('Program %s was interrupted' % self.name)
-                    kill_tree(self._p0.pid, signal.SIGTERM)
+                    kill_tree(self._p0.pid)
                     self.update_state(child_pid=None, exit_status=None, reason='Python BaseException')
                     log.exception(err)
                     raise
@@ -556,7 +557,6 @@ class ProgramBase(EventDispatcher):
             return 'ERROR'
 
     def log_to_daemonlog(self):
-        print('log_to_daemonlog')
         logger = logging.getLogger('chalmers')
         self._log_stream = open(self.data['daemon_log'], 'a', 1)
         self._log_stream.seek(0, 2)
@@ -610,7 +610,7 @@ class ProgramBase(EventDispatcher):
 
 
 
-def kill_tree(pid, children=None):
+def kill_tree(pid):
     'Kill all processes and child processes'
 
     try:
@@ -619,8 +619,7 @@ def kill_tree(pid, children=None):
         log.error("NoSuchProcess pid=%s" % pid)
         return
 
-    if not children:
-        children = parent.get_children(recursive=True)
+    children = parent.get_children(recursive=True)
 
     parent.kill()
 
