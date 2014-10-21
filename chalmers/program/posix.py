@@ -7,6 +7,7 @@ from chalmers import errors
 from chalmers.utils.daemonize import daemonize
 
 from .base import ProgramBase
+import pwd
 
 
 log = logging.getLogger(__name__)
@@ -91,7 +92,25 @@ class PosixProgram(ProgramBase):
 
 
     def preexec_fn(self):
+        # IGNORE SIGHUP
+        # This the chalmers managing process will catch the SIGHUP
+        # and kill the child
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
+
+        new_mask = self.data.get('umask')
+        user = self.data.get('user')
+
+        if new_mask:
+            os.umask(new_mask)
+
+        if user:
+            if isinstance(user, int):
+                user = pwd.getpwuid(user)
+            else:
+                user = pwd.getpwnam(user)
+
+            os.setegid(user.pw_gid)
+            os.seteuid(user.pw_uid)
 
 
     def _send_signal(self, pid, sig):

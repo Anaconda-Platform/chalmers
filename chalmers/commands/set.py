@@ -1,26 +1,45 @@
 '''
 Set a definition variable for a program
 
-To update a programs environment 
-run:
+To update a programs environment or start configuration
+ 
+Example - to change the signal used by 'chalmers stop' to shut down a process:
+
+    chalmers set server1 stopsignal=SIGINT
+
+Example - to change an environment variable:
 
     chalmers set server1 env.PORT=5000
     
+
 Common Config values:
 
   * startsecs: The time in seconds that the program is assumed to be starting up
     If the program exits before this time it is considered to be spinning
   * startretries: The number or times to launch a spinning program
   * stopwaitsecs: Wait this long
-  * exitcodes: A list of exit codes that are accepted as a successfull exit 
+  * exitcodes: A list of exit codes that are accepted as a successful exit 
   * stopsignal: The signal to sent to terminate the program. May be an int or string
     eg: 'SIGTERM' or 15  
+  * cwd: Directory run the command in
+  
+
+Log file config values:
 
  * log_dir: The base directory to output logs
  * redirect_stderr: Direct stderr to the same log file as stdout
  * stdout: filename to pipe the program's stdout
  * stderr: filename to pipe the program's stderr
  * daemon_log: filename to pipe the programs conrol log 
+ * env.PYTHONUNBUFFERED: Set this value to 1 if you want are running a 
+   python program and want realtime logging 
+   See: https://docs.python.org/2/using/cmdline.html#envvar-PYTHONUNBUFFERED 
+
+Posix Only Config values:
+
+ * umask: Abbreviation of user mask: sets the file mode creation mask of the current process. 
+   See http://en.wikipedia.org/wiki/Umask
+ * user: User to run the program as. May be a username or UID. 
  
 '''
 from __future__ import unicode_literals, print_function

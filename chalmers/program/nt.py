@@ -37,13 +37,6 @@ class NTProgram(ProgramBase):
             return False
 
 
-    def handle_signals(self):
-        self._ignore_sigint = 0
-        #signal.signal(signal.SIGINT, self.sigint_handler)
-
-
-
-
     def start_as_service(self):
         """
         Run this program in a new background process
@@ -68,23 +61,38 @@ class NTProgram(ProgramBase):
                               startupinfo=startupinfo)
 
 
+    def handle_signals(self):
+        # Called before keep_alive
+
+        new_mask = self.data.get('umask')
+        if new_mask:
+            log.warning("Config var 'umask' will be ignored on win32")
+
+        user = self.data.get('user')
+
+        if user:
+            raise errors.ChalmersError("Can not yet run as program as a user on win32")
+
+
     def dispatch_bg(self):
         raise errors.ChalmersError("Can not yet move a win32 process to the background")
 
     def _send_signal(self, pid, sig):
-        # Kill the proces using ctypes and pid
-        
+        'Kill the process using ctypes and pid'
+
         import ctypes
 
         if sig == signal.SIGINT:
-             self._ignore_sigint = 0 
-             SetConsoleCtrlHandler(sigint_handler, True)
-             res = ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid)
-             return
+            self._ignore_sigint = 0
+            # Set the handler so the main thread of this process does not catch it
+            # sigint_handler removes itself once caught
+            SetConsoleCtrlHandler(sigint_handler, True)
+            res = ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid)
+            return
 
         if sig != signal.SIGTERM:
-            log.error("Can not kill process with signal %s on windows. Using SIGTERM (%i)" % (sig, signal.SIGTERM) )
-        
+            log.error("Can not kill process with signal %s on windows. Using SIGTERM (%i)" % (sig, signal.SIGTERM))
+
         PROCESS_TERMINATE = 1
         handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, pid)
         ctypes.windll.kernel32.TerminateProcess(handle, -1)
