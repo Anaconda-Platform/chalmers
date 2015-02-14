@@ -56,7 +56,8 @@ class EventDispatcher(object):
                 self._listener = Listener(self.addr, family=self.FAMILY)
             except socket.error as err:
                 if err.errno == 48:
-                    raise errors.ChalmersError("Unix socket '%s' appears to be in use. Please stop this program." % self.addr)
+                    msg = "Unix socket '%s' appears to be in use. Please stop this program."
+                    raise errors.ChalmersError(msg % self.addr)
                 else:
                     raise
         return self._listener

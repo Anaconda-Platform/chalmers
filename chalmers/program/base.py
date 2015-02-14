@@ -28,6 +28,12 @@ from chalmers.utils.kill_tree import kill_tree
 
 log = logging.getLogger(__name__)
 
+
+def safe_makedir(filepath):
+    dirname = os.path.dirname(filepath)
+    if not os.path.isdir(dirname):
+        os.makedirs(dirname)
+
 def str_replace(data):
     """
     String substitution of `data` dict
@@ -130,6 +136,7 @@ class ProgramBase(EventDispatcher):
         if not isinstance(stopsignal, int):
             log.warning("Stopsignal %s is not a valid signal for this platform" % stopsignal)
             log.warning("Signal SIGTERM (%s) will be used" % signal.SIGTERM)
+            return signal.SIGTERM
         return stopsignal
 
     @classmethod
@@ -262,15 +269,21 @@ class ProgramBase(EventDispatcher):
     def setup_output(self):
         if self.pipe_output:
             self.data['redirect_stderr'] = True
-
         if self.data['redirect_stderr']:
             stderr = STDOUT
-        else:
+        elif self.data.get('stderr'):
+            safe_makedir(self.data['stderr'])
             stderr = open(self.data['stderr'], 'a+', 0)
             stderr.seek(0, os.SEEK_END)
+        else:
+            stderr = None
 
-        stdout = open(self.data['stdout'], 'a+', 0)
-        stdout.seek(0, os.SEEK_END)
+        if self.data.get('stdout'):
+            safe_makedir(self.data['stdout'])
+            stdout = open(self.data['stdout'], 'a+', 0)
+            stdout.seek(0, os.SEEK_END)
+        else:
+            stdout = None
 
         if self.pipe_output:
             self._echo = FileEcho(self.data['stdout'], sys.stdout)
@@ -357,11 +370,11 @@ class ProgramBase(EventDispatcher):
                 if self._terminating:
                     reason = "Terminated at user request"
                     status = None
+                elif status in self.data['exitcodes']:
+                    reason = "Program exited gracefully"
                 elif uptime < self.data['startsecs']:
                     reason = 'Program did not successfully start'
                     startretries -= 1
-                elif status in self.data['exitcodes']:
-                    reason = "Program exited gracefully"
                 else:
                     reason = "Program exited unexpectedly with code %s" % (status)
                     startretries = initial_startretries
@@ -371,7 +384,6 @@ class ProgramBase(EventDispatcher):
 
                 if self._terminating:
                     break
-
                 if status in self.data['exitcodes']:
                     break
 
@@ -404,10 +416,11 @@ class ProgramBase(EventDispatcher):
 
         if self.is_running:
             return 'RUNNING'
-        elif self.is_paused:
-            return 'PAUSED'
         elif self.is_ok:
-            return 'STOPPED'
+            if self.is_paused:
+                return 'PAUSED'
+            else:
+                return 'STOPPED'
         else:
             return 'ERROR'
 

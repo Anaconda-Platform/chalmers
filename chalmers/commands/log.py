@@ -27,7 +27,7 @@ def main(args):
 
         logfile = prog.data.get(args.logfile)
     else:
-        logfile = os.path.join(config.dirs.user_log_dir, 'chalmers.log')
+        logfile = config.main_logfile()
 
 
     if args.showfile:

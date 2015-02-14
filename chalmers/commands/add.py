@@ -10,41 +10,18 @@ or:
 '''
 from __future__ import unicode_literals, print_function
 
-import logging
-from os import path
-import os
-
-from chalmers import errors
-from chalmers import config
-from chalmers.program import Program
 from argparse import RawDescriptionHelpFormatter
+import logging
+import os
 import shlex
 
+from chalmers import errors
+from chalmers.program import Program
 
 log = logging.getLogger('chalmers.add')
 
-def main(args):
-    if args.cmd and args.command:
-        raise errors.ChalmersError('Unknow arguments %r' % args.command)
-    elif not (args.cmd or args.command):
-        raise errors.ChalmersError('Must specify a command to add')
-    if args.cmd:
-        args.command = args.cmd
+def create_definition(args):
 
-    program_dir = path.join(config.dirs.user_data_dir, 'programs')
-
-    if not args.name:
-        args.name = args.command[0]
-
-    if not path.isdir(program_dir):
-        os.makedirs(program_dir)
-
-    program_defn = path.join(program_dir, '{args.name}.yaml'.format(args=args))
-    if path.isfile(program_defn):
-        raise errors.ChalmersError("Program with name '{args.name}' already exists.  \n"
-                                   "Use the -n/--name option to change the name or \n"
-                                   "Run 'chalmers remove {args.name}' to remove it \n"
-                                   "or 'chalmers set' to update the parameters".format(args=args))
     env = {}
     for env_var in args.save_env:
         if env_var in os.environ:
@@ -71,20 +48,40 @@ def main(args):
     if args.stderr is not None:
         definition['stderr'] = args.stderr
 
-    state = {'paused': args.paused}
 
-    prog = Program.create(args.name, definition, state)
-    prog.state._store()
+def main(args):
+    if args.cmd and args.command:
+        raise errors.ChalmersError('Unknow arguments %r' % args.command)
+    elif not (args.cmd or args.command):
+        raise errors.ChalmersError('Must specify a command to add')
+    if args.cmd:
+        args.command = args.cmd
+
+    if not args.name:
+        args.name = args.command[0]
+
+    program = Program(args.name)
+
+    if program.exists():
+        raise errors.ChalmersError("Program with name '{args.name}' already exists.  \n"
+                                   "Use the -n/--name option to change the name or \n"
+                                   "Run 'chalmers remove {args.name}' to remove it \n"
+                                   "or 'chalmers set' to update the parameters".format(args=args))
+
+    state = {'paused': args.paused}
+    definition = create_definition(args)
+
+    program.raw_data.update(definition)
+    program.state.update(state)
 
     if not args.paused:
-        prog.pipe_output = not args.daemon
-        prog.start(daemon=args.daemon)
+        program.pipe_output = not args.daemon
+        program.start(daemon=args.daemon)
 
-    prog.raw_data._store()
     log.info('Added program {args.name}'.format(args=args))
 
 def add_parser(subparsers):
-    description = 'Add a command to run later'
+    description = 'Add a command to run'
     parser = subparsers.add_parser('add',
                                    help=description, description=description,
                                    epilog=__doc__,

@@ -14,6 +14,9 @@ class PersistentDict(dict):
     def filename(self):
         return self._filename
 
+    def exists(self):
+        return os.path.exists(self._filename)
+
     def reload(self):
         self._load()
         self._store()

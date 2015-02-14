@@ -4,10 +4,10 @@ from __future__ import unicode_literals, print_function
 
 from argparse import RawDescriptionHelpFormatter
 import logging
-
-from chalmers.program import Program
 import sys
+
 from chalmers import errors
+from chalmers.program import Program
 
 
 log = logging.getLogger('chalmers.remove')
@@ -22,11 +22,11 @@ def main(args):
         try:
             prog.delete()
         except errors.ChalmersError as err:
-            print("[ERROR ] {0}".format(err.message))
+            print("[{=ERROR!c:red} ] {0}".format(err.message))
             continue
 
 
-        print("[  OK  ]")
+        print("[  {=OK!c:green}  ]")
 
 def add_parser(subparsers):
 

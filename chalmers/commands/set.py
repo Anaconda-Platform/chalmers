@@ -44,12 +44,12 @@ Posix Only Config values:
 '''
 from __future__ import unicode_literals, print_function
 
+from argparse import RawDescriptionHelpFormatter
 import logging
 
+from chalmers import errors
 from chalmers.program import Program
 from chalmers.utils import try_eval, set_nested_key
-from chalmers import errors
-from argparse import RawDescriptionHelpFormatter
 
 
 log = logging.getLogger('chalmers.set')

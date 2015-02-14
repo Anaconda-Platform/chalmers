@@ -10,6 +10,7 @@ for example:
 '''
 from __future__ import unicode_literals, print_function
 
+from argparse import RawDescriptionHelpFormatter
 import logging
 import os
 import pipes
@@ -17,7 +18,6 @@ import subprocess
 
 from chalmers import errors
 from chalmers.program import Program
-from argparse import RawDescriptionHelpFormatter
 
 
 log = logging.getLogger('chalmers.edit')

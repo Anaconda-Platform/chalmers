@@ -4,6 +4,11 @@ import unittest
 
 from chalmers import config
 from chalmers.program.base import ProgramBase
+import signal
+from subprocess import Popen, check_call
+import os
+import mock
+from subprocess import Popen
 
 
 class TestProgram(ProgramBase):
@@ -13,7 +18,7 @@ class TestProgram(ProgramBase):
 
     @property
     def is_running(self):
-        pass
+        return getattr(self, '_test_is_running', False)
 
     def start_as_service(self):
         pass
@@ -40,6 +45,156 @@ class TestBase(unittest.TestCase):
                          u'daemon_log', u'exitcodes']
         self.assertEqual(p.data.keys(), expected_keys)
         self.assertEqual(p.state, {})
+
+    def test_stopsignal(self):
+        p = TestProgram('name')
+        self.addCleanup(p.delete)
+        self.assertEqual(p.stopsignal, signal.SIGTERM)
+
+        p.raw_data.update(stopsignal='foobar')
+        p.mk_data()
+        self.assertEqual(p.stopsignal, signal.SIGTERM)
+
+        p.raw_data.update(stopsignal='SIGINT')
+        p.mk_data()
+        self.assertEqual(p.stopsignal, signal.SIGINT)
+
+        p.raw_data.update(stopsignal=signal.SIGINT)
+        p.mk_data()
+        self.assertEqual(p.stopsignal, signal.SIGINT)
+
+    def test_is_ok(self):
+
+        p = TestProgram('name')
+        self.addCleanup(p.delete)
+
+        self.assertTrue(p.is_ok)
+        p.state.update(exit_status=None)
+        self.assertTrue(p.is_ok)
+
+        p.state.update(exit_status=0)
+        self.assertTrue(p.is_ok)
+
+        p.state.update(exit_status=1)
+        self.assertFalse(p.is_ok)
+
+    def test_text_status(self):
+
+        p = TestProgram('name')
+        self.addCleanup(lambda : (setattr(p, '_test_is_running', False), p.delete()))
+        self.assertEqual(p.text_status, 'STOPPED')
+
+        p.state.update(paused=True)
+        self.assertEqual(p.text_status, 'PAUSED')
+
+        p.state.update(exit_status=1)
+        self.assertEqual(p.text_status, 'ERROR')
+
+        p._test_is_running = True
+        self.assertEqual(p.text_status, 'RUNNING')
+
+    def test_setup_output(self):
+
+        p = TestProgram('name')
+
+        if os.path.isfile(p.data['stdout']):
+            os.unlink(p.data['stdout'])
+
+        with p.setup_output() as (out, err):
+            check_call(['echo', 'hello'], stdout=out, stderr=err)
+
+        with open(p.data['stdout']) as fd:
+            output = fd.read()
+
+        self.assertEqual(output.strip(), 'hello')
+
+        with p.setup_output() as (out, err):
+            check_call(['echo', 'hello'], stdout=out, stderr=err)
+
+        with open(p.data['stdout']) as fd:
+            output = fd.read()
+
+        self.assertEqual(output.split(), ['hello', 'hello'])
+
+    def test_keep_alive_bad_command(self):
+
+        p = TestProgram('name')
+
+        if os.path.isfile(p.data['stdout']):
+            os.unlink(p.data['stdout'])
+
+        p.raw_data.update(command=['bad_command'])
+        p.mk_data()
+
+        p.keep_alive()
+
+        self.assertEqual(p.state['child_pid'], None)
+        self.assertNotEqual(p.state['exit_status'], 0)
+        self.assertEqual(p.state['reason'], 'OSError running command "bad_command"')
+        self.assertEqual(p.text_status, 'ERROR')
+
+
+    def test_keep_alive_short(self):
+
+        p = TestProgram('name')
+
+        if os.path.isfile(p.data['stdout']):
+            os.unlink(p.data['stdout'])
+
+        p.raw_data.update(command=['echo', 'hi'])
+        p.mk_data()
+
+        p.keep_alive()
+
+        self.assertEqual(p.state['child_pid'], None)
+        self.assertEqual(p.state['exit_status'], 0)
+        self.assertEqual(p.state['reason'], 'Program exited gracefully')
+        self.assertEqual(p.text_status, 'STOPPED')
+
+    def test_keep_alive_short_errors(self):
+
+        p = TestProgram('name')
+
+        if os.path.isfile(p.data['stdout']):
+            os.unlink(p.data['stdout'])
+
+        p.raw_data.update(command=['echo', 'hi'], exitcodes=[99])
+        p.mk_data()
+
+        p.keep_alive()
+
+        self.assertEqual(p.state['child_pid'], None)
+        self.assertEqual(p.state['exit_status'], 0)
+        self.assertEqual(p.state['reason'], 'Program did not successfully start')
+        self.assertEqual(p.text_status, 'ERROR')
+
+    @mock.patch('chalmers.program.base.Popen')
+    def test_keep_alive_terminating(self, MockPopen):
+
+        p = TestProgram('name')
+
+        def side_effect(*args, **kwargs):
+            p._terminating = True
+            return Popen(*args, **kwargs)
+        MockPopen.side_effect = side_effect
+        if os.path.isfile(p.data['stdout']):
+            os.unlink(p.data['stdout'])
+
+        p.raw_data.update(command=['echo', 'hi'])
+        p.mk_data()
+
+        p.keep_alive()
+
+        self.assertEqual(p.state['child_pid'], None)
+        self.assertEqual(p.state['exit_status'], None)
+        self.assertEqual(p.state['reason'], 'Terminated at user request')
+        self.assertEqual(p.text_status, 'STOPPED')
+
+    def test_start_sync(self):
+
+        p = TestProgram('name')
+        p.keep_alive = lambda: None
+        p.start_sync()
 
 
 
