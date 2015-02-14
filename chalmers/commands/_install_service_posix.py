@@ -19,8 +19,10 @@ log = logging.getLogger('chalmers.reboot')
 def get_crontab():
     try:
         output = check_output(['crontab', '-l']).strip()
-    except CalledProcessError:
-        raise errors.ChalmersError("Could not read crontab")
+    except CalledProcessError as err:
+        if err.returncode != 1:
+            raise errors.ChalmersError("Could not read crontab")
+        return []
 
     return output.split('\n')
 

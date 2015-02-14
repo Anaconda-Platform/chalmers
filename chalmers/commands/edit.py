@@ -31,7 +31,7 @@ def main(args):
 
     prog = Program(args.name)
 
-    cmd = '%s %s' % (EDITOR, pipes.quote(prog.definition_filename))
+    cmd = '%s %s' % (EDITOR, pipes.quote(prog.raw_data.filename))
 
     print(cmd)
     if subprocess.call(cmd, shell=True):

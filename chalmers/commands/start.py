@@ -29,8 +29,19 @@ def main(args):
     else:
         programs = [Program(name) for name in args.names]
 
-    print("Starting programs %s" % ', '.join([p.name for p in programs]))
-    print()
+    already_running_programs = [p.name for p in programs if p.is_running]
+    if already_running_programs:
+
+        print("The programs '%s' are already running" % "', '".join(already_running_programs))
+
+    programs = [p for p in programs if not p.is_running]
+    if len(programs):
+        print("Starting programs %s" % ', '.join([p.name for p in programs]))
+        print()
+    else:
+        print("No programs to start")
+
+
     if args.daemon:
         for prog in programs:
             if not prog.is_running:

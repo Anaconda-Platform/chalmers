@@ -14,8 +14,8 @@ log = logging.getLogger('chalmers.show')
 def main(args):
 
     prog = Program(args.name)
-    print("Definition file:\n\t%s" % prog.definition_filename)
-    print("State file:\n\t%s" % prog.state_filename)
+    print("Definition file:\n\t%s" % prog.raw_data.filename)
+    print("State file:\n\t%s" % prog.state.filename)
     print('State')
     for key, value in prog.state.items():
         print("%12s: %s" % (key, value))

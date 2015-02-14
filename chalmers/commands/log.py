@@ -41,6 +41,10 @@ def main(args):
             log.warn("File '%s' does not exist" % logfile)
         return
 
+    if logfile is None:
+        log.warn("The logfile for key '%s' does not exist" % args.logfile)
+        return
+
     with open(logfile) as fd:
         if args.n:
             lines = fd.readlines()

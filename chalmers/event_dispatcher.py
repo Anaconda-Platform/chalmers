@@ -49,6 +49,8 @@ class EventDispatcher(object):
     def listener(self):
         "Return the multiprocessing Listener object"
         if self._listener is None:
+            if self.FAMILY == 'AF_UNIX' and os.path.exists(self.addr):
+                os.unlink(self.addr)
             try:
                 log.info("Listening to events from: %s" % self.addr)
                 self._listener = Listener(self.addr, family=self.FAMILY)

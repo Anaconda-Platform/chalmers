@@ -108,9 +108,10 @@ class ProgramBase(EventDispatcher):
         defn_filename = path.join(config.dirs.user_data_dir, 'programs', '%s.yaml' % self.name)
         state_filename = path.join(config.dirs.user_data_dir, 'state', '%s.yaml' % self.name)
 
-        self.raw_data = PersistentDict(defn_filename)
         self.state = PersistentDict(state_filename)
+        self.raw_data = PersistentDict(defn_filename)
         self.data = {}
+        self.mk_data()
 
         self._p0 = None
         self.pipe_output = False

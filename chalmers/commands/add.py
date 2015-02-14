@@ -74,13 +74,13 @@ def main(args):
     state = {'paused': args.paused}
 
     prog = Program.create(args.name, definition, state)
-    prog.save_state()
+    prog.state._store()
 
     if not args.paused:
         prog.pipe_output = not args.daemon
         prog.start(daemon=args.daemon)
 
-    prog.save()
+    prog.raw_data._store()
     log.info('Added program {args.name}'.format(args=args))
 
 def add_parser(subparsers):
