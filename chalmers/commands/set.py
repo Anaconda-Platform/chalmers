@@ -37,10 +37,10 @@ Log file config values:
 
 Posix Only Config values:
 
- * umask: Abbreviation of user mask: sets the file mode creation mask of the current process. 
+  * umask: Abbreviation of user mask: sets the file mode creation mask of the current process. 
    See http://en.wikipedia.org/wiki/Umask
- * user: User to run the program as. May be a username or UID. 
- 
+  * user: User to run the program as. May be a username or UID. This option is only valid when 
+    chalmers is run as the root user 
 '''
 from __future__ import unicode_literals, print_function
 

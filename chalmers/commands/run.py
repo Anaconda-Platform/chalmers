@@ -15,7 +15,7 @@ from os import path
 import os
 
 from chalmers import errors
-from chalmers.config import dirs
+from chalmers import config
 from chalmers.program import Program
 from argparse import RawDescriptionHelpFormatter
 import shlex
@@ -32,7 +32,7 @@ def main(args):
     if args.cmd:
         args.command = args.cmd
 
-    program_dir = path.join(dirs.user_data_dir, 'programs')
+    program_dir = path.join(config.dirs.user_data_dir, 'programs')
 
     if not args.name:
         args.name = args.command[0]

@@ -1,14 +1,5 @@
-import logging
-from logging.handlers import RotatingFileHandler
-import os
-
-from chalmers.config import dirs
-from chalmers.event_dispatcher import send_action
 from chalmers.program import Program
-from chalmers.program_manager import ProgramManager
 from chalmers.windows.service_base import WindowsService
-from clyent.logs import log_unhandled_exception
-import sys
 
 
 class ChalmersService(WindowsService):

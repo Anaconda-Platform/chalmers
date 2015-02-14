@@ -39,10 +39,11 @@ def main(args):
     print("Process is now a background process")
 
 def add_parser(subparsers):
+    description = 'Allow a service to run in the background'
     parser = subparsers.add_parser('bg',
-                                      help='Allow a service to run in the background',
-                                      description=__doc__,
-                                      formatter_class=RawDescriptionHelpFormatter)
+                                   help=description, description=description,
+                                   epilog=__doc__,
+                                   formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('name')
     parser.set_defaults(main=main)

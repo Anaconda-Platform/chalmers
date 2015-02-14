@@ -9,7 +9,7 @@ import os
 
 import yaml
 
-from chalmers.config import dirs
+from chalmers import config
 from chalmers.utils.definition import make_definition
 
 
@@ -24,7 +24,7 @@ def main(args):
     programs = {k['program']['name']:k['program'] for k in import_data if 'program' in k}
 
     for group in groups.values():
-        group_dir = path.join(dirs.user_data_dir, 'groups')
+        group_dir = path.join(config.dirs.user_data_dir, 'groups')
         if not path.isdir(group_dir): os.makedirs(group_dir)
 
         group_path = path.join(group_dir, '%s.yaml' % group['name'])
@@ -34,7 +34,7 @@ def main(args):
 
     for program in programs.values():
         program = make_definition(program)
-        program_dir = path.join(dirs.user_data_dir, 'programs')
+        program_dir = path.join(config.dirs.user_data_dir, 'programs')
         if not path.isdir(program_dir): os.makedirs(program_dir)
 
         program_path = path.join(program_dir, '%s.yaml' % program['name'])

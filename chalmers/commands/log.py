@@ -4,7 +4,8 @@ Show log output of program:
 To show the chalmers program control log, run:
 
     chalmers log server1 -3
- 
+
+
 '''
 from __future__ import unicode_literals, print_function
 
@@ -13,8 +14,8 @@ import logging
 import os
 import sys
 import time
-from chalmers.config import dirs
 
+from chalmers import config
 from chalmers.program import Program
 
 
@@ -26,7 +27,7 @@ def main(args):
 
         logfile = prog.data.get(args.logfile)
     else:
-        logfile = os.path.join(dirs.user_log_dir, 'chalmers.log')
+        logfile = os.path.join(config.dirs.user_log_dir, 'chalmers.log')
 
 
     if args.showfile:

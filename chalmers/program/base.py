@@ -4,24 +4,26 @@ Chalmers program object
 from __future__ import absolute_import, unicode_literals, print_function
 
 import abc
+from contextlib import contextmanager
 from glob import glob
 import logging
-from threading import Lock, Event
 from os import path
 import os
 import signal
 from subprocess import Popen, STDOUT
+import sys
+from threading import Event
 import time
 
+import psutil
 import yaml
 
+from chalmers import config
 from chalmers import errors
-from chalmers.config import dirs
 from chalmers.event_dispatcher import EventDispatcher, send_action
-import sys
-import psutil
 from chalmers.utils.file_echo import FileEcho
-from contextlib import contextmanager
+from chalmers.utils.persistent_dict import PersistentDict
+from chalmers.utils.kill_tree import kill_tree
 
 
 log = logging.getLogger(__name__)
@@ -51,16 +53,17 @@ class ProgramBase(EventDispatcher):
                 ['stdout', 'stderr', 'daemon_log', 'redirect_stderr']),
                ('Process Controll',
                 ['retries', 'exitcodes', 'stopwaitsecs',
-                 'stopsignal', 'startsecs' ])
+                 'stopsignal', 'startsecs', 'cwd' ])
               ]
-
-    DEFAULTS = {
+    @property
+    def default_data(self):
+        return {
                 'startretries': 3,
                 'exitcodes': [0],
                 'startsecs': 3,
                 'stopwaitsecs': 10,
                 'stopsignal': signal.SIGTERM,
-                'log_dir': dirs.user_log_dir,
+                'log_dir': config.dirs.user_log_dir,
 
                 'redirect_stderr': True,
                 'stdout': '{log_dir}/{name}.stdout.log',
@@ -68,82 +71,54 @@ class ProgramBase(EventDispatcher):
                 'daemon_log': '{log_dir}/{name}.daemon.log',
                 }
 
+    #===============================================================================
+    # Abstract Properties
+    #===============================================================================
+
     @abc.abstractproperty
     def is_running(self): pass
 
+    @abc.abstractmethod
+    def _send_signal(self, pid, signal):
+        pass
+
+    @abc.abstractmethod
     def start_as_service(self):
         """
         Run this program in a new background process
         
         chalmers manager must be running
         """
-        from ..program_manager import ProgramManager
-        send_action(ProgramManager.NAME, 'start', self.name)
+        pass
 
-    @property
-    def definition_filename(self):
-        'The file name where the run defn is stored in'
-        return path.join(dirs.user_data_dir, 'programs', '%s.yaml' % self.name)
-
-    @property
-    def state_filename(self):
-        'The file name where current program state is stored'
-        return path.join(dirs.user_data_dir, 'state', '%s.yaml' % self.name)
-
-    @property
-    def lock_filename(self):
-        'The file name where current program state is stored'
-        return path.join(dirs.user_data_dir, 'lock', '%s' % self.name)
+    def handle_signals(self):
+        '''
+        Can optionally override to handle signals
+        '''
+        pass
 
     preexec_fn = None
 
     def __init__(self, name, load=True):
         self._name = name
 
-        lock_dir = path.dirname(self.lock_filename)
-
-        if not path.isdir(lock_dir):
-            os.makedirs(lock_dir)
-
-        self.file_lock = Lock()
-
         EventDispatcher.__init__(self)
         self.finished_event = Event()
 
-        self.raw_data = {}
+        defn_filename = path.join(config.dirs.user_data_dir, 'programs', '%s.yaml' % self.name)
+        state_filename = path.join(config.dirs.user_data_dir, 'state', '%s.yaml' % self.name)
+
+        self.raw_data = PersistentDict(defn_filename)
+        self.state = PersistentDict(state_filename)
         self.data = {}
-        self.state = {}
+
         self._p0 = None
-        if load:
-            self.reload()
-            self.reload_state()
+        self.pipe_output = False
 
-        self._pipe_output = False
-
-
-    @property
-    def pipe_output(self):
-        return self._pipe_output
-
-    @pipe_output.setter
-    def pipe_output(self, value):
-        self._pipe_output = value
 
     @property
     def name(self):
         return self._name
-
-    @classmethod
-    def create(cls, name, defn, state=None):
-        """
-        Create a new program object
-        """
-        prog = cls(name, False)
-        prog.raw_data = defn
-        prog.state = state or {}
-        prog.mk_data()
-
-        return prog
 
     @property
     def stopsignal(self):
@@ -156,72 +131,13 @@ class ProgramBase(EventDispatcher):
             log.warning("Signal SIGTERM (%s) will be used" % signal.SIGTERM)
         return stopsignal
 
-    def save(self):
-        """
-        Save the program definition to file
-        """
-        defn_dir = path.dirname(self.definition_filename)
-
-        if not path.isdir(defn_dir):
-            os.makedirs(defn_dir)
-
-        # Force check of stopsignal
-        self.stopsignal
-
-        with open(self.definition_filename, 'w') as df:
-            yaml.safe_dump(self.raw_data, df, default_flow_style=False)
-
-    def save_state(self):
-        """
-        Save the program state to file
-        """
-        state_dir = path.dirname(self.state_filename)
-
-        if not path.isdir(state_dir):
-            os.makedirs(state_dir)
-
-        with open(self.state_filename, 'w') as df:
-            log.debug("Saving state of program %s to %s" % (self.name, self.state_filename))
-            yaml.safe_dump(self.state, df, default_flow_style=False)
-
-    def reload_state(self):
-        """
-        Replace the state in memory with the state in the state file
-        """
-
-        log.debug("Reload state from file %s" % self.state_filename)
-        if path.isfile(self.state_filename):
-            with open(self.state_filename) as sf:
-                self.state = yaml.safe_load(sf)
-
-                if self.state is None:
-                    log.debug("Statefile returned none")
-        else:
-            log.debug("Statefile does not exist")
-            self.state = {}
-
-    def reload(self):
-        """
-        Replace the program definition in memory with the definition 
-        from the defn file
-        """
-
-        if not path.isfile(self.definition_filename):
-            msg = "Program %s does not exist (no definition file %s)"
-            raise errors.ProgramNotFound(msg % (self.name, self.definition_filename))
-
-        with open(self.definition_filename) as df:
-            self.raw_data = yaml.safe_load(df)
-
-        self.mk_data()
-
     @classmethod
     def load_template(cls, template_name):
         """
         Load a template from file
         """
 
-        template_path = path.join(dirs.user_data_dir, 'template', '%s.yaml' % template_name)
+        template_path = path.join(config.dirs.user_data_dir, 'template', '%s.yaml' % template_name)
 
         if not path.isfile(template_path):
             return {}
@@ -234,9 +150,10 @@ class ProgramBase(EventDispatcher):
         Transform the 'raw_data' from the definition into
         the used data
         """
-        self.data = self.DEFAULTS.copy()
+        self.data = self.default_data.copy()
 
         raw_data = self.raw_data or {}
+
         if 'name' not in raw_data:
             raw_data['name'] = self.name
 
@@ -246,7 +163,6 @@ class ProgramBase(EventDispatcher):
 
         self.data.update(raw_data)
 
-
         str_replace(self.data)
 
         if self.data.get('redirect_stderr'):
@@ -255,23 +171,6 @@ class ProgramBase(EventDispatcher):
     @property
     def is_paused(self):
         return self.state.get('paused')
-
-
-    def update_definition(self, *E, **F):
-        'Update the program definition'
-        with self.file_lock:
-            self.reload()
-            self.raw_data.update(*E, **F)
-            self.save()
-
-    def update_state(self, *E, **F):
-        'Update the program state'
-        with self.file_lock:
-
-            self.reload_state()
-            self.state.update(*E, **F)
-            log.debug("Update state with info: %r" % dict(*E, **F))
-            self.save_state()
 
     def start(self, daemon=True):
         """
@@ -298,14 +197,14 @@ class ProgramBase(EventDispatcher):
 
         self.start_listener()
 
-        self.update_state(pid=os.getpid())
+        self.state.update(pid=os.getpid())
 
         try:
             self.keep_alive()
         except errors.StopProcess:
             self._stop()
         finally:
-            self.update_state(pid=None, stop_time=time.time())
+            self.state.update(pid=None, stop_time=time.time())
             self.finished_event.set()
             self._running = False
             if self._listener:
@@ -330,8 +229,6 @@ class ProgramBase(EventDispatcher):
             for child in children:
                 if child.is_running():
                     child.kill()
-
-
 
     def _stop(self):
         """
@@ -359,17 +256,6 @@ class ProgramBase(EventDispatcher):
 
         return children
 
-#         log.info('Stop Process Requested')
-#         self._terminating = True
-#         if self._p0:
-#             log.info('Sending signal %s to process %s' % (stopsignal, self._p0.pid))
-#             kill_tree(self._p0.pid, stopsignal)
-#         elif self._p0 is None:
-#             raise errors.ChalmersError("This process did not start this program, can not call _terminate")
-
-    @abc.abstractmethod
-    def _send_signal(self, pid, signal):
-        pass
 
     @contextmanager
     def setup_output(self):
@@ -396,9 +282,6 @@ class ProgramBase(EventDispatcher):
         finally:
             if self._echo:
                 self._echo.stop()
-
-    def handle_signals(self):
-        pass
 
     def keep_alive(self):
         """
@@ -434,19 +317,19 @@ class ProgramBase(EventDispatcher):
                                      preexec_fn=self.preexec_fn)
                 except OSError as err:
                     log.exception('Program %s could not be started with popen' % self.name)
-                    self.update_state(child_pid=None, exit_status=1,
+                    self.state.update(child_pid=None, exit_status=1,
                                       reason='OSError running command "%s"' % self.data['command'][0])
                     return
                 except:
                     log.exception('Exception in keep_alive')
-                    self.update_state(child_pid=None, exit_status=1,
+                    self.steate.update(child_pid=None, exit_status=1,
                                       reason='There was an unknown exception opening command (check logs)')
                     return
 
 
 
                 log.info('Program started with pid %s' % self._p0.pid)
-                self.update_state(child_pid=self._p0.pid, reason=None, exit_status=None,
+                self.state.update(child_pid=self._p0.pid, reason=None, exit_status=None,
                                   start_time=time.time())
 
                 try:
@@ -454,12 +337,12 @@ class ProgramBase(EventDispatcher):
                 except KeyboardInterrupt:
                     log.error('Program %s was interrupted by user' % self.name)
                     kill_tree(self._p0.pid)
-                    self.update_state(child_pid=None, exit_status=None, reason='Interrupted by user')
+                    self.state.update(child_pid=None, exit_status=None, reason='Interrupted by user')
                     raise
                 except BaseException as err:
                     log.error('Program %s was interrupted' % self.name)
                     kill_tree(self._p0.pid)
-                    self.update_state(child_pid=None, exit_status=None, reason='Python BaseException')
+                    self.state.update(child_pid=None, exit_status=None, reason='Python BaseException')
                     log.exception(err)
                     raise
 
@@ -482,7 +365,7 @@ class ProgramBase(EventDispatcher):
                     reason = "Program exited unexpectedly with code %s" % (status)
                     startretries = initial_startretries
 
-                self.update_state(child_pid=None, exit_status=status,
+                self.state.update(child_pid=None, exit_status=status,
                                   reason=reason)
 
                 if self._terminating:
@@ -500,37 +383,8 @@ class ProgramBase(EventDispatcher):
         if self.is_running:
             raise errors.ChalmersError("Can not remove running program (must be stopped)")
 
-        if path.isfile(self.definition_filename):
-            os.unlink(self.definition_filename)
-
-        if path.isfile(self.state_filename):
-            os.unlink(self.state_filename)
-
-
-    @classmethod
-    def find_for_user(cls):
-        'Find all programs this user has defined'
-        program_glob = path.join(dirs.user_data_dir, 'programs', '*.yaml')
-        for filename in glob(program_glob):
-            basename = path.basename(filename)
-            name = path.splitext(basename)[0]
-            yield cls(name)
-
-
-    @classmethod
-    def start_all(cls, start_paused=False):
-        'Start all user defined programs'
-        log.info("Starting all programs")
-
-        for prog in cls.find_for_user():
-            if not start_paused and prog.is_paused:
-                log.info(" - Program %s is paused" % prog.name)
-            elif not prog.is_running:
-                log.info(" + Starting program %s" % prog.name)
-                prog.start(daemon=True)
-            else:
-                log.info(" - Programs %s is already running" % prog.name)
-
+        self.state.delete()
+        self.raw_data.delete()
 
     @property
     def is_ok(self):
@@ -593,36 +447,63 @@ class ProgramBase(EventDispatcher):
             print("Program %s is already stopped" % self.name)
 
         print("Starting program %s ... " % self.name, end=''); sys.stdout.flush()
-        self.reload_state()
+        self.state.reload()
         self.start()
         print("restarted")
 
     def wait_for_start(self):
+        """
+        Wait for program to start, 
+        returns True if the program started successfully
+        """
         time.sleep(.5)
-        self.reload_state()
+        self.state.reload()
         startsecs = self.data['startsecs']
         st = time.time()
         while time.time() - self.state.get('start_time', st) < startsecs:
             time.sleep(1)
-            self.reload_state()
+            self.state.reload()
 
         return not self.is_ok
 
+    #===============================================================================
+    # Class methods
+    #===============================================================================
+
+    @classmethod
+    def create(cls, name, defn, state=None):
+        """
+        Create a new program object
+        """
+        prog = cls(name, False)
+        prog.raw_data.update(defn)
+        prog.state.update(state or {})
+        prog.mk_data()
+
+        return prog
+
+    @classmethod
+    def find_for_user(cls):
+        'Find all programs this user has defined'
+        program_glob = path.join(config.dirs.user_data_dir, 'programs', '*.yaml')
+        for filename in glob(program_glob):
+            basename = path.basename(filename)
+            name = path.splitext(basename)[0]
+            yield cls(name)
 
 
-def kill_tree(pid):
-    'Kill all processes and child processes'
+    @classmethod
+    def start_all(cls, start_paused=False):
+        'Start all user defined programs'
+        log.info("Starting all programs")
 
-    try:
-        parent = psutil.Process(pid)
-    except psutil.NoSuchProcess:
-        log.error("NoSuchProcess pid=%s" % pid)
-        return
+        for prog in cls.find_for_user():
+            if not start_paused and prog.is_paused:
+                log.info(" - Program %s is paused" % prog.name)
+            elif not prog.is_running:
+                log.info(" + Starting program %s" % prog.name)
+                prog.start(daemon=True)
+            else:
+                log.info(" - Programs %s is already running" % prog.name)
 
-    children = parent.get_children(recursive=True)
 
-    parent.kill()
-
-    for child in children:
-        if child.is_running():
-            child.kill()

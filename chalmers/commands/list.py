@@ -15,6 +15,9 @@ import logging
 import time
 
 from chalmers.program import Program
+import sys
+import os
+import yaml
 
 
 log = logging.getLogger(__name__)
@@ -22,7 +25,8 @@ log = logging.getLogger(__name__)
 def sort_key(prog):
     return prog.text_status, prog.name
 
-def main(args):
+
+def list_loaded(args):
 
     programs = sorted(Program.find_for_user(), key=sort_key)
 
@@ -37,7 +41,7 @@ def main(args):
             ctx = (prog.data['name'][:24], prog.text_status,
                    prog.state.get('child_pid'),
                    td,
-                )
+                   )
 
             print('%-25s %-15s pid %-6s, uptime %s' % ctx)
         else:
@@ -62,10 +66,34 @@ def main(args):
         print('No programs added')
 
 
-def add_parser(subparsers):
-    parser = subparsers.add_parser('list',
-                                      help='List registered programs',
-                                      description=__doc__,
-                                      formatter_class=RawDescriptionHelpFormatter)
+def list_stashed(args):
 
+    locations = [os.path.join(sys.prefix, 'etc', 'chalmers'),
+                 os.path.join('/', 'etc', 'chalmers')]
+    for location in locations:
+        if not os.path.isdir(location):
+            continue
+        print(location)
+        for filename in os.listdir(location):
+            filepath = os.path.join(location, filename)
+            print(filepath)
+            print(yaml.load(open(filepath)))
+
+
+def main(args):
+    if args.stashed:
+        list_stashed(args)
+    else:
+        list_loaded(args)
+
+def add_parser(subparsers):
+    description = 'List registered programs'
+    parser = subparsers.add_parser('list',
+                                   help=description, description=description,
+                                   epilog=__doc__,
+                                   formatter_class=RawDescriptionHelpFormatter)
+
+    parser.add_argument('--stashed', action='store_true')
     parser.set_defaults(main=main)
+
+

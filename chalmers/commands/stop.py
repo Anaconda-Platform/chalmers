@@ -37,7 +37,7 @@ def main(args):
             else:
                 print_colors("[  {=OK!c:green}  ]")
         else:
-            print_colors("Program is already stopped: %-25s " % prog.name[:25], "[{=ERROR!c:red} ]")
+            print_colors("Program is already stopped: %-25s " % prog.name[:25], "[{=STOPPED!c:yello} ]")
 
 def pause_main(args):
 

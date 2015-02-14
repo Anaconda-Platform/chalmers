@@ -6,7 +6,7 @@ import socket
 from threading import Thread
 
 from chalmers import errors
-from chalmers.config import dirs
+from chalmers import config
 
 
 log = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def get_addr(name):
     if os.name == 'nt':
         return r'\\.\pipe\chalmers:%s' % name
     else:
-        socdir = os.path.join(dirs.user_data_dir, 'sockets')
+        socdir = os.path.join(config.dirs.user_data_dir, 'sockets')
         if not os.path.isdir(socdir):
             os.makedirs(socdir)
         sock_path = os.path.join(socdir, '%s' % name).encode()
@@ -82,7 +82,7 @@ class EventDispatcher(object):
         'return the pid of this process'
         return os.getpid()
 
-    @property 
+    @property
     def is_listening(self):
         return self._running
 
@@ -119,13 +119,11 @@ class EventDispatcher(object):
                     except Exception as err:
                         log.exception(err)
                         c.send({'error':True, 'message':'Exception in action %s - %s' % (action, err)})
-                        raise
                     else:
                         c.send({'error':False, 'message':'ok', 'result': result})
                 else:
                     log.warn('No action %s' % action)
                     c.send({'error':True, 'message':'No action %s' % action})
-                    pass
                 c.close()
         finally:
             self._listener = None
