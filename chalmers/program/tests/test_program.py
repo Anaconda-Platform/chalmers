@@ -1,14 +1,14 @@
+import os
 from os.path import join
+import signal
+from subprocess import check_call, Popen
 import tempfile
 import unittest
 
+import mock
+
 from chalmers import config
 from chalmers.program.base import ProgramBase
-import signal
-from subprocess import Popen, check_call
-import os
-import mock
-from subprocess import Popen
 
 
 class TestProgram(ProgramBase):
@@ -176,6 +176,7 @@ class TestBase(unittest.TestCase):
         def side_effect(*args, **kwargs):
             p._terminating = True
             return Popen(*args, **kwargs)
+
         MockPopen.side_effect = side_effect
         if os.path.isfile(p.data['stdout']):
             os.unlink(p.data['stdout'])

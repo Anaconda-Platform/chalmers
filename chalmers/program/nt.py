@@ -41,7 +41,7 @@ class NTProgram(ProgramBase):
         """
         Run this program in a new background process
 
-        posix only
+        windows only
         """
 
         startupinfo = subprocess.STARTUPINFO()

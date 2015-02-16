@@ -1,5 +1,6 @@
 '''
 '''
+from __future__ import print_function, unicode_literals
 from yaml import safe_load
 import logging
 from pprint import pformat
@@ -35,13 +36,13 @@ def pformat2(value):
     return sep.join(pvalue)
 
 
-def print_opts(category, data, opts):
+def print_opts(category, data, opts, file=None):
     'Print all options from dict "data" that are in "category"'
     if not any(opt in data for opt in opts):
         return
-    log.info('\n%s' % category)
-    log.info('-' * len(category))
+    print('\n%s' % category, file=file)
+    print('-' * len(category), file=file)
     for opt in opts:
         if opt in data:
             value = data.pop(opt)
-            print("%12s: %s" % (opt, pformat2(value)))
+            print("%12s: %s" % (opt, pformat2(value)), file=file)
