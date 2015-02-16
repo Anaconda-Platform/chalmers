@@ -37,7 +37,7 @@ def main(args):
     programs = [p for p in programs if not p.is_running]
     if len(programs):
         print("Starting programs %s" % ', '.join([p.name for p in programs]))
-        print()
+        print("")
     else:
         print("No programs to start")
 

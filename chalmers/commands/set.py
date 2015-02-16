@@ -74,12 +74,11 @@ def main(args):
             raise errors.ChalmersError("Can not set program name")
 
         set_nested_key(proc.raw_data, key, value)
-        log.info("Set '%s' to %r for program %s" % (key, value, args.name))
+        print("Set '%s' to %r for program %s" % (key, value, args.name))
 
-    proc.mk_data()
-    proc.save()
+    proc.raw_data._store()
 
-    log.info("done")
+    print("done")
 
 
 def add_parser(subparsers):

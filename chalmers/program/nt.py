@@ -94,6 +94,7 @@ class NTProgram(ProgramBase):
             log.error("Can not kill process with signal %s on windows. Using SIGTERM (%i)" % (sig, signal.SIGTERM))
 
         PROCESS_TERMINATE = 1
+        ExitCode = -1
         handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, pid)
-        ctypes.windll.kernel32.TerminateProcess(handle, -1)
+        ctypes.windll.kernel32.TerminateProcess(handle, ExitCode)
         ctypes.windll.kernel32.CloseHandle(handle)

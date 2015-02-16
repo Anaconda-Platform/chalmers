@@ -8,6 +8,7 @@ import sys
 
 from chalmers import errors
 from chalmers.program import Program
+from clyent.logs.colors.printer import print_colors
 
 
 log = logging.getLogger('chalmers.remove')
@@ -16,17 +17,20 @@ def main(args):
 
     programs = [Program(name) for name in args.names]
     for prog in programs:
+        if not prog.exists():
+            print("Program '{0}' does not exist".format(prog.name))
+            continue
 
         print("Removing program {0!s:25} ... ".format(name[:25]), end=''); sys.stdout.flush()
 
         try:
             prog.delete()
         except errors.ChalmersError as err:
-            print("[{=ERROR!c:red} ] {0}".format(err.message))
+            print_colors("[{=ERROR!c:red} ] {0}".format(err.message), stream=sys.stdout)
             continue
 
 
-        print("[  {=OK!c:green}  ]")
+        print_colors("[  {=OK!c:green}  ]", stream=sys.stdout)
 
 def add_parser(subparsers):
 

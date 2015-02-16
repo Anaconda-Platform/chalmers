@@ -1,0 +1,142 @@
+import io
+from logging import StreamHandler
+import os
+import shutil
+import unittest
+
+import mock
+
+from chalmers import config, errors
+from chalmers.scripts import chalmers_main
+import logging
+import yaml
+
+
+class ChalmersCli(object):
+    def __init__(self):
+        self.script = chalmers_main.__file__
+        if self.script.endswith('.pyc') or self.script.endswith('.pyo'):
+            self.script = self.script[:-1]
+        self.env = os.environ.copy()
+        self.root = 'test_config'
+        self.env['CHALMERS_ROOT'] = self.root
+        config.set_relative_dirs(self.root)
+
+        logging.getLogger('cli-logger').addHandler(logging.NullHandler())
+
+
+    def __getattr__(self, subcommand):
+
+        def run_subcommand(*args):
+            cmd = ['-q', '--no-color', subcommand]
+            cmd.extend(args)
+
+            out = io.StringIO()
+
+            log = logging.getLogger('chalmers')
+            log.setLevel(logging.ERROR)
+            del log.handlers[:]
+
+            with mock.patch('sys.stdout', out), mock.patch('chalmers.scripts.chalmers_main.setup_logging'):
+                chalmers_main.main(cmd, False)
+
+            return out.getvalue()
+
+        return run_subcommand
+
+
+class Test(unittest.TestCase):
+
+    def setUp(self):
+        self.cli = ChalmersCli()
+        if os.path.isdir(self.cli.root):
+            shutil.rmtree(self.cli.root)
+        unittest.TestCase.setUp(self)
+
+    def tearDown(self):
+        if os.path.isdir(self.cli.root):
+            shutil.rmtree(self.cli.root)
+        unittest.TestCase.tearDown(self)
+
+    def test_add_show(self):
+        self.cli.add('echo', 'hi')
+        self.assertEqual(self.cli.show('echo', '--cmd').strip(), 'echo hi')
+        self.assertEqual(self.cli.show('echo', '--cmd').strip(), 'echo hi')
+
+
+    def test_cant_add_twice(self):
+        self.cli.add('echo', 'hi')
+        with self.assertRaises(errors.ChalmersError):
+            self.cli.add('echo', 'hi')
+
+    def test_add_remove(self):
+        self.cli.add('echo', 'hi')
+        self.cli.remove('echo')
+
+    def test_cant_remove_non_existent(self):
+
+        out = self.cli.remove('echo')
+        self.assertEqual(out.strip(), "Program 'echo' does not exist")
+
+
+    def test_list_no_programs(self):
+
+        out = self.cli.list()
+        self.assertEqual(out.strip(), "No programs added")
+
+    def test_list(self):
+
+        out = self.cli.add('echo', 'hi')
+        out = self.cli.list()
+        self.assertEqual(out.split(), ['echo', 'PAUSED'])
+
+    def test_pause(self):
+
+        out = self.cli.add('echo', 'hi')
+
+        out = self.cli.list()
+        self.assertEqual(out.split(), ['echo', 'PAUSED'])
+
+        out = self.cli.unpause('echo')
+
+        out = self.cli.list()
+        self.assertEqual(out.split(), ['echo', 'STOPPED'])
+
+        out = self.cli.pause('echo')
+
+        out = self.cli.list()
+        self.assertEqual(out.split(), ['echo', 'PAUSED'])
+
+    def test_show(self):
+
+        self.cli.add('echo', 'hi')
+        out = self.cli.show('echo')
+
+    def test_set(self):
+
+        self.cli.add('echo', 'hi')
+        out = self.cli.set('echo', 'x=1')
+        self.assertEqual(out.strip(), "Set 'x' to 1 for program echo\ndone")
+        out = self.cli.show('echo', '--def')
+        data = yaml.load(open(out.strip()))
+
+        self.assertEqual(data['x'], 1)
+
+    def test_start(self):
+
+        print self.cli.add('echo', 'This is the output')
+        out = self.cli.start('echo', '-w')
+        self.assertIn('This is the output', out)
+
+    def test_log(self):
+
+        print self.cli.add('echo', 'This is the output')
+        out = self.cli.start('echo', '-w')
+        self.assertIn('This is the output', out)
+
+        self.assertEqual(self.cli.log('echo').strip(), 'This is the output')
+
+
+if __name__ == "__main__":
+    # import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()

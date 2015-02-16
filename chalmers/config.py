@@ -13,3 +13,8 @@ def set_relative_dirs(root):
 
 def main_logfile():
     os.path.join(dirs.user_log_dir, 'chalmers.log')
+
+# Set the root config and log dirs from an environment variable
+if os.environ.get('CHALMERS_ROOT'):
+    CHALMERS_ROOT = os.environ['CHALMERS_ROOT']
+    set_relative_dirs(CHALMERS_ROOT)

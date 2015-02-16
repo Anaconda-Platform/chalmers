@@ -48,6 +48,8 @@ def create_definition(args):
     if args.stderr is not None:
         definition['stderr'] = args.stderr
 
+    return definition
+
 
 def main(args):
     if args.cmd and args.command:

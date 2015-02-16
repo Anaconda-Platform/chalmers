@@ -2,6 +2,9 @@ from threading import Thread
 import os
 import time
 
+import logging
+log = logging.getLogger(__name__)
+
 class FileEcho(Thread):
 
     def __init__(self, filename, stream):
@@ -22,9 +25,12 @@ class FileEcho(Thread):
         while self._running:
             if self.pos <= os.fstat(self.fd.fileno()).st_size:
                 self.fd.seek(self.pos)
-                data = self.fd.read()
+                data = self.fd.read().decode('utf-8')
                 self.pos = self.fd.tell()
-                self.stream.write(data)
+                try:
+                    self.stream.write(data)
+                except TypeError as err:
+                    log.exception(err)
             else:
                 time.sleep(1)
 

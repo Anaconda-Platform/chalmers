@@ -122,6 +122,8 @@ class ProgramBase(EventDispatcher):
         self._p0 = None
         self.pipe_output = False
 
+    def exists(self):
+        return self.raw_data.exists()
 
     @property
     def name(self):
@@ -426,6 +428,7 @@ class ProgramBase(EventDispatcher):
 
     def log_to_daemonlog(self):
         logger = logging.getLogger('chalmers')
+        safe_makedir(self.data['daemon_log'])
         self._log_stream = open(self.data['daemon_log'], 'a', 1)
         self._log_stream.seek(0, 2)
         hdlr = logging.StreamHandler(self._log_stream)
