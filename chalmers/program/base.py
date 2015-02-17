@@ -222,6 +222,8 @@ class ProgramBase(EventDispatcher):
                     send_action(self.name, 'exitloop')
                 except:
                     pass
+            if 'daemon_log' in self.data:
+                self.stop_daemonlog()
 
 
     def dispatch_terminate(self, timeout=None):
@@ -298,6 +300,11 @@ class ProgramBase(EventDispatcher):
         finally:
             if self._echo:
                 self._echo.stop()
+                
+            if hasattr(stdout, 'close'):
+                stdout.close()
+            if hasattr(stderr, 'close'):
+                stdout.close()
 
     def keep_alive(self):
         """
@@ -431,13 +438,18 @@ class ProgramBase(EventDispatcher):
         safe_makedir(self.data['daemon_log'])
         self._log_stream = open(self.data['daemon_log'], 'a', 1)
         self._log_stream.seek(0, 2)
-        hdlr = logging.StreamHandler(self._log_stream)
+        self._daemonlog_hdlr = hdlr = logging.StreamHandler(self._log_stream)
         hdlr.setLevel(logging.INFO)
         fmt = logging.Formatter("[%(asctime)s] %(levelname)s:%(message)s")
         hdlr.setFormatter(fmt)
         logger.setLevel(logging.INFO)
         logger.addHandler(hdlr)
 
+    def stop_daemonlog(self):
+
+        logger = logging.getLogger('chalmers')
+        logger.removeHandler(self._daemonlog_hdlr)
+        self._log_stream.close()
 
 
     def stop(self):

@@ -5,8 +5,10 @@ import unittest
 
 from chalmers import config
 
-from chalmers.program.posix import PosixProgram
+if os.name == 'posix':
+    from chalmers.program.posix import PosixProgram
 
+@unittest.skipUnless(os.name == 'posix', 'Theses tests only run on posix systems')
 class TestPosix(unittest.TestCase):
 
     def setUp(self):
