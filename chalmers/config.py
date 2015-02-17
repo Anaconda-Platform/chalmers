@@ -12,7 +12,7 @@ def set_relative_dirs(root):
     dirs = appdirs.RelativeAppDirs(root)
 
 def main_logfile():
-    os.path.join(dirs.user_log_dir, 'chalmers.log')
+    return os.path.join(dirs.user_log_dir, 'chalmers.log')
 
 # Set the root config and log dirs from an environment variable
 if os.environ.get('CHALMERS_ROOT'):
