@@ -16,5 +16,5 @@ def main_logfile():
 
 # Set the root config and log dirs from an environment variable
 if os.environ.get('CHALMERS_ROOT'):
-    CHALMERS_ROOT = os.environ['CHALMERS_ROOT']
+    CHALMERS_ROOT = os.path.abspath(os.environ['CHALMERS_ROOT'])
     set_relative_dirs(CHALMERS_ROOT)
