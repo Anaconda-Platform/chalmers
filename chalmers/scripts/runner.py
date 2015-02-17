@@ -11,6 +11,7 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument('--root', help='chalmers root config directory')
+    parser.add_argument('name', help='name of program to run')
     args = parser.parse_args()
 
     if args.root:
@@ -19,9 +20,8 @@ def main():
 
     logfile = config.main_logfile()
     setup_logging(logger, logging.INFO, use_color=False, logfile=logfile, show_tb=True)
-    name = sys.argv[1]
-    cli_logger.error("Starting program: %s" % name)
-    prog = Program(name)
+    cli_logger.error("Starting program: %s" % args.name)
+    prog = Program(args.name)
     prog.start_sync()
 
 if __name__ == '__main__':
