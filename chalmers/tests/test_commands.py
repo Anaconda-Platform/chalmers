@@ -1,15 +1,14 @@
 import io
-from logging import StreamHandler
+import logging
 import os
 import shutil
 import unittest
 
 import mock
+import yaml
 
 from chalmers import config, errors
 from chalmers.scripts import chalmers_main
-import logging
-import yaml
 
 
 class ChalmersCli(object):

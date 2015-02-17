@@ -300,9 +300,10 @@ class ProgramBase(EventDispatcher):
         finally:
             if self._echo:
                 self._echo.stop()
-                
+
             if hasattr(stdout, 'close'):
                 stdout.close()
+
             if hasattr(stderr, 'close'):
                 stdout.close()
 
