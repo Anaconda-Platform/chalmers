@@ -28,6 +28,7 @@ def main(args):
         logfile = prog.data.get(args.logfile)
     else:
         logfile = config.main_logfile()
+        prog = None
 
 
     if args.showfile:
@@ -58,7 +59,7 @@ def main(args):
         else:
             sys.stdout.write(fd.read())
 
-        while args.append:
+        while args.append and (not prog or prog and prog.is_running):
             pos = fd.tell()
             if pos < os.fstat(fd.fileno()).st_size:
                 fd.seek(pos)
