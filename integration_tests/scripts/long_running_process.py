@@ -1,13 +1,14 @@
 import time
 import sys
-
+import os
 
 def main():
 
-    print 'This is LRP'
+    print 'This is LRP', os.getpid()
     print 'OK'
     sys.stdout.flush()
-    time.sleep(10)
+    for i in range(20):
+	    time.sleep(1)
     print 'LRP is done now'
     sys.stdout.flush()
 
