@@ -1,17 +1,11 @@
-import io
-import logging
 import os
 import shutil
-from subprocess import Popen, check_output, PIPE, CalledProcessError
+from subprocess import check_output
 import sys
+import time
 import unittest
 
-import mock
-import yaml
-
-from chalmers import config, errors
 from chalmers.scripts import chalmers_main
-import time
 
 class ChalmersCli(object):
     def __init__(self):
@@ -31,7 +25,7 @@ class ChalmersCli(object):
 
             print "> chalmers", subcommand, " ".join(args)
             out = check_output(cmd, env=self.env)
-            
+
             print "   || " + "\n   || ".join(out.splitlines())
             print
             return out
