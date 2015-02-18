@@ -64,7 +64,8 @@ class NTProgram(ProgramBase):
         creationflags = subprocess.CREATE_NEW_CONSOLE | subprocess.CREATE_NEW_PROCESS_GROUP
         p0 = subprocess.Popen(cmd,
                               creationflags=creationflags,
-                              startupinfo=startupinfo)
+                              startupinfo=startupinfo,
+                              close_fds=True)
 
 
     def handle_signals(self):
