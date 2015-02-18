@@ -29,8 +29,12 @@ class ChalmersCli(object):
             cmd = [sys.executable, self.script, '-q', '--no-color', subcommand]
             cmd.extend(args)
 
-            return check_output(cmd, env=self.env)
+            print "> chalmers", subcommand, " ".join(args)
+            out = check_output(cmd, env=self.env)
             
+            print "   || " + "\n   || ".join(out.splitlines())
+            print
+            return out
         return run_subcommand
 
 
@@ -49,81 +53,58 @@ class Test(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
     def test_simple(self):
-        print 'Add echo'
         self.cli.add('echo', 'hi')
-        print 'Start'
         self.cli.start('echo', wait=False)
         time.sleep(1)
-        print 'Log'
         self.cli.log('echo', '-f')
-        print 'Done'
 
     def test_long_running_process(self):
         print 'Add Long running process'
         script = script_path('long_running_process.py')
-        print self.cli.add('-n', 'lrp', sys.executable, script)
-        print 'Start'
-        print self.cli.start('lrp')
-        print 'list'
+        self.cli.add('-n', 'lrp', sys.executable, script)
+        self.cli.start('lrp')
         out = self.cli.list()
-        print out
         self.assertIn('RUNNING', out)
 
-        print self.cli.stop('lrp')
-        print 'log'
+        self.cli.stop('lrp')
         out = self.cli.log('lrp')
-        print out
         self.assertIn('This is LRP', out)
 
         out = self.cli.list()
-        print out
         self.assertIn('PAUSED', out)
 
-        print 'Done'
+        print '> done'
 
 
     def test_sigint(self):
-        print 'Add Long running process'
+        print 'Test Sigint'
         script = script_path('long_running_process.py')
-        print self.cli.add('-n', 'lrp', sys.executable, script)
-        print self.cli.set('lrp', 'stopsignal=SIGINT')
-        print '>start'
-        print self.cli.start('lrp')
-        print '>list'
+        self.cli.add('-n', 'lrp', sys.executable, script)
+        self.cli.set('lrp', 'stopsignal=SIGINT')
+        self.cli.start('lrp')
         out = self.cli.list()
-        print out
         self.assertIn('RUNNING', out)
-        print '>stop'
-        print self.cli.stop('lrp')
-        print '>log'
+        self.cli.stop('lrp')
         out = self.cli.log('lrp')
-        print out
         self.assertIn('This is LRP', out)
-        print '>list'
+        self.assertIn('KeyboardInterrupt', out)
         out = self.cli.list()
-        print out
         self.assertIn('PAUSED', out)
 
-        print '>done'
+        print '> done'
 
     def test_spinning_process(self):
         'Add Long Spinning process'
         script = script_path('spinning_process.py')
-        print self.cli.add('-n', 'spinner', sys.executable, script)
-        print 'Start'
-        print self.cli.start('spinner')
+        self.cli.add('-n', 'spinner', sys.executable, script)
+        self.cli.start('spinner')
 
-        print 'log'
         out = self.cli.log('spinner')
-        print out
         self.assertEqual(out.count('This is Spinning'), 3)
-        print 'Done'
-
         out = self.cli.list()
-        print out
         self.assertIn('ERROR', out)
         self.assertIn('Program did not successfully start', out)
-
+        print "> done"
 
 
 
