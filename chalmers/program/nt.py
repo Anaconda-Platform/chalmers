@@ -13,10 +13,6 @@ from chalmers import errors
 
 from .base import ProgramBase
 
-def sigint_handler(signum, frame=None):
-    log.warn("Program received signal %s ignoring" % (signum))
-    SetConsoleCtrlHandler(sigint_handler, False)
-
 log = logging.getLogger(__name__)
 
 class NTProgram(ProgramBase):
@@ -88,13 +84,9 @@ class NTProgram(ProgramBase):
         'Kill the process using ctypes and pid'
 
         import ctypes
-
+        log.error("Send Signal pid=%s sig=%s SIGINT=%s" % (pid, sig, signal.SIGINT))
         if sig == signal.SIGINT:
-            self._ignore_sigint = 0
-            # Set the handler so the main thread of this process does not catch it
-            # sigint_handler removes itself once caught
-            SetConsoleCtrlHandler(sigint_handler, True)
-            res = ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, pid)
+            os.kill(signal.CTRL_C_EVENT, 0)
             return
 
         if sig != signal.SIGTERM:
