@@ -55,9 +55,15 @@ class NTProgram(ProgramBase):
         if script.endswith('.pyc') or script.endswith('.pyo'):
             script = script[:-1]
 
-        cmd = [sys.executable, script, self.name]
+        cmd = [sys.executable, script]
+
+        if 'CHALMERS_ROOT' in os.environ:
+            cmd.extend(['--root', os.environ['CHALMERS_ROOT']])
+
+        cmd.append(self.name)
+        creationflags = subprocess.CREATE_NEW_CONSOLE | subprocess.CREATE_NEW_PROCESS_GROUP
         p0 = subprocess.Popen(cmd,
-                              creationflags=subprocess.CREATE_NEW_CONSOLE,
+                              creationflags=creationflags,
                               startupinfo=startupinfo)
 
 
