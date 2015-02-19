@@ -1,15 +1,22 @@
-import sys
-from chalmers.program import Program
-import logging
-from clyent.logs import setup_logging
-from chalmers import config
+"""
+Chalmers program manager (for windows)
+"""
+
 from argparse import ArgumentParser
+import logging
+
+from clyent.logs import setup_logging
+
+from chalmers import config
+from chalmers.program import Program
+
+
 logger = logging.getLogger('chalmers')
 cli_logger = logging.getLogger('cli-logger')
 
 def main():
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(description=__doc__)
     parser.add_argument('--root', help='chalmers root config directory')
     parser.add_argument('name', help='name of program to run')
     args = parser.parse_args()
