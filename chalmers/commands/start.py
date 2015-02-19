@@ -48,7 +48,7 @@ def main(args):
                 prog.start(args.daemon)
 
         for prog in programs:
-            print("Starting program %-25s ... " % (prog.name[:25]), end='')
+            print("Checking status of program %-25s ... " % (prog.name[:25]), end='')
             sys.stdout.flush()
             err = prog.wait_for_start()
             if err:
@@ -73,10 +73,14 @@ def restart_main(args):
         programs = [prog for prog in programs if not prog.is_paused]
     else:
         programs = [Program(name) for name in args.names]
+
     if not (args.all or args.names):
         raise errors.ChalmersError("Must specify at least one program to restart")
 
-    if len(programs) == 0:
+    if len(programs):
+        print("Restarting programs %s" % ', '.join([p.name for p in programs]))
+        print("")
+    else:
         log.warn("No programs to restart")
         return
 
@@ -99,7 +103,7 @@ def restart_main(args):
         prog.start()
 
     for prog in programs:
-        print("Starting program %-25s ... " % (prog.name[:25]), end='')
+        print("Checking status of program %-25s ... " % (prog.name[:25]), end='')
         sys.stdout.flush()
         err = prog.wait_for_start()
         if err:
