@@ -44,5 +44,5 @@ def print_opts(category, data, opts, file=None):
     print('-' * len(category), file=file)
     for opt in opts:
         if opt in data:
-            value = data.pop(opt)
+            value = data.get(opt)
             print("%12s: %s" % (opt, pformat2(value)), file=file)

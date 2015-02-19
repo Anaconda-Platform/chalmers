@@ -1,6 +1,7 @@
 import logging
 
 from chalmers.program import Program
+import sys
 
 
 log = logging.getLogger(__name__)
@@ -34,6 +35,15 @@ def select_programs(args, filter_paused=True):
             programs = [prog for prog in programs if not prog.is_paused]
     else:
         programs = [Program(name) for name in args.names]
+
+    erorrs = 0
+    for program in programs:
+        if not program.exists():
+            erorrs += 1
+            log.error("Program '%s' does not exist" % program.name)
+    if erorrs:
+        raise SystemExit(1)
+
     return list(programs)
 
 def filter_programs(programs, filt, title, name, have_filter_paused=True):
@@ -56,3 +66,22 @@ def filter_programs(programs, filt, title, name, have_filter_paused=True):
         raise SystemExit(0)
 
     return programs
+
+
+def bool_input(prompt, default=True):
+    """
+    Wait for bool input
+    """
+    default_str = '[Y|n]' if default else '[y|N]'
+    while 1:
+        inpt = input('%s %s: ' % (prompt, default_str))
+        if inpt.lower() in ['y', 'yes'] and not default:
+            return True
+        elif inpt.lower() in ['', 'n', 'no'] and not default:
+            return False
+        elif inpt.lower() in ['', 'y', 'yes']:
+            return True
+        elif inpt.lower() in ['n', 'no']:
+            return False
+        else:
+            sys.stderr.write('please enter yes or no\n')
