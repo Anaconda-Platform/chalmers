@@ -12,6 +12,8 @@ class ProgramNotFound(ChalmersError):
 class StateError(ChalmersError):
     pass
 
+class ConnectionError(ChalmersError):
+    pass
 
 class ShowHelp(object):
     pass

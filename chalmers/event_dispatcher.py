@@ -149,7 +149,7 @@ def send_action(name, action, *args, **kwargs):
     try:
         c = Client(addr, family=EventDispatcher.FAMILY)
     except (socket.error, WindowsError):
-        raise errors.ChalmersError("Could not connect to chalmers program %s" % name)
+        raise errors.ConnectionError("Could not connect to chalmers program %s" % name)
 
     try:
         c.send({'action': action, 'args':args, 'kwargs':kwargs})
