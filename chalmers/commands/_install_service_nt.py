@@ -1,17 +1,21 @@
 """
 Install windows services
 """
+from contextlib import contextmanager
 import getpass
 import logging
+from subprocess import Popen
+
+from win32com.shell import shell
+from win32serviceutil import RemoveService, StopService
 
 from chalmers import errors
 from chalmers.event_dispatcher import send_action
+from chalmers.program_manager import ProgramManager
+from chalmers.utils.cli import bool_input
 from chalmers.windows.install import get_service_name, is_installed, is_running
 from chalmers.windows.install import instart
-from win32com.shell import shell
-from win32serviceutil import RemoveService, StopService
-from chalmers.program_manager import ProgramManager
-from subprocess import Popen
+
 
 log = logging.getLogger(__name__)
 
@@ -19,20 +23,6 @@ try:
     input = raw_input
 except NameError:
     pass
-def bool_input(prompt, default=True):
-        default_str = '[Y|n]' if default else '[y|N]'
-        while 1:
-            inpt = input('%s %s: ' % (prompt, default_str))
-            if inpt.lower() in ['y', 'yes'] and not default:
-                return True
-            elif inpt.lower() in ['', 'n', 'no'] and not default:
-                return False
-            elif inpt.lower() in ['', 'y', 'yes']:
-                return True
-            elif inpt.lower() in ['n', 'no']:
-                return False
-            else:
-                sys.stderr.write('please enter yes or no\n')
 
 def run_as_admin(args, cmd):
 
@@ -53,7 +43,6 @@ def run_as_admin(args, cmd):
     if p0.wait():
         raise errors.ChalmersError("Command 'runas' did not complete successfully")
 
-from contextlib import contextmanager
 
 @contextmanager
 def wait_for_input(args):
