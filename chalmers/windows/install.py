@@ -1,14 +1,14 @@
 import getpass
 import logging
+import os
 from os.path import abspath
 import sys
 
+from pywintypes import error as Win32Error
+import win32api, win32serviceutil, win32service
+
 from chalmers import errors
 from chalmers.scripts import service as service_script
-import win32api, win32serviceutil, win32service
-from pywintypes import error as Win32Error
-import os
-
 
 log = logging.getLogger(__name__)
 
