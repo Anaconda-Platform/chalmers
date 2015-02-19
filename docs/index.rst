@@ -30,7 +30,7 @@ Running chalmers on system boot
  
 ::
 
-    chalmers install-service
+    chalmers service install
 
 
 Adding a Program
@@ -38,12 +38,12 @@ Adding a Program
 
 ::
 
-    chalmers run -- sleep 10
+    chalmers add -- sleep 10
+    chalmers start sleep
 
 
 Check the program status
 -------------------------
-
 
 ::
 
