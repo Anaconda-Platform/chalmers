@@ -10,12 +10,10 @@ import os
 import yaml
 
 from chalmers import config, errors
-from chalmers.utils.definition import make_definition
 from chalmers.program import Program
 
 
 log = logging.getLogger('chalmers.import')
-
 
 
 def main(args):
@@ -44,16 +42,6 @@ def main(args):
 
         prog.raw_data.update(defn)
         prog.mk_data()
-        print(prog.data)
-#         program = make_definition(program)
-#         program_dir = path.join(config.dirs.user_data_dir, 'programs')
-#         if not path.isdir(program_dir): os.makedirs(program_dir)
-#
-#         program_path = path.join(program_dir, '%s.yaml' % program['name'])
-#         log.info("Writing program %s to %s" % (program['name'], program_path))
-
-#         with open(program_path, 'w') as pf:
-#             yaml.safe_dump(program, pf, default_flow_style=False)
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('import',
