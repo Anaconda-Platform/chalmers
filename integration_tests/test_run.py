@@ -1,3 +1,5 @@
+from __future__ import print_function, unicode_literals
+
 import os
 import shutil
 from subprocess import check_output
@@ -6,6 +8,7 @@ import time
 import unittest
 
 from chalmers.scripts import chalmers_main
+
 
 class ChalmersCli(object):
     def __init__(self):
@@ -23,11 +26,14 @@ class ChalmersCli(object):
             cmd = [sys.executable, self.script, '-q', '--no-color', subcommand]
             cmd.extend(args)
 
-            print "> chalmers", subcommand, " ".join(args)
+            print("> chalmers", subcommand, " ".join(args))
             out = check_output(cmd, env=self.env)
 
-            print "   || " + "\n   || ".join(out.splitlines())
-            print
+            if isinstance(out, bytes):
+                out = out.decode()
+
+            print("   || " + "\n   || ".join(out.splitlines()))
+            print("")
             return out
         return run_subcommand
 
@@ -53,7 +59,7 @@ class Test(unittest.TestCase):
         self.cli.log('echo', '-f')
 
     def test_long_running_process(self):
-        print 'Add Long running process'
+        print('Add Long running process')
         script = script_path('long_running_process.py')
         self.cli.add('-n', 'lrp', sys.executable, script)
         self.cli.start('lrp')
@@ -67,11 +73,11 @@ class Test(unittest.TestCase):
         out = self.cli.list()
         self.assertIn('PAUSED', out)
 
-        print '> done'
+        print('> done')
 
 
     def test_sigint(self):
-        print 'Test Sigint'
+        print('Test Sigint')
         script = script_path('long_running_process.py')
         self.cli.add('-n', 'lrp', sys.executable, script)
         self.cli.set('lrp', 'stopsignal=SIGINT')
@@ -85,7 +91,7 @@ class Test(unittest.TestCase):
         out = self.cli.list()
         self.assertIn('PAUSED', out)
 
-        print '> done'
+        print('> done')
 
     def test_spinning_process(self):
         'Add Long Spinning process'
@@ -98,7 +104,7 @@ class Test(unittest.TestCase):
         out = self.cli.list()
         self.assertIn('ERROR', out)
         self.assertIn('Program did not successfully start', out)
-        print "> done"
+        print("> done")
 
 
 
