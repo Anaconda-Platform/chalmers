@@ -453,7 +453,7 @@ class ProgramBase(EventDispatcher):
         self._log_stream.close()
 
 
-    def stop(self):
+    def stop(self, force=False):
         """
         Stop this program
         """
@@ -461,7 +461,21 @@ class ProgramBase(EventDispatcher):
         if not self.is_running:
             raise errors.StateError("Program is not running")
 
-        send_action(self.name, 'terminate', timeout=self.data['stopwaitsecs'])
+        if force:
+            if self.state.get('pid'):
+                log.debug("Force killing chalmers monitor process pid=%s" % self.state.get('pid'))
+                try:
+                    kill_tree(self.state.get('pid'))
+                except psutil.NoSuchProcess:
+                    pass
+            if self.state.get('child_pid'):
+                log.debug("Force killing chalmers child process pid=%s" % self.state.get('child_pid'))
+                try:
+                    kill_tree(self.state.get('child_pid'))
+                except psutil.NoSuchProcess:
+                    pass
+        else:
+            send_action(self.name, 'terminate', timeout=self.data['stopwaitsecs'])
 
 
     def restart(self):

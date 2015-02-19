@@ -65,9 +65,9 @@ class PosixProgram(ProgramBase):
                 log.warn("Error: %s" % err)
 
 
-    def stop(self):
+    def stop(self, force=False):
         try:
-            ProgramBase.stop(self)
+            ProgramBase.stop(self, force=force)
         finally:
             self.clear_socket()
 
