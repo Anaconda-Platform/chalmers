@@ -40,10 +40,11 @@ class TestBase(unittest.TestCase):
     def test_create(self):
         p = TestProgram.create('name', {})
         self.addCleanup(p.delete)
-        expected_keys = [u'stdout', u'redirect_stderr', u'stopwaitsecs', u'startsecs',
+        expected_keys = {u'stdout', u'redirect_stderr', u'stopwaitsecs', u'startsecs',
                          u'stopsignal', u'name', u'log_dir', u'startretries',
-                         u'daemon_log', u'exitcodes']
-        self.assertEqual(p.data.keys(), expected_keys)
+                         u'daemon_log', u'exitcodes'}
+
+        self.assertEqual(set(p.data.keys()), expected_keys)
         self.assertEqual(p.state, {})
 
     def test_stopsignal(self):

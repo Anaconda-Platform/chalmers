@@ -1,3 +1,4 @@
+from __future__ import print_function, unicode_literals
 import io
 import logging
 import os
@@ -74,8 +75,13 @@ class Test(unittest.TestCase):
 
     def test_cant_remove_non_existent(self):
 
-        out = self.cli.remove('echo')
-        self.assertEqual(out.strip(), "Program 'echo' does not exist")
+        with self.assertRaises(SystemExit):
+            self.cli.remove('echo')
+
+    def test_cant_start_non_existent(self):
+
+        with self.assertRaises(SystemExit):
+            self.cli.start('echo')
 
 
     def test_list_no_programs(self):
@@ -117,19 +123,20 @@ class Test(unittest.TestCase):
         out = self.cli.set('echo', 'x=1')
         self.assertEqual(out.strip(), "Set 'x' to 1 for program echo\ndone")
         out = self.cli.show('echo', '--def')
-        data = yaml.load(open(out.strip()))
+        with open(out.strip()) as fd:
+            data = yaml.load(fd)
 
         self.assertEqual(data['x'], 1)
 
     def test_start(self):
 
-        print self.cli.add('echo', 'This is the output')
+        self.cli.add('echo', 'This is the output')
         out = self.cli.start('echo', '-w')
         self.assertIn('This is the output', out)
 
     def test_log(self):
 
-        print self.cli.add('echo', 'This is the output')
+        self.cli.add('echo', 'This is the output')
         out = self.cli.start('echo', '-w')
         self.assertIn('This is the output', out)
 

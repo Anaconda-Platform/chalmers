@@ -70,7 +70,7 @@ def unpause_main(args):
         log.info("Unpausing program %s" % (prog.name))
         prog.state.update(paused=False)
         if not prog.is_running:
-            log.warn("%s is not running and will start on next system boot" % (prog.name))
+            log.warning("%s is not running and will start on next system boot" % (prog.name))
 
 
 def add_parser(subparsers):

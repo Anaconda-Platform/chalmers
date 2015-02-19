@@ -25,7 +25,7 @@ class ProgramManager(EventDispatcher):
 
     NAME = 'chalmers_manager'
 
-    COLOR_CODES = range(40, 48) + [100, 102, 104, 105, 106]
+    COLOR_CODES = list(range(40, 48)) + [100, 102, 104, 105, 106]
     random.shuffle(COLOR_CODES)
 
     def __init__(self, exit_on_first_failure=False, use_color=None, setup_logging=True):

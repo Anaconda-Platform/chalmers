@@ -28,6 +28,17 @@ from chalmers.utils.kill_tree import kill_tree
 
 log = logging.getLogger(__name__)
 
+# Python 3
+try:
+    unicode
+except NameError:
+    unicode = str
+
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 def safe_makedir(filepath):
     dirname = os.path.dirname(filepath)
@@ -277,14 +288,14 @@ class ProgramBase(EventDispatcher):
             stderr = STDOUT
         elif self.data.get('stderr'):
             safe_makedir(self.data['stderr'])
-            stderr = open(self.data['stderr'], 'a+', 0)
+            stderr = open(self.data['stderr'], 'a+', 1)
             stderr.seek(0, os.SEEK_END)
         else:
             stderr = None
 
         if self.data.get('stdout'):
             safe_makedir(self.data['stdout'])
-            stdout = open(self.data['stdout'], 'a+', 0)
+            stdout = open(self.data['stdout'], 'a+', 1)
             stdout.seek(0, os.SEEK_END)
         else:
             stdout = None
@@ -333,7 +344,6 @@ class ProgramBase(EventDispatcher):
                 log.info("Setting Environment: \n%s" % env_str)
                 log.info("Setting Working Directory: %s" % cwd)
                 log.info("Running Command: %s" % ' '.join(self.data['command']))
-
                 try:
                     self._p0 = Popen(self.data['command'],
                                      stdout=stdout, stderr=stderr,

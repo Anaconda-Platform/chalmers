@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import abc
 import logging
 from multiprocessing.connection import Listener, Client
@@ -7,6 +9,7 @@ from threading import Thread
 
 from chalmers import errors
 from chalmers import config
+import sys
 
 
 log = logging.getLogger(__name__)
@@ -15,6 +18,11 @@ try:
     WindowsError
 except NameError:
     WindowsError = SystemError
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 def get_addr(name):
     """
@@ -30,7 +38,12 @@ def get_addr(name):
         socdir = os.path.join(config.dirs.user_data_dir, 'sockets')
         if not os.path.isdir(socdir):
             os.makedirs(socdir)
-        sock_path = os.path.join(socdir, '%s' % name).encode()
+
+        sock_path = os.path.join(socdir, '%s' % name)
+
+        if sys.version_info.major < 3:
+            sock_path = sock_path.encode()
+
         return sock_path
 
 class EventDispatcher(object):

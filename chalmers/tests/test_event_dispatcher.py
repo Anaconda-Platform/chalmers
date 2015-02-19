@@ -16,7 +16,7 @@ class TestEventDispatcher(EventDispatcher):
         self.foo = value
 
     def dispatch_error(self, value):
-        raise Exception("This sucks!")
+        raise Exception("Expected dispatch error")
 
 class Test(unittest.TestCase):
 
