@@ -17,7 +17,7 @@ def stop_process(signum, frame):
     """
     Signal handler to raise StopProcess exception
     """
-    log.debug("Process recieved signal %s" % signum)
+    log.debug("Process received signal %s" % signum)
     raise errors.StopProcess()
 
 class PosixProgram(ProgramBase):
