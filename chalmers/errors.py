@@ -4,7 +4,9 @@ Chalmers error classes
 from clyent.errors import ClyentError
 
 class ChalmersError(ClyentError):
-    pass
+    def __init__(self, *args, **kwargs):
+        self.message = args[0] if args else None
+        ClyentError.__init__(self, *args, **kwargs)
 
 class ProgramNotFound(ChalmersError):
     pass
