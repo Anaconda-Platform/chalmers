@@ -9,8 +9,9 @@ import os
 
 import yaml
 
-from chalmers import config
+from chalmers import config, errors
 from chalmers.utils.definition import make_definition
+from chalmers.program import Program
 
 
 log = logging.getLogger('chalmers.import')
@@ -32,16 +33,27 @@ def main(args):
         with open(group_path, 'w') as gf:
             yaml.safe_dump(group, gf, default_flow_style=False)
 
-    for program in programs.values():
-        program = make_definition(program)
-        program_dir = path.join(config.dirs.user_data_dir, 'programs')
-        if not path.isdir(program_dir): os.makedirs(program_dir)
+    for defn in programs.values():
+        if 'name' not in defn:
+            raise errors.ChalmersError("Import definition requires a name field")
 
-        program_path = path.join(program_dir, '%s.yaml' % program['name'])
-        log.info("Writing program %s to %s" % (program['name'], program_path))
+        prog = Program(defn['name'])
+        if prog.exists():
+            log.warn("Program '%s' already exists, not importing" % defn['name'])
+            continue
 
-        with open(program_path, 'w') as pf:
-            yaml.safe_dump(program, pf, default_flow_style=False)
+        prog.raw_data.update(defn)
+        prog.mk_data()
+        print(prog.data)
+#         program = make_definition(program)
+#         program_dir = path.join(config.dirs.user_data_dir, 'programs')
+#         if not path.isdir(program_dir): os.makedirs(program_dir)
+#
+#         program_path = path.join(program_dir, '%s.yaml' % program['name'])
+#         log.info("Writing program %s to %s" % (program['name'], program_path))
+
+#         with open(program_path, 'w') as pf:
+#             yaml.safe_dump(program, pf, default_flow_style=False)
 
 def add_parser(subparsers):
     parser = subparsers.add_parser('import',
@@ -49,4 +61,5 @@ def add_parser(subparsers):
                                       description=__doc__)
 
     parser.add_argument('input', type=FileType('r'))
+
     parser.set_defaults(main=main)

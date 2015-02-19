@@ -14,32 +14,22 @@ from argparse import RawDescriptionHelpFormatter
 import logging
 import sys
 
-from chalmers import errors
-from chalmers.program import Program
 from clyent import print_colors
+
+from chalmers import errors
+from chalmers.utils.cli import add_selection_group, select_programs, \
+    filter_programs
+
 
 log = logging.getLogger('chalmers.stop')
 
 def main(args):
 
-    if args.all:
-        programs = Program.find_for_user()
-    else:
-        programs = [Program(name) for name in args.names]
+    programs = select_programs(args, filter_paused=False)
 
-    already_stopped_programs = [p.name for p in programs if not p.is_running]
-    if already_stopped_programs:
-        print("The programs '%s' are already stopped" % "', '".join(already_stopped_programs))
-
-    programs = [p for p in programs if p.is_running]
-
-    if len(programs):
-        print("Stopping programs %s" % ', '.join([p.name for p in programs]))
-        print("")
-    else:
-        print("No programs to stop")
+    programs = filter_programs(programs, lambda p: not p.is_running, 'Stopping', 'stopped')
+    if not programs:
         return
-
     for prog in programs:
         if prog.is_running:
             print("Stopping program %-25s ... " % prog.name[:25], end=''); sys.stdout.flush()
@@ -56,10 +46,10 @@ def main(args):
 
 def pause_main(args):
 
-    if args.all:
-        programs = Program.find_for_user()
-    else:
-        programs = [Program(name) for name in args.names]
+    programs = select_programs(args, filter_paused=False)
+    programs = filter_programs(programs, lambda p: p.is_paused, 'Pausing', 'paused')
+    if not programs:
+        return
 
     for prog in programs:
         log.info("Pausing program %s" % (prog.name))
@@ -70,16 +60,17 @@ def pause_main(args):
 
 def unpause_main(args):
 
-    if args.all:
-        programs = Program.find_for_user()
-    else:
-        programs = [Program(name) for name in args.names]
+    programs = select_programs(args, filter_paused=False)
+    programs = filter_programs(programs, lambda p: not p.is_paused, 'Unpausing', 'unpaused')
+
+    if not programs:
+        return
 
     for prog in programs:
         log.info("Unpausing program %s" % (prog.name))
         prog.state.update(paused=False)
         if not prog.is_running:
-            log.warn("%s is not running and will start on system reboot" % (prog.name))
+            log.warn("%s is not running and will start on next system boot" % (prog.name))
 
 
 def add_parser(subparsers):
@@ -88,10 +79,7 @@ def add_parser(subparsers):
                                    description=__doc__,
                                    formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('names', nargs='*', metavar='PROG',
-                        help='Name of program')
-    parser.add_argument('-a', '--all', action='store_true',
-                        help='Select all programs')
+    add_selection_group(parser)
     parser.add_argument('--force', action='store_true',
                         help='Force kill a program (stopsignal will be ignored)'
                         )
@@ -103,10 +91,7 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('names', nargs='*', metavar='PROG',
-                        help='Name of program')
-    parser.add_argument('-a', '--all', action='store_true',
-                        help='Select all programs')
+    add_selection_group(parser)
 
     parser.set_defaults(main=pause_main)
 
@@ -115,9 +100,6 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('names', nargs='*', metavar='PROG',
-                        help='Name of program')
-    parser.add_argument('-a', '--all', action='store_true',
-                        help='Select all programs')
+    add_selection_group(parser)
 
     parser.set_defaults(main=unpause_main)

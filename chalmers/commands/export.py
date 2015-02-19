@@ -8,7 +8,7 @@ import sys
 
 import yaml
 
-from chalmers.program import Program
+from chalmers.utils.cli import add_selection_group, select_programs
 
 
 log = logging.getLogger('chalmers.export')
@@ -19,8 +19,10 @@ def main(args):
 
     export_data = []
 
-    for prog in Program.find_for_user():
-        export_data.append({'program': prog.raw_data})
+    programs = select_programs(args, filter_paused=False)
+
+    for prog in programs:
+        export_data.append({'program': dict(prog.raw_data)})
 
     yaml.safe_dump(export_data, args.output, default_flow_style=False)
 
@@ -29,6 +31,7 @@ def add_parser(subparsers):
                                       help='[IN DEVELOPMENT] Export current configuration to be installed with the "import" command',
                                       description=__doc__)
 
-    parser.add_argument('names', nargs='*')
+    add_selection_group(parser)
+
     parser.add_argument('-o', '--output', type=FileType('w'), default=sys.stdout)
     parser.set_defaults(main=main)

@@ -9,26 +9,27 @@ import sys
 from chalmers import errors
 from chalmers.program import Program
 from clyent.logs.colors.printer import print_colors
+from chalmers.utils.cli import add_selection_group, select_programs
 
 
 log = logging.getLogger('chalmers.remove')
 
 def main(args):
 
-    programs = [Program(name) for name in args.names]
+    programs = select_programs(args, filter_paused=False)
+
     for prog in programs:
         if not prog.exists():
             print("Program '{0}' does not exist".format(prog.name))
             continue
 
-        print("Removing program {0!s:25} ... ".format(name[:25]), end=''); sys.stdout.flush()
+        print("Removing program {0!s:25} ... ".format(prog.name[:25]), end=''); sys.stdout.flush()
 
         try:
             prog.delete()
         except errors.ChalmersError as err:
             print_colors("[{=ERROR!c:red} ] {0}".format(err.message), stream=sys.stdout)
             continue
-
 
         print_colors("[  {=OK!c:green}  ]", stream=sys.stdout)
 
@@ -39,5 +40,6 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('names', nargs='*', metavar='PROG')
+    add_selection_group(parser)
+
     parser.set_defaults(main=main)

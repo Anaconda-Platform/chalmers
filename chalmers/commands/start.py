@@ -11,11 +11,13 @@ from __future__ import unicode_literals, print_function
 from argparse import RawDescriptionHelpFormatter
 import logging
 import sys
-
-from chalmers.program import Program
-from clyent import print_colors
-from chalmers import errors
 import time
+
+from clyent import print_colors
+
+from chalmers import errors
+from chalmers.utils.cli import add_selection_group, select_programs, \
+    filter_programs
 
 
 log = logging.getLogger('chalmers.start')
@@ -23,24 +25,10 @@ log = logging.getLogger('chalmers.start')
 
 def main(args):
 
-    if args.all:
-        programs = list(Program.find_for_user())
-        programs = [p for p in programs if not p.is_paused]
-    else:
-        programs = [Program(name) for name in args.names]
+    programs = select_programs(args, filter_paused=True)
 
-    already_running_programs = [p.name for p in programs if p.is_running]
-    if already_running_programs:
-
-        print("The programs '%s' are already running" % "', '".join(already_running_programs))
-
-    programs = [p for p in programs if not p.is_running]
-    if len(programs):
-        print("Starting programs %s" % ', '.join([p.name for p in programs]))
-        print("")
-    else:
-        print("No programs to start")
-
+    programs = filter_programs(programs, lambda p: p.is_running,
+                               'Starting', 'started', True)
 
     if args.daemon:
         for prog in programs:
@@ -67,12 +55,7 @@ def main(args):
 
 def restart_main(args):
 
-
-    if args.all:
-        programs = Program.find_for_user()
-        programs = [prog for prog in programs if not prog.is_paused]
-    else:
-        programs = [Program(name) for name in args.names]
+    programs = select_programs(args, filter_paused=True)
 
     if not (args.all or args.names):
         raise errors.ChalmersError("Must specify at least one program to restart")
@@ -120,24 +103,20 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('names', nargs='*', metavar='PROG',
-                        help='Names of the programs to start')
+    add_selection_group(parser)
+
     parser.add_argument('-w', '--wait', '--no-daemon', action='store_false', dest='daemon',
                         help='Wait for program to exit')
     parser.add_argument('-d', '--daemon', action='store_true', dest='daemon', default=True,
                         help='Run program as daemon')
-    parser.add_argument('-a', '--all', action='store_true',
-                        help='start all programs')
 
     parser.set_defaults(main=main)
 
     parser = subparsers.add_parser('restart',
                                       help='Restart a program',
-                                      description=__doc__)
+                                      description=__doc__,
+                                      formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('names', nargs='*', metavar='PROG',
-                        help='Names of the programs to start')
-    parser.add_argument('-a', '--all', action='store_true',
-                        help='start all programs')
+    add_selection_group(parser)
 
     parser.set_defaults(main=restart_main)
