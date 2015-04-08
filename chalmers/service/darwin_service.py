@@ -1,37 +1,16 @@
 """
-Install a launchd rule to run at system boot 
+Install a launchd rule to run at boot 
 """
 from __future__ import unicode_literals, print_function
 
 import logging
-from subprocess import check_output, check_call, CalledProcessError
+from subprocess import check_output, CalledProcessError
 import sys
 
 from chalmers import errors
-
-
-# chalmers_plist = """
-# <?xml version="1.0" encoding="UTF-8"?>
-# <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-# <plist version="1.0">
-# <dict>
-#     <key>Label</key>
-#     <string>org.continuum.chalmers</string>
-#     <key>ProgramArguments</key>
-#     <array>
-#         <string>{python_exe}</string>
-#         <string>{chalmers_script}</string>
-#         <string>start</string>
-#         <string>-a</string>
-#     </array>
-#     <key>RunAtLoad</key>
-#     <true/>
-# </dict>
-# </plist>
-# """.format(python_exe=sys.executable, chalmers_script=sys.argv[0])
 launchd_label = "org.continuum.chalmers"
 
-log = logging.getLogger('chalmers.reboot')
+log = logging.getLogger('chalmers.service')
 
 def get_launchd():
     try:
