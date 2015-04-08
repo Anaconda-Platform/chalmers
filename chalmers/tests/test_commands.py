@@ -93,24 +93,24 @@ class Test(unittest.TestCase):
 
         out = self.cli.add('echo', 'hi')
         out = self.cli.list()
-        self.assertEqual(out.split(), ['echo', 'PAUSED'])
+        self.assertEqual(out.split(), ['echo', 'OFF'])
 
     def test_pause(self):
 
         out = self.cli.add('echo', 'hi')
 
         out = self.cli.list()
-        self.assertEqual(out.split(), ['echo', 'PAUSED'])
+        self.assertEqual(out.split(), ['echo', 'OFF'])
 
-        out = self.cli.unpause('echo')
+        out = self.cli.on('echo')
 
         out = self.cli.list()
         self.assertEqual(out.split(), ['echo', 'STOPPED'])
 
-        out = self.cli.pause('echo')
+        out = self.cli.off('echo')
 
         out = self.cli.list()
-        self.assertEqual(out.split(), ['echo', 'PAUSED'])
+        self.assertEqual(out.split(), ['echo', 'OFF'])
 
     def test_show(self):
 
