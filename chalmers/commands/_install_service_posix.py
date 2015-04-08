@@ -33,7 +33,7 @@ def set_crontab(tab):
     p0 = Popen(['crontab'], stdin=PIPE)
     p0.communicate(input=new_cron_tab)
 
-def main(args):
+def install_for_user():
     tab_lines = get_crontab()
 
     if chalmers_tab_entry in tab_lines:
@@ -45,6 +45,19 @@ def main(args):
         set_crontab(tab_lines)
 
         log.info("All chalmers programs will now run on boot")
+
+
+def install_for_system():
+    asdf
+
+
+def main(args):
+
+    if args.for_user:
+        install_for_user()
+    else:
+        install_for_system()
+
 
 def main_uninstall(args):
 

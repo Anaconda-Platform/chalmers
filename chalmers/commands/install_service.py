@@ -42,6 +42,11 @@ def add_parser(subparsers):
                                       formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('action', choices=['install', 'uninstall', 'status'])
+    group = parser.add_argument_group('Service Type').add_mutually_exclusive_group()
+    group.add_argument('--user', dest='for_user', default=True, action='store_true',
+                       help='Install chalmers as a service for this user')
+    group.add_argument('--system', dest='for_user', action='store_false',
+                       help='Install chalmers as a service (requires root)')
 
     if os.name == 'nt':
         parser.add_argument('-u', '--username', default=getpass.getuser(),
