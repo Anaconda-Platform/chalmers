@@ -32,14 +32,14 @@ def install(args):
 def uninstall(args):
 
     if args.system is None:
-        cron_service.install()
+        cron_service.uninstall()
     else:
         system_uninstall(args.system)
 
-def main_status(args):
+def status(args):
 
     if args.system is None:
-        cron_service.install()
+        cron_service.status()
     else:
         system_status(args.system)
 
