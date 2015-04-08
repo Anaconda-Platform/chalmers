@@ -9,27 +9,25 @@ eg:
     
 '''
 from __future__ import unicode_literals, print_function
+
+from argparse import RawDescriptionHelpFormatter
+import argparse
 import getpass
 import os
-from argparse import RawDescriptionHelpFormatter
+
 from chalmers import errors
-import argparse
 
-if os.name == 'nt':
-    from . import _install_service_nt as svs
-else:
-    from . import _install_service_posix as svs
-
+from chalmers import service
 def main(args):
 
     if args.action == 'status':
-        svs.main_status(args)
+        service.status(args)
 
     elif args.action == 'install':
-        svs.main(args)
+        service.install(args)
 
     elif args.action == 'uninstall':
-        svs.main_uninstall(args)
+        service.uninstall(args)
 
     else:
         raise errors.ChalmersError("Invalid action %s" % args.action)
