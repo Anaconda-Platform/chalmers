@@ -29,13 +29,13 @@ from chalmers import errors
 # </dict>
 # </plist>
 # """.format(python_exe=sys.executable, chalmers_script=sys.argv[0])
-launchd_label = "org.binstar.chalmers"
+launchd_label = "org.continuum.chalmers"
 
 log = logging.getLogger('chalmers.reboot')
 
 def get_launchd():
     try:
-        return check_output(['launchctlddd', 'list', launchd_label])
+        return check_output(['launchctl', 'list', launchd_label])
     except OSError as err:
         raise errors.ChalmersError("Could not access program 'launchctl' required for osx service install")
     except CalledProcessError as err:
@@ -52,7 +52,7 @@ def add_launchd():
                    sys.executable, chalmers_script, 'start', '--all']
         log.info("Running command: %s" % ' '.join(command))
         output = check_output(command).strip()
-        log.info("launchctl: " % output)
+        log.info("launchctl: %s" % output)
     except OSError as err:
         raise errors.ChalmersError("Could not access program 'launchctl' required for osx service install")
     except CalledProcessError as err:
@@ -65,6 +65,10 @@ def add_launchd():
 def install(args):
     """Create a launchd plist and load as a global daemon"""
 
+    if args.system is not False:
+        raise  errors.ChalmersError("--system is not yet implemented for osx. "
+                                    "Run 'sudo su - USERNAME -c \"chalmers install service\"' ")
+
     log.info("Adding chalmers launchd plist")
     add_launchd()
     log.info("All chalmers programs will now run on boot")
@@ -74,7 +78,7 @@ def uninstall(args):
 
     log.info("Removing chalmers plist from launchd")
     try:
-        command = ['launchctl', 'remove', 'org.continuum.chalmers']
+        command = ['launchctl', 'remove', launchd_label]
         log.info("Running command: %s" % ' '.join(command))
         output = check_output(command).strip()
     except CalledProcessError as err:
@@ -88,8 +92,7 @@ def status(args):
     """Check if chalmers will be started at reboot"""
 
     launchd_lines = get_launchd()
-    print(launchd_lines)
-    if launchd_label in launchd_lines:
+    if launchd_lines:
         log.info("Chalmers is setup to start on boot")
     else:
         log.info("Chalmers will not start on boot")
