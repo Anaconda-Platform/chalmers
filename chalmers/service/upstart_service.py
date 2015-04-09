@@ -12,6 +12,8 @@ chalmers_script = sys.argv[0]
 
 log = logging.getLogger(__name__)
 
+UPSTART_INIT_DIR = '/etc/init'
+
 def read_data(filename):
     filename = path.join(path.dirname(__file__), 'data', filename)
     with open(filename) as fd:
@@ -40,7 +42,7 @@ def install(target_user):
                                                      launch=launch)
 
 
-    filepath = '/etc/init/%s.conf' % script_name
+    filepath = path.join(UPSTART_INIT_DIR, '%s.conf' % script_name)
     with open(filepath, 'w') as fd:
         fd.write(data)
     log.info('Write file: %s' % filepath)
@@ -51,7 +53,7 @@ def uninstall(target_user):
     else:  # Run as root
         script_name = 'chalmers'
 
-    filepath = '/etc/init/%s.conf' % script_name
+    filepath = path.join(UPSTART_INIT_DIR, '%s.conf' % script_name)
     if path.exists(filepath):
         log.info('Remove file: %s' % filepath)
         os.unlink(filepath)
@@ -78,7 +80,7 @@ def status(target_user):
         raise
 
 
-    filepath = '/etc/init/%s.conf' % script_name
+    filepath = path.join(UPSTART_INIT_DIR, '%s.conf' % script_name)
     if not path.exists(filepath):
         log.warn("Service file '%s' does not exist " % filepath)
 

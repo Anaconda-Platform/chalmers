@@ -10,6 +10,8 @@ import sys
 
 log = logging.getLogger('chalmers.service')
 
+INIT_D_DIR = '/etc/init.d'
+
 python_exe = sys.executable
 chalmers_script = sys.argv[0]
 
@@ -41,17 +43,19 @@ def install(target_user):
                                                      launch=launch)
 
 
-    filepath = '/etc/init.d/%s' % script_name
+    filepath = path.join(INIT_D_DIR, script_name)
+
     with open(filepath, 'w') as fd:
         fd.write(data)
     log.info('Write file: %s' % filepath)
     os.chmod(filepath, 0754)
     log.info('Running command chmod 754 %s' % filepath)
 
-    command = ['chkconfig',  script_name, 'on']
+    command = ['chkconfig', script_name, 'on']
     log.info('Running command: %s' % ' '.join(command))
     output = check_output(command)
     log.info(output)
+
 
 
 def uninstall(target_user):
@@ -70,7 +74,7 @@ def uninstall(target_user):
         if err.returncode == 1:
             log.info("chkconfig is not installed")
         else: raise
-    filepath = '/etc/init.d/%s' % script_name
+    filepath = path.join(INIT_D_DIR, script_name)
     if not path.exists(filepath):
         log.warn("File '%s' does not exist " % filepath)
     else:
@@ -96,7 +100,7 @@ def status(target_user):
         raise
 
 
-    filepath = '/etc/init.d/%s' % script_name
+    filepath = path.join(INIT_D_DIR, script_name)
     if not path.exists(filepath):
         log.warn("Service file '%s' does not exist " % filepath)
     log.info("Chalmers is setup to start on boot")
