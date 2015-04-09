@@ -12,6 +12,10 @@ log = logging.getLogger('chalmers.service')
 
 INIT_D_DIR = '/etc/init.d'
 
+
+def script_name():
+    pass
+
 python_exe = sys.executable
 chalmers_script = sys.argv[0]
 
@@ -19,6 +23,15 @@ def read_data(filename):
     filename = path.join(path.dirname(__file__), 'data', filename)
     with open(filename) as fd:
         return fd.read()
+
+def have_insserv():
+    try:
+        check_call(['insserv'], stdout=PIPE)
+        return True
+    except OSError as err:
+        if err.errno == 2:
+            return False
+        raise
 
 def have_chkconfig():
     try:
@@ -52,10 +65,18 @@ def install(target_user):
     os.chmod(filepath, 0754)
     log.info('Running command chmod 754 %s' % filepath)
 
-    command = ['chkconfig', script_name, 'on']
-    log.info('Running command: %s' % ' '.join(command))
-    output = check_output(command)
-    log.info(output)
+    if have_insserv():
+        # OpenSUSE
+        command = ['insserv', script_name]
+        log.info('Running command: %s' % ' '.join(command))
+        output = check_output(command)
+        log.info(output)
+    else:
+        # Redhat, CentOS
+        command = ['chkconfig', script_name, 'on']
+        log.info('Running command: %s' % ' '.join(command))
+        output = check_output(command)
+        log.info(output)
 
 
 
@@ -75,6 +96,7 @@ def uninstall(target_user):
         if err.returncode == 1:
             log.info("chkconfig is not installed")
         else: raise
+
     filepath = path.join(INIT_D_DIR, script_name)
     if not path.exists(filepath):
         log.warn("File '%s' does not exist " % filepath)
