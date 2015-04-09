@@ -26,17 +26,16 @@ import os
 
 from chalmers import errors
 
-from chalmers import service
+from chalmers.service import Service
 def main(args):
+    service = Service(args.system)
 
     if args.action == 'status':
-        service.status(args)
-
+        service.status()
     elif args.action == 'install':
-        service.install(args)
-
+        service.install()
     elif args.action == 'uninstall':
-        service.uninstall(args)
+        service.uninstall()
 
     else:
         raise errors.ChalmersError("Invalid action %s" % args.action)

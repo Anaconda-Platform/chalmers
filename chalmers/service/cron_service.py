@@ -8,6 +8,7 @@ from subprocess import Popen, check_output, CalledProcessError, PIPE
 import sys
 
 from chalmers import errors
+import os
 
 
 python_exe = sys.executable
@@ -33,39 +34,58 @@ def set_crontab(tab):
     p0 = Popen(['crontab'], stdin=PIPE)
     p0.communicate(input=new_cron_tab)
 
-def install():
-    tab_lines = get_crontab()
+class CronService(object):
+    """
+    Install a @reboot insruction to the user's local cron table
+    """
 
-    if chalmers_tab_entry in tab_lines:
-        log.info("Chalmers crontab instruction already exists")
-    else:
-        log.info("Adding chalmers instruction to crontab")
-        tab_lines.append(chalmers_tab_entry)
+    def __init__(self, target_user):
+        self.target_user = target_user
 
-        set_crontab(tab_lines)
+    @classmethod
+    def use_if_not_root(cls, subcls, target_user):
+        if target_user is False:
+            return object.__new__(cls, target_user)
+        else:
+            if os.getuid() != 0:
+                raise errors.ChalmersError("You can not install a posix service for "
+                                           "user %s without root privileges. "
+                                           "Run this command again with sudo")
+            return object.__new__(subcls, target_user)
 
-        log.info("All chalmers programs will now run on boot")
+    def install(self):
+        tab_lines = get_crontab()
+
+        if chalmers_tab_entry in tab_lines:
+            log.info("Chalmers crontab instruction already exists")
+        else:
+            log.info("Adding chalmers instruction to crontab")
+            tab_lines.append(chalmers_tab_entry)
+
+            set_crontab(tab_lines)
+
+            log.info("All chalmers programs will now run on boot")
 
 
-def uninstall():
+    def uninstall(self):
 
-    tab_lines = get_crontab()
+        tab_lines = get_crontab()
 
-    if chalmers_tab_entry in tab_lines:
-        log.info("Removing chalmers instruction from crontab")
-        tab_lines.remove(chalmers_tab_entry)
+        if chalmers_tab_entry in tab_lines:
+            log.info("Removing chalmers instruction from crontab")
+            tab_lines.remove(chalmers_tab_entry)
 
-        set_crontab(tab_lines)
+            set_crontab(tab_lines)
 
-    else:
-        log.info("Chalmers crontab instruction does not exist")
+        else:
+            log.info("Chalmers crontab instruction does not exist")
 
-def status():
+    def status(self):
 
-    tab_lines = get_crontab()
+        tab_lines = get_crontab()
 
-    if chalmers_tab_entry in tab_lines:
-        log.info("Chalmers is setup to start on boot")
-    else:
-        log.info("Chalmers will not start on boot")
+        if chalmers_tab_entry in tab_lines:
+            log.info("Chalmers is setup to start on boot")
+        else:
+            log.info("Chalmers will not start on boot")
 

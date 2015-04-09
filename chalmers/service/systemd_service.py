@@ -1,19 +1,24 @@
 """
 """
+from __future__ import unicode_literals, print_function
 
 import logging
 from os import path
 import os
-from subprocess import check_call, check_output, CalledProcessError, PIPE
+from subprocess import check_call, PIPE, check_output as _check_output, \
+    CalledProcessError
 import sys
+
 from chalmers.service.cron_service import CronService
+
+
+log = logging.getLogger('chalmers.service')
+
+SYSTEM_D_INIT_DIR = '/etc/systemd/system'
+
 
 python_exe = sys.executable
 chalmers_script = sys.argv[0]
-
-log = logging.getLogger(__name__)
-
-UPSTART_INIT_DIR = '/etc/init'
 
 def read_data(filename):
     filename = path.join(path.dirname(__file__), 'data', filename)
@@ -22,14 +27,14 @@ def read_data(filename):
 
 def check():
     try:
-        check_call(['initctl', '--version'], stdout=PIPE)
+        check_call(['systemctl', '--version'], stdout=PIPE)
         return True
     except OSError as err:
         if err.errno == 2:
             return False
         raise
 
-class UpstartService(object):
+class SystemdService(object):
     __new__ = CronService.use_if_not_root
 
     def __init__(self, target_user):
@@ -38,12 +43,12 @@ class UpstartService(object):
     @property
     def script_name(self):
         if self.target_user:
-            return 'chalmers.%s' % self.target_user
+            return 'chalmers.%s.service' % self.target_user
         else:  # Run as root
-            return 'chalmers'
+            return 'chalmers.service'
     @property
     def script_path(self):
-        return path.join(UPSTART_INIT_DIR, '%s.conf' % self.script_name)
+        return path.join(SYSTEM_D_INIT_DIR, self.script_name)
 
     @property
     def launch_command(self):
@@ -52,42 +57,48 @@ class UpstartService(object):
         else:  # Run as root
             return 'bash'
 
-    def install(self):
+    @property
+    def template(self):
+        return read_data('systemd.service')
 
-        data = read_data('chalmers-upstart.conf').format(python_exe=python_exe,
-                                                         chalmers=chalmers_script,
-                                                         launch=self.launch_command)
+    def check_output(self, command):
+        log.info('Running command: %s' % ' '.join(command))
+        output = _check_output(command)
+        log.info(output)
+        return output
+
+    def install(self):
+        data = self.template.format(python_exe=python_exe,
+                                    chalmers=chalmers_script,
+                                    launch=self.launch_command)
 
         with open(self.script_path, 'w') as fd:
-            fd.write(data)
+            print(data, file=fd)
 
-        log.info('Write file: %s' % self.script_path)
+        self.check_output(['systemctl', 'enable', self.script_name])
 
     def uninstall(self):
+        self.check_output(['systemctl', 'disable', self.script_name])
+
         if path.exists(self.script_path):
-            log.info('Remove file: %s' % self.script_path)
             os.unlink(self.script_path)
-            log.info("Chalmers service has been removed")
         else:
-            log.info("Chalmers service does not exist")
+            log.warning("Systemd service file %s does not exist" % self.script_path)
 
     def status(self):
-        #     initctl status chalmers
 
-        command = ['initctl', 'status', self.script_name]
-        log.info('Running command: %s' % ' '.join(command))
         try:
-            output = check_output(command)
-            log.info(output)
+            self.check_output(['systemctl', 'disable', self.script_name])
         except CalledProcessError as err:
             if err.returncode == 1:
                 log.info("Chalmers will not start on boot")
                 return False
             raise
-
         if not path.exists(self.script_path):
             log.warn("Service file '%s' does not exist " % self.script_path)
 
         log.info("Chalmers is setup to start on boot")
-
         return True
+
+
+
