@@ -41,9 +41,15 @@ def add_parser(subparsers):
 
     parser.add_argument('action', choices=['install', 'uninstall', 'status'])
     group = parser.add_argument_group('Service Type').add_mutually_exclusive_group()
-    group.add_argument('--system', dest='system', nargs='?',
+
+    if os.name == 'posix':
+        sytem_default = os.environ.get('SUDO_USER') if os.getuid() == 0 else False
+    else:
+        sytem_default = False
+
+    group.add_argument('--system', dest='system', nargs='?', default=sytem_default,
                        help='Install Chalmers as a service to the system for a given user (requires admin). '
-                            'If no user is given it will launch chalmers as root', default=False)
+                            'If no user is given it will launch chalmers as root (default: %(default)s)')
 
     if os.name == 'nt':
         parser.add_argument('-u', '--username', default=getpass.getuser(),
