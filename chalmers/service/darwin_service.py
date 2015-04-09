@@ -4,65 +4,111 @@ Install a launchd rule to run at boot
 from __future__ import unicode_literals, print_function
 
 import logging
-from subprocess import check_output, CalledProcessError
+from subprocess import CalledProcessError, check_output as _check_output, STDOUT
 import sys
 
 from chalmers import errors
+import pwd
+import os
 launchd_label = "org.continuum.chalmers"
+
+def label(username):
+    if username:
+        return '%s.%s' % (launchd_label, username)
+    else:
+        return launchd_label
 
 log = logging.getLogger('chalmers.service')
 
-def get_launchd():
+def check_output_user(target_user):
+    if target_user:
+        pw = pwd.getpwnam(target_user)
+        env = os.environ.copy()
+        env.update({'HOME': pw.pw_dir, 'SHELL': pw.pw_shell, 'USER': pw.pw_name})
+        preexec_fn = demote(pw.pw_uid, pw.pw_gid)
+        log.info("Changing USER/UID/GID to: %s/%s/%s" % (pw.pw_name, pw.pw_uid, pw.pw_gid))
+    else:
+        env = os.environ
+        preexec_fn = None
+
+    def check_output_inner(command):
+        return _check_output(command, env=env, cwd='/', preexec_fn=preexec_fn, stderr=STDOUT)
+
+    return check_output_inner
+
+
+def get_launchd(target_user):
+
+    check_output = check_output_user(target_user)
+
     try:
-        return check_output(['launchctl', 'list', launchd_label])
+        return check_output(['launchctl', 'list', label(target_user)])
     except OSError as err:
         raise errors.ChalmersError("Could not access program 'launchctl' required for osx service install")
     except CalledProcessError as err:
         if err.returncode == 1:
-            # launchd_label was not found
+            if 'Socket is not connected' in err.output:
+                raise errors.ChalmersError("The user '%s' must be logged in via the osx gui to perform this operation" % target_user)
             return None
         raise
 
 
-def add_launchd():
+def demote(user_uid, user_gid):
+    def result():
+        os.setgid(user_gid)
+        os.setuid(user_uid)
+    return result
+
+def add_launchd(target_user):
+
+    check_output = check_output_user(target_user)
+
     try:
         chalmers_script = sys.argv[0]
-        command = ['launchctl', 'submit', '-l', launchd_label, '--',
+        command = ['launchctl', 'submit', '-l', label(target_user), '--',
                    sys.executable, chalmers_script, 'start', '--all']
+
         log.info("Running command: %s" % ' '.join(command))
+
         output = check_output(command).strip()
         log.info("launchctl: %s" % output)
     except OSError as err:
         raise errors.ChalmersError("Could not access program 'launchctl' required for osx service install")
     except CalledProcessError as err:
         if err.returncode == 1:
-            # launchd_label was not found
-            raise errors.ChalmersError("Chalmers service is already installed")
+            if 'Socket is not connected' in err.output:
+                raise errors.ChalmersError("The user '%s' must be logged in via the osx gui to perform this operation" % target_user)
+            else:
+                raise errors.ChalmersError("Chalmers service is already installed")
         raise
 
 
 def install(args):
     """Create a launchd plist and load as a global daemon"""
 
-    if args.system is not False:
-        raise  errors.ChalmersError("--system is not yet implemented for osx. "
-                                    "Run 'sudo su - USERNAME -c \"chalmers install service\"' ")
-
     log.info("Adding chalmers launchd plist")
-    add_launchd()
+    add_launchd(args.system)
     log.info("All chalmers programs will now run on boot")
 
 def uninstall(args):
     """Uninstall launchd plist for chalmers"""
 
+    target_user = args.system
+    check_output = check_output_user(target_user)
+
     log.info("Removing chalmers plist from launchd")
     try:
-        command = ['launchctl', 'remove', launchd_label]
+        command = ['launchctl', 'remove', label(target_user)]
+
         log.info("Running command: %s" % ' '.join(command))
         output = check_output(command).strip()
+        log.info(output)
     except CalledProcessError as err:
         if err.returncode == 1:
-            raise errors.ChalmersError("Chalmers service is not installed")
+            if 'Socket is not connected' in err.output:
+                raise errors.ChalmersError("The user '%s' must be logged in via the osx gui to perform this operation" % target_user)
+            else:
+                raise errors.ChalmersError("Chalmers service is not installed")
         raise
     else:
         log.info("Chalmers service has been removed")
@@ -70,7 +116,7 @@ def uninstall(args):
 def status(args):
     """Check if chalmers will be started at reboot"""
 
-    launchd_lines = get_launchd()
+    launchd_lines = get_launchd(args.system)
     if launchd_lines:
         log.info("Chalmers is setup to start on boot")
     else:
