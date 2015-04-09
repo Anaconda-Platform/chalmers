@@ -10,6 +10,7 @@ import sys
 from chalmers import errors
 import pwd
 import os
+
 launchd_label = "org.continuum.chalmers"
 
 def label(username):
