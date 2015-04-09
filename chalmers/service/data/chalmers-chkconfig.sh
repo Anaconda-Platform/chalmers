@@ -1,21 +1,23 @@
 # chkconfig: 35 85 15
 
+
 PYTHON={python_exe}
 CHALMERS={chalmers}
+LAUNCH={launch}
+
 
 case "$1" in
     start)
-        $PYTHON $CHALMERS start --all
+        $LAUNCH -c "$PYTHON $CHALMERS start --all"
         ;;
     stop)
-        $PYTHON $CHALMERS stop --all
+        $LAUNCH -c "$PYTHON $CHALMERS stop --all"
         ;;
     status)
-        $PYTHON $CHALMERS list
+        $LAUNCH -c "$PYTHON $CHALMERS list"
         ;;
     restart)
-        $PYTHON $CHALMERS restart --all
-        start
+        $LAUNCH -c "$PYTHON $CHALMERS restart --all"
         ;;
     *)
         echo "Usage:  {{start|stop|status|restart}}"
