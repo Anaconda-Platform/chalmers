@@ -1,11 +1,11 @@
 '''
-Stop/Pause/Unpause a program
+Stop or toggle a program on/off
 
 Stopping a program will send a signal to the program. The signal can be set by:
 
     chalmers set server1 stopsignal=SIGTERM
  
-When paused, a program will not be started at system boot 
+When off, a program will not be started at system boot 
 '''
 
 from __future__ import unicode_literals, print_function
@@ -86,19 +86,19 @@ def add_parser(subparsers):
 
     parser.set_defaults(main=main)
 
-    parser = subparsers.add_parser('pause',
-                                      help='Pause program (don\'t run on system boot)',
-                                      description=__doc__,
-                                      formatter_class=RawDescriptionHelpFormatter)
+    parser = subparsers.add_parser('off',
+                                   help='Don\'t run a program on system boot or `chalmers start --all`',
+                                   description=__doc__,
+                                   formatter_class=RawDescriptionHelpFormatter)
 
     add_selection_group(parser)
 
     parser.set_defaults(main=pause_main)
 
-    parser = subparsers.add_parser('unpause',
-                                      help='Unpause program (run on system boot)',
-                                      description=__doc__,
-                                      formatter_class=RawDescriptionHelpFormatter)
+    parser = subparsers.add_parser('on',
+                                   help='Run a program on system boot or `chalmers start --all`',
+                                   description=__doc__,
+                                   formatter_class=RawDescriptionHelpFormatter)
 
     add_selection_group(parser)
 

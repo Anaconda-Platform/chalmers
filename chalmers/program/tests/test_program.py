@@ -86,7 +86,7 @@ class TestBase(unittest.TestCase):
         self.assertEqual(p.text_status, 'STOPPED')
 
         p.state.update(paused=True)
-        self.assertEqual(p.text_status, 'PAUSED')
+        self.assertEqual(p.text_status, 'OFF')
 
         p.state.update(exit_status=1)
         self.assertEqual(p.text_status, 'ERROR')
