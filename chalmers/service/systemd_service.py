@@ -88,7 +88,7 @@ class SystemdService(object):
     def status(self):
 
         try:
-            self.check_output(['systemctl', 'disable', self.script_name])
+            self.check_output(['systemctl', 'is-enabled', self.script_name])
         except CalledProcessError as err:
             if err.returncode == 1:
                 log.info("Chalmers will not start on boot")
