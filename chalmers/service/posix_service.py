@@ -11,23 +11,9 @@ import sys
 
 from chalmers import errors
 
-from . import cron_service, redhat_service
-
+from . import cron_service, redhat_service, upstart_service
 
 log = logging.getLogger('chalmers.service')
-
-python_exe = sys.executable
-chalmers_script = sys.argv[0]
-
-def have_upstart():
-    try:
-        check_call(['initctl', '--version'], stdout=PIPE)
-        return True
-    except OSError as err:
-        if err.errno == 2:
-            return False
-        raise
-
 
 def system_install(target_user):
     if os.getuid() != 0:
@@ -38,6 +24,8 @@ def system_install(target_user):
 
     if redhat_service.have_chkconfig():
         redhat_service.install(target_user)
+    elif upstart_service.have_initctl():
+        upstart_service.install(target_user)
     else:
         raise NotImplementedError("TODO:")
 
@@ -52,6 +40,9 @@ def system_uninstall(target_user):
 
     if redhat_service.have_chkconfig():
         redhat_service.uninstall(target_user)
+    elif upstart_service.have_initctl():
+        upstart_service.uninstall(target_user)
+
     else:
         raise NotImplementedError("TODO:")
 
@@ -62,6 +53,9 @@ def system_status(target_user):
 
     if redhat_service.have_chkconfig():
         redhat_service.status(target_user)
+    elif upstart_service.have_initctl():
+        upstart_service.status(target_user)
+
     else:
         raise NotImplementedError("TODO:")
 
