@@ -65,8 +65,8 @@ def system_install(target_user):
         raise errors.ChalmersError("System services requires admin privleges. "
                                    "run this command as an administrator")
 
-    log.info("Your password is required by the windows service manager to launch"
-             "The chalmers service at login")
+    log.info("Your password is required by the windows service manager to launch "
+             "the chalmers service at startup")
     password = getpass.getpass(b"Password for %s: " % target_user)
 
     instart('.\\%s' % target_user, password)
