@@ -75,13 +75,17 @@ class SystemdService(object):
         with open(self.script_path, 'w') as fd:
             print(data, file=fd)
 
+        log.info("Wrote file: %s" % self.script_path)
         self.check_output(['systemctl', 'enable', self.script_name])
+
+        log.info("Chalmers will now start on boot for user %s" % self.target_user)
 
     def uninstall(self):
         self.check_output(['systemctl', 'disable', self.script_name])
 
         if path.exists(self.script_path):
             os.unlink(self.script_path)
+            log.info("Removed file: %s" % self.script_path)
         else:
             log.warning("Systemd service file %s does not exist" % self.script_path)
 
@@ -97,7 +101,7 @@ class SystemdService(object):
         if not path.exists(self.script_path):
             log.warn("Service file '%s' does not exist " % self.script_path)
 
-        log.info("Chalmers is setup to start on boot")
+        log.info("Chalmers is setup to start on boot for user %s" % self.target_user)
         return True
 
 
