@@ -1,12 +1,21 @@
 '''
-[Un]Install chalmers so that it will run at system boot
+[Un]Install chalmers so that it will run at system boot.
 
-This set is required on win32 platforms:
+For all platforms you can install the service either to the system or locally
 
-eg:
-   
+When installing For some platforms osx and win32, chalmers will only run at login 
+
+Local service install. Admin is not required::
+
     chalmers service install
+
+Root service install (posix)::
+
+    sudo chalmers service install --system 
+
+Root service install (windows)::
     
+    runas /user:.\Administrator "chalmers service install --system" 
 '''
 from __future__ import unicode_literals, print_function
 
