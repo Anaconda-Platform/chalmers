@@ -51,7 +51,7 @@ def install(target_user):
     os.chmod(filepath, 0754)
     log.info('Running command chmod 754 %s' % filepath)
 
-    command = ['chkconfig', 'on', script_name]
+    command = ['chkconfig',  script_name, 'on']
     log.info('Running command: %s' % ' '.join(command))
     output = check_output(command)
     log.info(output)
@@ -66,13 +66,19 @@ def uninstall(target_user):
 
     command = ['chkconfig', '--del', script_name]
     log.info('Running command: %s' % ' '.join(command))
-    output = check_output(command)
-    log.info(output)
+    try:
+        output = check_output(command)
+        log.info(output)
+    except CalledProcessError as err:
+        if err.returncode == 1:
+            log.info("chkconfig is not installed")
+        else: raise
     filepath = '/etc/init.d/%s' % script_name
     if not path.exists(filepath):
         log.warn("File '%s' does not exist " % filepath)
     else:
         os.unlink(filepath)
+    log.info("Chalmers service has been removed")
 
 def status(target_user):
 
@@ -96,9 +102,6 @@ def status(target_user):
     filepath = '/etc/init.d/%s' % script_name
     if not path.exists(filepath):
         log.warn("Service file '%s' does not exist " % filepath)
-    else:
-        os.unlink(filepath)
-
     log.info("Chalmers is setup to start on boot")
     return True
 

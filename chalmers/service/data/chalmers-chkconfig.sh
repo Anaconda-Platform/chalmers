@@ -3,7 +3,7 @@
 
 PYTHON={python_exe}
 CHALMERS={chalmers}
-LAUNCH={launch}
+LAUNCH="{launch}"
 
 
 case "$1" in
