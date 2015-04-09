@@ -40,7 +40,8 @@ def install(target_user):
 
     data = read_data('chalmers-chkconfig.sh').format(python_exe=python_exe,
                                                      chalmers=chalmers_script,
-                                                     launch=launch)
+                                                     launch=launch,
+                                                     script_name=script_name)
 
 
     filepath = path.join(INIT_D_DIR, script_name)

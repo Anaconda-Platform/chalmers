@@ -1,4 +1,23 @@
+#!/bin/bash
+#
+# /etc/init.d/{script_name}
+#
 # chkconfig: 35 85 15
+# Handles starting and stopping chalmers.
+#
+# Tested on OpenSUSE (insserve), Centos (chkconfig)
+# Author: Gary Monson gary.monson@gmail.com
+#
+### BEGIN INIT INFO
+# Provides:          {{script_name}}
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Description:       Provides chalmers service
+### END INIT INFO
+
+
 
 
 PYTHON={python_exe}
