@@ -54,6 +54,7 @@ def local_uninstall():
 
 def local_status():
     filepath = path.join(STARTUP_DIR, 'chalmers.bat')
+    log.info("Check if file exists: %s" % filepath)
     if os.path.exists(filepath):
         log.info("Chalmers is setup to start on boot")
     else:
