@@ -22,6 +22,9 @@ log = logging.getLogger(__name__)
 
 class Win32SystemService(object):
     def __init__(self, target_user):
+        if target_user is None:
+            target_user = GetUserName()
+
         self.target_user = target_user
 
     @property
