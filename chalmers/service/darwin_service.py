@@ -1,5 +1,8 @@
 """
-Install a launchd rule to run at boot 
+Install a launchd rule to run at boot
+
+http://en.wikipedia.org/wiki/Launchd
+ 
 """
 from __future__ import unicode_literals, print_function
 

@@ -1,5 +1,15 @@
 """
-Install a crontab rule to run at system boot 
+Install a crontab rule to run at system boot
+
+E.g.::
+    
+    @reboot /path/to/python /path/to/chalmers start -a
+    
+FIXME: There may be cases where the reboot command does not work 
+correctly.
+ 
+ * http://unix.stackexchange.com/questions/109804/crontabs-reboot-only-works-for-root
+ 
 """
 from __future__ import unicode_literals, print_function
 
@@ -40,6 +50,11 @@ class CronService(object):
     """
 
     def __init__(self, target_user):
+        if target_user is not False:
+            msg = ("Not implemented: chalmers can not detect "
+                   "the init system for your unix machine "
+                   "(upstart, systemd or sysv)")
+            raise errors.ChalmersError(msg)
         self.target_user = target_user
 
     @classmethod

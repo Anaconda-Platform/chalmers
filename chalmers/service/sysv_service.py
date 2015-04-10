@@ -29,7 +29,7 @@ def check():
             return False
         raise
 
-class ChkconfigService(object):
+class SysVService(object):
     # Returns CronService if user is not root
     __new__ = CronService.use_if_not_root
 
