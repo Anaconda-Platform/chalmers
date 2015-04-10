@@ -1,4 +1,9 @@
 """
+Install "Systemd" init services definition with systemctl command
+
+http://www.freedesktop.org/wiki/Software/systemd
+
+
 """
 from __future__ import unicode_literals, print_function
 

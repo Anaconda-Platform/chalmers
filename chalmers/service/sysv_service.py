@@ -1,5 +1,12 @@
 """
+Install "SysV-style" init services definition with chkconfig command
+
+http://en.wikipedia.org/wiki/Init
+
+Note: chkconfig only soft links the /etc/inid.d/ script to the proper /etc/rc files. 
+We could check if this could be done manually. chkconfig behaves strange on some systems.  
 """
+
 from __future__ import unicode_literals, print_function
 
 import logging
@@ -7,7 +14,9 @@ from os import path
 import os
 from subprocess import check_call, CalledProcessError, PIPE, check_output as _check_output
 import sys
+
 from chalmers.service.cron_service import CronService
+
 
 log = logging.getLogger('chalmers.service')
 
@@ -64,7 +73,7 @@ class SysVService(object):
 
     @property
     def template(self):
-        return read_data('chalmers-chkconfig.sh')
+        return read_data('sysv-init.sh')
 
 
     def install(self):

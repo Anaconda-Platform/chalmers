@@ -19,5 +19,3 @@ elif platform.system() == 'Darwin':
 else:
     from .posix_service import PosixService as Service
 
-
-

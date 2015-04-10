@@ -5,8 +5,7 @@
 # chkconfig: 35 85 15
 # Handles starting and stopping chalmers.
 #
-# Tested on OpenSUSE (insserve), Centos (chkconfig)
-# Author: Gary Monson gary.monson@gmail.com
+# Author: Continuum Analytics
 #
 ### BEGIN INIT INFO
 # Provides:          {{script_name}}

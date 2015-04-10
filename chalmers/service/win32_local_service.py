@@ -1,5 +1,10 @@
 """
 Install windows startup script
+
+This just writes a script to:: 
+
+    %HOMEPATH%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\chalmers.bat
+
 """
 from __future__ import print_function, absolute_import, unicode_literals
 
@@ -7,8 +12,6 @@ import logging
 from os import path
 import os
 import sys
-
-from win32api import GetUserName
 
 
 log = logging.getLogger(__name__)

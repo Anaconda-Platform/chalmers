@@ -1,4 +1,8 @@
 """
+Install upstart init services definition with initctl command
+
+http://upstart.ubuntu.com/
+
 """
 
 import logging
@@ -6,7 +10,9 @@ from os import path
 import os
 from subprocess import check_call, check_output, CalledProcessError, PIPE
 import sys
+
 from chalmers.service.cron_service import CronService
+
 
 python_exe = sys.executable
 chalmers_script = sys.argv[0]
@@ -54,7 +60,7 @@ class UpstartService(object):
 
     def install(self):
 
-        data = read_data('chalmers-upstart.conf').format(python_exe=python_exe,
+        data = read_data('upstart.conf').format(python_exe=python_exe,
                                                          chalmers=chalmers_script,
                                                          launch=self.launch_command)
 

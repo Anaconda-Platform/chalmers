@@ -1,7 +1,10 @@
-# chlamers service for systemd
+# Chlamers service for systemd
 # by Continuum Analytics (https://github.com/binstar/chalmers)
+#
+# /etc/systemd/system/chalmers.service
+#
 [Unit]
-Description=Chalmers process controll
+Description=Chalmers process control
 
 [Service]
 ExecStart={launch} -c "{python_exe} {chalmers} start --all"
