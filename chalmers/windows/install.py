@@ -12,6 +12,8 @@ from chalmers.scripts import service as service_script
 
 log = logging.getLogger(__name__)
 
+ERR_SERVICE_EXISTS = 1073
+
 def InstallService(serviceName, displayName, startType=win32service.SERVICE_DEMAND_START,
                     serviceDeps=None,
                     errorControl=win32service.SERVICE_ERROR_NORMAL,
@@ -96,11 +98,14 @@ def instart(userName, password):
             userName=userName,
             password=password,
         )
-    except Win32Error as err:
-        if err.args[0] == 1073:
-            raise errors.ChalmersError(err.args[2])
 
-    log.info('Install OK')
+    except Win32Error as err:
+        if err.args[0] != ERR_SERVICE_EXISTS:
+            raise
+        log.warn('Chalmers service %s is already installed' % svc_name)
+    else:
+        log.info('Installed chalmers service %s to windows services' % svc_name)
+    
     try:
         win32serviceutil.StartService(svc_name)
     except Win32Error as err:
