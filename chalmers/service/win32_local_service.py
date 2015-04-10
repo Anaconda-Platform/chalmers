@@ -13,13 +13,20 @@ from os import path
 import os
 import sys
 
-
+from chalmers import errors
 log = logging.getLogger(__name__)
 
 HOME = os.environ.get('HOMEPATH')
 STARTUP_DIR = path.join(HOME, 'AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup')
 
 class Win32LocalService(object):
+    def __init__(self, target_user):
+
+        if target_user is not False:  #
+            raise errors.ChalmersError("You can not install a local service into another users account. "
+                                       "To do this use the 'runas' windows command with chalmers")
+
+        self.target_user = target_user
 
     @property
     def script_path(self):
