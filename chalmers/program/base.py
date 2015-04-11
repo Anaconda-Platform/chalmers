@@ -479,7 +479,13 @@ class ProgramBase(EventDispatcher):
 
         logger = logging.getLogger('chalmers')
         logger.removeHandler(self._daemonlog_hdlr)
-        self._log_stream.close()
+        try:
+            self._log_stream.close()
+        except IOError:
+            # Ignore:
+            # close() called during concurrent operation on the same file object.
+            pass
+
 
 
     def stop(self, force=False):
