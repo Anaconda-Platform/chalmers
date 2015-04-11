@@ -56,6 +56,7 @@ def set_crontab(tab):
     p0 = sp.Popen(['crontab'], stdin=sp.PIPE)
     p0.communicate(input=new_cron_tab)
 
+py3 = sys.version_info.major == 3
 class CronService(object):
     """
     Install a @reboot insruction to the user's local cron table
@@ -76,13 +77,20 @@ class CronService(object):
     @classmethod
     def use_if_not_root(cls, subcls, target_user):
         if target_user is False:
-            return object.__new__(cls, target_user)
+            if py3:
+                return object.__new__(cls)
+            else:
+                return object.__new__(cls, target_user)
+
         else:
             if os.getuid() != 0:
                 raise errors.ChalmersError("You can not install a posix service for "
                                            "user %s without root privileges. "
                                            "Run this command again with sudo")
-            return object.__new__(subcls, target_user)
+            if py3:
+                return object.__new__(subcls)
+            else:
+                return object.__new__(subcls, target_user)
 
     def install(self):
         tab_lines = get_crontab()
