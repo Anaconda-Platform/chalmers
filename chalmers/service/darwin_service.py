@@ -7,6 +7,7 @@ http://en.wikipedia.org/wiki/Launchd
 from __future__ import unicode_literals, print_function
 
 import logging
+from os import path
 import os
 import pwd
 from subprocess import CalledProcessError, check_output as _check_output, STDOUT
@@ -14,6 +15,16 @@ import sys
 
 from chalmers import errors
 
+import tempfile
+
+python_exe = sys.executable
+chalmers_script = sys.argv[0]
+
+
+def read_data(filename):
+    filename = path.join(path.dirname(__file__), 'data', filename)
+    with open(filename) as fd:
+        return fd.read()
 
 launchd_label = "org.continuum.chalmers"
 
@@ -40,20 +51,18 @@ class DarwinService(object):
         else:
             return launchd_label
 
+    @property
+    def template(self):
+        return read_data('launchd.plist')
+
     def check_output(self, command):
         if self.target_user:
-            pw = pwd.getpwnam(self.target_user)
-            env = os.environ.copy()
-            env.update({'HOME': pw.pw_dir, 'SHELL': pw.pw_shell, 'USER': pw.pw_name})
-            preexec_fn = demote(pw.pw_uid, pw.pw_gid)
-            log.info("Changing USER/UID/GID to: %s/%s/%s" % (pw.pw_name, pw.pw_uid, pw.pw_gid))
-        else:
-            env = os.environ
-            preexec_fn = None
+            if os.getuid() != 0:
+                raise errors.ChalmersError("Can not perform system install without root")
 
         log.info("Running command: %s" % ' '.join(command))
         try:
-            output = _check_output(command, env=env, cwd='/', preexec_fn=preexec_fn, stderr=STDOUT)
+            output = _check_output(command, stderr=STDOUT)
         except OSError as err:
             raise errors.ChalmersError("Could not access program 'launchctl' required for osx service install")
         except CalledProcessError as err:
@@ -75,16 +84,26 @@ class DarwinService(object):
             raise
 
     def add_launchd(self):
+        if self.target_user:
+            username = '<key>UserName</key> <string>%s</string>' % self.target_user
+        else:
+            username = ''
+        plist = self.template.format(python_exe=python_exe,
+                                     chalmers=chalmers_script,
+                                     label=self.label,
+                                     username=username)
 
-        try:
-            chalmers_script = sys.argv[0]
-            command = ['launchctl', 'submit', '-l', self.label, '--',
-                       sys.executable, chalmers_script, 'start', '--all']
-            self.check_output(command).strip()
-        except CalledProcessError as err:
-            if err.returncode == 1:
-                raise errors.ChalmersError("Chalmers service is already installed")
-            raise
+        with tempfile.NamedTemporaryFile('w', suffix='.plist', prefix='chalmers') as fd:
+
+            fd.write(plist)
+            fd.flush()
+            try:
+                command = ['launchctl', 'load', fd.name]
+                self.check_output(command).strip()
+            except CalledProcessError as err:
+                if err.returncode == 1:
+                    raise errors.ChalmersError("Chalmers service is already installed")
+                raise
 
 
     def install(self):
