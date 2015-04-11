@@ -77,7 +77,7 @@ def main(args):
     program.state.update(state)
 
     if not args.paused:
-        program.start(daemon=args.daemon)
+        program.start()
 
     log.info('Added program {args.name}'.format(args=args))
 
