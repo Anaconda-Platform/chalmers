@@ -1,7 +1,7 @@
 """
 Install win32 system service. 
 
-This requires admin privleges to run
+This requires admin privileges to run
 
  
 """
