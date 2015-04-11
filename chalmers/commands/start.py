@@ -16,9 +16,8 @@ import time
 from clyent import print_colors
 
 from chalmers import errors
-from chalmers.mutiplex_io_pool import MultiPlexIOPool
-from chalmers.utils.cli import add_selection_group, select_programs, \
-    filter_programs
+from chalmers.utils import cli
+from chalmers.utils.mutiplex_io_pool import MultiPlexIOPool
 
 
 log = logging.getLogger('chalmers.start')
@@ -26,9 +25,9 @@ log = logging.getLogger('chalmers.start')
 
 def main(args):
 
-    programs = select_programs(args, filter_paused=True)
+    programs = cli.select_programs(args, filter_paused=True)
 
-    programs = filter_programs(programs, lambda p: p.is_running,
+    programs = cli.filter_programs(programs, lambda p: p.is_running,
                                'Starting', 'started', True)
 
     if args.daemon:
@@ -57,7 +56,7 @@ def main(args):
 
 def restart_main(args):
 
-    programs = select_programs(args, filter_paused=True)
+    programs = cli.select_programs(args, filter_paused=True)
 
     if not (args.all or args.names):
         raise errors.ChalmersError("Must specify at least one program to restart")
@@ -105,13 +104,13 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    add_selection_group(parser)
+    cli.add_selection_group(parser)
 
     parser.add_argument('-w', '--wait', '--no-daemon', action='store_false', dest='daemon',
                         help='Wait for program to exit')
     parser.add_argument('-d', '--daemon', action='store_true', dest='daemon', default=True,
                         help='Run program as daemon')
-    parser.add_argument('--stream', action='store_true', default=sys.stdout.isatty(),
+    parser.add_argument('--stream', '--io', action='store_true', default=sys.stdout.isatty(),
                         help='Multiplex stdout of programs to stdout')
     parser.add_argument('--no-stream', action='store_false', dest='stream',
                         help='Don\'t pip stdout of programs to stdout')
@@ -123,6 +122,6 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    add_selection_group(parser)
+    cli.add_selection_group(parser)
 
     parser.set_defaults(main=restart_main)

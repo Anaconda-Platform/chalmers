@@ -1,47 +1,19 @@
 from __future__ import print_function, absolute_import, unicode_literals
 
-from multiprocessing import Process, Queue
-from threading import Thread
-import sys
-import time
-from os import path
-from clyent import print_colors
-from random import shuffle
 from itertools import cycle
+from multiprocessing import Process, Queue
+from os import path
+from threading import Thread
+import time
 
-class stdq(object):
-    def __init__(self, name, queue, out):
-        self.queue = queue
-        self.out = out
-        self.name = name
+from clyent import print_colors
 
-    def write(self, data):
-        self.out.write('X %r' % repr(data))
-        import traceback
-        self.out.write('-- traceback.print_stack --\n')
-        traceback.print_stack(file=self.out)
-        self.out.write('-- traceback.print_stack --\n')
-
-        if data:
-            self.out.write('X %r' % repr(data))
-            self.queue.put([self.name, data])
-        # self.out.write(data)
-
-    def flush(self):
-        pass
-
-def iotarget(name, target):
-    def iotarget_inner(*args, **kwargs):
-        queue = kwargs.pop('queue')
-        stdout = sys.stdout
-        sys.stdout = stdq(name, queue, stdout)
-        return target(*args, **kwargs)
-    return iotarget_inner
 
 class MultiPlexIOPool(object):
-
-
-
+    """
+    This class runs programs in a sub-process optionally it watches their 
+    stdout file outputs and multiplexes the output to the current processes stdout
+    """
 
     def __init__(self, stream=False, color=False):
         self.stream = stream
@@ -60,7 +32,7 @@ class MultiPlexIOPool(object):
 
     def printer_loop(self):
 
-        colors = cycle(['blue', 'green', 'red', 'bold', 'yello'])
+        colors = cycle(['blue', 'red', 'green', 'yello', 'white'])
         color = iter(colors)
         color_map = {}
 
