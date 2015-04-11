@@ -1,5 +1,9 @@
 """
-Install windows system service
+Install win32 system service. 
+
+This requires admin privleges to run
+
+ 
 """
 
 from __future__ import print_function, absolute_import, unicode_literals

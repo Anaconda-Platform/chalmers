@@ -61,8 +61,8 @@ class UpstartService(object):
     def install(self):
 
         data = read_data('upstart.conf').format(python_exe=python_exe,
-                                                         chalmers=chalmers_script,
-                                                         launch=self.launch_command)
+                                                chalmers=chalmers_script,
+                                                launch=self.launch_command)
 
         with open(self.script_path, 'w') as fd:
             fd.write(data)

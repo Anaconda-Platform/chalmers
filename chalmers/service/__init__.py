@@ -1,3 +1,6 @@
+"""
+chalmers.service selects the correct service for the platform on import
+"""
 from __future__ import absolute_import
 
 import os, platform

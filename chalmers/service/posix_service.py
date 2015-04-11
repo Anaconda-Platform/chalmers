@@ -1,5 +1,13 @@
 """
-Linux services
+Linux services, this module checks the existence of linux command line 
+programs on import
+
+ * systemd_service
+ * upstart_service
+ * sysv_service
+ * cron_service
+
+In that order  
 """
 from __future__ import unicode_literals, print_function
 
