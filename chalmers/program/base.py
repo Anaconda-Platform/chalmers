@@ -518,23 +518,6 @@ class ProgramBase(EventDispatcher):
             send_action(self.name, 'terminate', timeout=self.data['stopwaitsecs'])
 
 
-    def restart(self):
-        if self.is_running:
-            print("Stopping program %s ..." % self.name, end=''); sys.stdout.flush()
-            try:
-                self.stop()
-            except errors.StateError as err:
-                log.error(err.message)
-            else:
-                print("stopped ")
-        else:
-            print("Program %s is already stopped" % self.name)
-
-        print("Starting program %s ... " % self.name, end=''); sys.stdout.flush()
-        self.state.reload()
-        self.start()
-        print("restarted")
-
     def wait_for_start(self):
         """
         Wait for program to start, 
@@ -574,20 +557,5 @@ class ProgramBase(EventDispatcher):
             basename = path.basename(filename)
             name = path.splitext(basename)[0]
             yield cls(name, force=force)
-
-
-    @classmethod
-    def start_all(cls, start_paused=False):
-        'Start all user defined programs'
-        log.info("Starting all programs")
-
-        for prog in cls.find_for_user():
-            if not start_paused and prog.is_paused:
-                log.info(" - Program %s is paused" % prog.name)
-            elif not prog.is_running:
-                log.info(" + Starting program %s" % prog.name)
-                prog.start(daemon=True)
-            else:
-                log.info(" - Programs %s is already running" % prog.name)
 
 
