@@ -68,15 +68,13 @@ def main(args):
 
     if proc.is_running:
         log.warning("Program is running: Updates will not be reflected until a restart is done")
+    with proc.raw_data.transaction():
+        for key, value in args.items:
+            if key == 'name':
+                raise errors.ChalmersError("Can not set program name")
 
-    for key, value in args.items:
-        if key == 'name':
-            raise errors.ChalmersError("Can not set program name")
-
-        set_nested_key(proc.raw_data, key, value)
-        print("Set '%s' to %r for program %s" % (key, value, args.name))
-
-    proc.raw_data._store()
+            set_nested_key(proc.raw_data, key, value)
+            print("Set '%s' to %r for program %s" % (key, value, args.name))
 
     print("done")
 
