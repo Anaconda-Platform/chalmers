@@ -12,7 +12,7 @@ def kill_tree(pid):
         log.error("NoSuchProcess pid=%s" % pid)
         return
 
-    children = parent.get_children(recursive=True)
+    children = parent.children(recursive=True)
 
     parent.kill()
 
