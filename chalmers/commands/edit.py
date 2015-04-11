@@ -29,7 +29,7 @@ def main(args):
     if EDITOR is None:
         raise errors.ChalmersError("Environment variable 'EDITOR' needs to be set")
 
-    prog = Program(args.name)
+    prog = Program(args.name, force=True)
 
     cmd = '%s %s' % (EDITOR, pipes.quote(prog.raw_data.filename))
 
