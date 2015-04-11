@@ -5,8 +5,8 @@ eg:
     chalmers add --name server1 -- python /path/to/myserver.py
 or:
     chalmers add --name server1 -c "python /path/to/myserver.py"
-    
-    
+
+
 '''
 from __future__ import unicode_literals, print_function
 
@@ -77,8 +77,7 @@ def main(args):
     program.state.update(state)
 
     if not args.paused:
-        program.pipe_output = not args.daemon
-        program.start(daemon=args.daemon)
+        program.start()
 
     log.info('Added program {args.name}'.format(args=args))
 
