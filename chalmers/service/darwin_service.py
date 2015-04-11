@@ -9,8 +9,7 @@ from __future__ import unicode_literals, print_function
 import logging
 from os import path
 import os
-import pwd
-from subprocess import CalledProcessError, check_output as _check_output, STDOUT
+import subprocess as sp
 import sys
 
 from chalmers import errors
@@ -29,16 +28,6 @@ def read_data(filename):
 launchd_label = "org.continuum.chalmers"
 
 log = logging.getLogger('chalmers.service')
-
-def demote(user_uid, user_gid):
-    'pre exec function to drop root privleges on Popen'
-
-    def result():
-        os.setgid(user_gid)
-        os.setuid(user_uid)
-
-    return result
-
 
 class DarwinService(object):
     def __init__(self, target_user):
@@ -62,10 +51,10 @@ class DarwinService(object):
 
         log.info("Running command: %s" % ' '.join(command))
         try:
-            output = _check_output(command, stderr=STDOUT)
+            output = sp.check_output(command, stderr=sp.STDOUT)
         except OSError as err:
             raise errors.ChalmersError("Could not access program 'launchctl' required for osx service install")
-        except CalledProcessError as err:
+        except sp.CalledProcessError as err:
             if err.returncode == 1:
                 if 'Socket is not connected' in err.output:
                     log.error(err.output)
@@ -78,7 +67,7 @@ class DarwinService(object):
         try:
             command = ['launchctl', 'list', self.label]
             return self.check_output(command)
-        except CalledProcessError as err:
+        except sp.CalledProcessError as err:
             if err.returncode == 1:
                 return None
             raise
@@ -100,7 +89,7 @@ class DarwinService(object):
             try:
                 command = ['launchctl', 'load', fd.name]
                 self.check_output(command).strip()
-            except CalledProcessError as err:
+            except sp.CalledProcessError as err:
                 if err.returncode == 1:
                     raise errors.ChalmersError("Chalmers service is already installed")
                 raise
@@ -112,6 +101,7 @@ class DarwinService(object):
         log.info("Adding chalmers launchd plist")
         self.add_launchd()
         log.info("All chalmers programs will now run on boot")
+        return True
 
     def uninstall(self):
         """Uninstall launchd plist for chalmers"""
@@ -120,12 +110,14 @@ class DarwinService(object):
         try:
             command = ['launchctl', 'remove', self.label]
             self.check_output(command).strip()
-        except CalledProcessError as err:
+        except sp.CalledProcessError as err:
             if err.returncode == 1:
-                raise errors.ChalmersError("Chalmers service is not installed")
+                log.error("Chalmers service is not installed")
+                return False
             raise
 
         log.info("Chalmers service has been removed")
+        return True
 
     def status(self):
         """Check if chalmers will be started at reboot"""
@@ -133,6 +125,8 @@ class DarwinService(object):
         launchd_lines = self.get_launchd()
         if launchd_lines:
             log.info("Chalmers is setup to start on boot")
+            return True
         else:
             log.info("Chalmers will not start on boot")
+            return False
 

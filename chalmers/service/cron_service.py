@@ -14,7 +14,7 @@ correctly.
 from __future__ import unicode_literals, print_function
 
 import logging
-from subprocess import Popen, check_output, CalledProcessError, PIPE
+import subprocess as sp
 import sys
 
 from chalmers import errors
@@ -27,10 +27,23 @@ chalmers_tab_entry = '@reboot %s %s start -a' % (python_exe, chalmers_script)
 
 log = logging.getLogger('chalmers.reboot')
 
+def check():
+    try:
+        sp.check_output(['crontab', '-l'], stderr=sp.STDOUT)
+    except sp.CalledProcessError as err:
+        if err.returncode == 1 and 'crontab: no crontab for' in err.output:
+            return True
+        raise
+    except IOError as err:
+        if err.errno == 2: return False
+        raise
+    else:
+        return True
+
 def get_crontab():
     try:
-        output = check_output(['crontab', '-l']).strip()
-    except CalledProcessError as err:
+        output = sp.check_output(['crontab', '-l']).strip()
+    except sp.CalledProcessError as err:
         if err.returncode != 1:
             raise errors.ChalmersError("Could not read crontab")
         return []
@@ -38,10 +51,9 @@ def get_crontab():
     return output.split('\n')
 
 def set_crontab(tab):
-
     new_cron_tab = '\n'.join(tab) + '\n'
 
-    p0 = Popen(['crontab'], stdin=PIPE)
+    p0 = sp.Popen(['crontab'], stdin=sp.PIPE)
     p0.communicate(input=new_cron_tab)
 
 class CronService(object):
@@ -56,6 +68,7 @@ class CronService(object):
                    "(upstart, systemd or sysv)")
             raise errors.ChalmersError(msg)
         self.target_user = target_user
+        self.log = logging.getLogger('chalmers.cron_service')
 
     @classmethod
     def use_if_not_root(cls, subcls, target_user):
@@ -72,35 +85,40 @@ class CronService(object):
         tab_lines = get_crontab()
 
         if chalmers_tab_entry in tab_lines:
-            log.info("Chalmers crontab instruction already exists")
+            self.log.warn("Chalmers crontab instruction already exists")
+            return True
         else:
-            log.info("Adding chalmers instruction to crontab")
+            self.log.info("Adding chalmers instruction to crontab")
             tab_lines.append(chalmers_tab_entry)
 
             set_crontab(tab_lines)
 
-            log.info("All chalmers programs will now run on boot")
+            self.log.info("All chalmers programs will now run on boot")
+            return True
 
 
     def uninstall(self):
 
         tab_lines = get_crontab()
-
         if chalmers_tab_entry in tab_lines:
-            log.info("Removing chalmers instruction from crontab")
+            self.log.info("Removing chalmers instruction from crontab")
             tab_lines.remove(chalmers_tab_entry)
 
             set_crontab(tab_lines)
+            return True
 
         else:
-            log.info("Chalmers crontab instruction does not exist")
+            self.log.info("Chalmers crontab instruction does not exist")
+            return False
 
     def status(self):
 
         tab_lines = get_crontab()
 
         if chalmers_tab_entry in tab_lines:
-            log.info("Chalmers is setup to start on boot")
+            self.log.info("Chalmers is setup to start on boot")
+            return True
         else:
-            log.info("Chalmers will not start on boot")
+            self.log.info("Chalmers will not start on boot")
+            return False
 

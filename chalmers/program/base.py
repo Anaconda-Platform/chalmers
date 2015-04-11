@@ -22,8 +22,8 @@ from chalmers import config
 from chalmers import errors
 from chalmers.event_dispatcher import EventDispatcher, send_action
 from chalmers.utils.file_echo import FileEcho
-from chalmers.utils.persistent_dict import PersistentDict
 from chalmers.utils.kill_tree import kill_tree
+from chalmers.utils.persistent_dict import PersistentDict
 
 
 log = logging.getLogger(__name__)
@@ -319,7 +319,7 @@ class ProgramBase(EventDispatcher):
         else:
             stdout = None
 
-        if self.pipe_output:
+        if self.pipe_output:  # TODO: this may no longer be useful
             self._echo = FileEcho(self.data['stdout'], sys.stdout)
             self._echo.start()
         else:
