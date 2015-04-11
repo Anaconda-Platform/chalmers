@@ -12,12 +12,14 @@ from argparse import RawDescriptionHelpFormatter
 import logging
 import sys
 import time
-
+from multiprocessing import Process
 from clyent import print_colors
 
 from chalmers import errors
 from chalmers.utils.cli import add_selection_group, select_programs, \
     filter_programs
+
+
 
 
 log = logging.getLogger('chalmers.start')
@@ -46,11 +48,12 @@ def main(args):
                 print_colors('[  {=OK!c:green}  ]')
 
     else:
-        if len(programs) != 1:
-            raise errors.ChalmersError("start currently only supports running one program in -w/--no-daemon mode")
-        prog = programs[0]
-        prog.pipe_output = True
-        prog.start(daemon=False)
+        processes = [Process(target=prog.start, kwargs={'daemon':False}) for prog in programs]
+        for proc in processes:
+            proc.start()
+
+        for proc in processes:
+            proc.join()
 
 
 def restart_main(args):
