@@ -16,8 +16,20 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 
 #### Running chalmers on system boot
 
-    chalmers install-service
+    sudo chalmers service install
 
+This will setup chalmers to start as the current user using the os native init scripts. 
+On windows, you can use `runas` if you are not administrator. 
+
+To run chalmers as the root user run
+
+    sudo chalmers service install --root
+
+You may also run the chalmers service locally without requiring root privleges
+
+    chalmers service install
+
+#### Running chalmers on system boot (All platforms)
 
 #### Adding a Program
 
@@ -28,6 +40,52 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 #### Check the program status
 
     chalmers list
+
+## Chalmers Program Configuration
+
+To set an option for a program run `chalmers set` eg.
+
+```
+chalmers set program-name key1=value1 [key2=value2 ...]
+```
+
+See the list below for a list of usefull keys
+
+### Common Config values:
+
+  * `startsecs`: The time in seconds that the program is assumed to be starting up
+    If the program exits before this time it is considered to be spinning
+  * `startretries`: The number or times to launch a spinning program
+  * `stopwaitsecs`: Wait this long
+  * `exitcodes`: A list of exit codes that are accepted as a successful exit 
+  * `stopsignal`: The signal to sent to terminate the program. May be an int or string eg: 'SIGTERM' or 15  
+    This must be only 'SIGTERM' or 'SIGINT' on win32 platforms.
+  * `cwd`: Directory start the program
+  * `env.ENVVAR`: Replace `ENVVAR` with the name of the environment variable you want to set.
+    eg.
+    
+    ```
+    chalmers set program-name env.PORT=4567
+    ```
+
+Log file config values:
+
+ 
+ * `redirect_stderr`: Direct stderr to the same log file as stdout (default is True)
+ * `stdout`: filename to pipe the program's stdout
+ * `stderr`: filename to pipe the program's stderr
+ * `log_dir`: The base directory to output logs
+ * `daemon_log`: filename to pipe the programs conrol log 
+ * env.PYTHONUNBUFFERED: Set this value to 1 if you want are running a 
+   python program and want realtime logging 
+   See: https://docs.python.org/2/using/cmdline.html#envvar-PYTHONUNBUFFERED 
+
+Posix Only Config values:
+
+  * `umask`: Abbreviation of user mask: sets the file mode creation mask of the current process. 
+   See http://en.wikipedia.org/wiki/Umask
+  * `user`: User to run the program as. May be a username or UID. This option is only valid when 
+    chalmers is run as the root user 
 
 
 ## Chalmers commands
