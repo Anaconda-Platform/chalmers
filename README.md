@@ -16,8 +16,20 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 
 #### Running chalmers on system boot
 
-    chalmers install-service
+    sudo chalmers service install
 
+This will setup chalmers to start as the current user using the os native init scripts. 
+On windows, you can use `runas` if you are not administrator. 
+
+To run chalmers as the root user run
+
+    sudo chalmers service install --root
+
+You may also run the chalmers service locally without requiring root privleges
+
+    chalmers service install
+
+#### Running chalmers on system boot (All platforms)
 
 #### Adding a Program
 
