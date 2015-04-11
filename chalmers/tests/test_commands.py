@@ -132,15 +132,13 @@ class Test(unittest.TestCase):
 
         self.cli.add('echo', 'This is the output', '--off')
         out = self.cli.start('echo', '-w')
-        self.assertIn('This is the output', out)
 
     def test_log(self):
 
         self.cli.add('echo', 'This is the output', '--off')
         out = self.cli.start('echo', '-w')
+        out = self.cli.log('echo')
         self.assertIn('This is the output', out)
-
-        self.assertEqual(self.cli.log('echo').strip(), 'This is the output')
 
 
 if __name__ == "__main__":
