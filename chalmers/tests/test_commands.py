@@ -59,18 +59,18 @@ class Test(unittest.TestCase):
         unittest.TestCase.tearDown(self)
 
     def test_add_show(self):
-        self.cli.add('echo', 'hi')
+        self.cli.add('echo', 'hi', '--off', '--off')
         self.assertEqual(self.cli.show('echo', '--cmd').strip(), 'echo hi')
         self.assertEqual(self.cli.show('echo', '--cmd').strip(), 'echo hi')
 
 
     def test_cant_add_twice(self):
-        self.cli.add('echo', 'hi')
+        self.cli.add('echo', 'hi', '--off')
         with self.assertRaises(errors.ChalmersError):
-            self.cli.add('echo', 'hi')
+            self.cli.add('echo', 'hi', '--off')
 
     def test_add_remove(self):
-        self.cli.add('echo', 'hi')
+        self.cli.add('echo', 'hi', '--off')
         self.cli.remove('echo')
 
     def test_cant_remove_non_existent(self):
@@ -91,13 +91,13 @@ class Test(unittest.TestCase):
 
     def test_list(self):
 
-        out = self.cli.add('echo', 'hi')
+        out = self.cli.add('echo', 'hi', '--off')
         out = self.cli.list()
         self.assertEqual(out.split(), ['echo', 'OFF'])
 
     def test_pause(self):
 
-        out = self.cli.add('echo', 'hi')
+        out = self.cli.add('echo', 'hi', '--off')
 
         out = self.cli.list()
         self.assertEqual(out.split(), ['echo', 'OFF'])
@@ -114,12 +114,12 @@ class Test(unittest.TestCase):
 
     def test_show(self):
 
-        self.cli.add('echo', 'hi')
+        self.cli.add('echo', 'hi', '--off')
         out = self.cli.show('echo')
 
     def test_set(self):
 
-        self.cli.add('echo', 'hi')
+        self.cli.add('echo', 'hi', '--off')
         out = self.cli.set('echo', 'x=1')
         self.assertEqual(out.strip(), "Set 'x' to 1 for program echo\ndone")
         out = self.cli.show('echo', '--def')
@@ -130,13 +130,13 @@ class Test(unittest.TestCase):
 
     def test_start(self):
 
-        self.cli.add('echo', 'This is the output')
+        self.cli.add('echo', 'This is the output', '--off')
         out = self.cli.start('echo', '-w')
         self.assertIn('This is the output', out)
 
     def test_log(self):
 
-        self.cli.add('echo', 'This is the output')
+        self.cli.add('echo', 'This is the output', '--off')
         out = self.cli.start('echo', '-w')
         self.assertIn('This is the output', out)
 
