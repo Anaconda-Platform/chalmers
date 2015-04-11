@@ -25,7 +25,7 @@ log = logging.getLogger('chalmers.stop')
 
 def main(args):
 
-    programs = select_programs(args, filter_paused=False)
+    programs = select_programs(args, filter_paused=False, force=args.force)
 
     programs = filter_programs(programs, lambda p: not p.is_running, 'Stopping', 'stopped')
     if not programs:
