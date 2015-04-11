@@ -17,6 +17,8 @@ import argparse
 
 if os.name == 'nt':
     from . import _install_service_nt as svs
+elif ("Darwin" in os.uname()[0]) & (int(os.uname()[2].split(".")[0]) >= 8):
+    from . import _install_service_launchd as svs
 else:
     from . import _install_service_posix as svs
 
