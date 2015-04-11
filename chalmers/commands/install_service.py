@@ -55,7 +55,7 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('action', choices=['install', 'uninstall', 'status'])
+    parser.add_argument('action', choices=['install', 'uninstall', 'status'], nargs='?', default='status')
     group = parser.add_argument_group('Service Type').add_mutually_exclusive_group()
 
     if os.name == 'posix':
