@@ -17,7 +17,7 @@ def add_selection_group(parser):
                         help='select all programs')
 
 
-def select_programs(args, filter_paused=True):
+def select_programs(args, filter_paused=True, force=False):
     """
     Return a list of selected programs from command line arguments
     """
@@ -30,11 +30,11 @@ def select_programs(args, filter_paused=True):
         raise  SystemExit(1)
 
     if args.all:
-        programs = Program.find_for_user()
+        programs = Program.find_for_user(force=force)
         if filter_paused:
             programs = [prog for prog in programs if not prog.is_paused]
     else:
-        programs = [Program(name) for name in args.names]
+        programs = [Program(name, force=force) for name in args.names]
 
     erorrs = 0
     for program in programs:

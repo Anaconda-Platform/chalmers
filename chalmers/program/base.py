@@ -116,7 +116,7 @@ class ProgramBase(EventDispatcher):
 
     preexec_fn = None
 
-    def __init__(self, name, load=True):
+    def __init__(self, name, load=True, force=False):
         self._name = name
 
         EventDispatcher.__init__(self)
@@ -125,7 +125,17 @@ class ProgramBase(EventDispatcher):
         defn_filename = path.join(config.dirs.user_data_dir, 'programs', '%s.yaml' % self.name)
         state_filename = path.join(config.dirs.user_data_dir, 'state', '%s.yaml' % self.name)
 
-        self.state = PersistentDict(state_filename)
+        try:
+            self.state = PersistentDict(state_filename)
+        except yaml.parser.ParserError:
+            log.error("Yaml parser error. could not parse state file %s" % state_filename)
+            if force:
+                log.warn("Removing state file and continuing")
+                os.unlink(state_filename)
+                self.state = PersistentDict(state_filename)
+            else:
+                raise errors.ChalmersError("Invalid state file. run `chalmers stop --force` to clear the state file")
+
         self.raw_data = PersistentDict(defn_filename)
         self.data = {}
         self.mk_data()
@@ -537,13 +547,13 @@ class ProgramBase(EventDispatcher):
         return prog
 
     @classmethod
-    def find_for_user(cls):
+    def find_for_user(cls, force=False):
         'Find all programs this user has defined'
         program_glob = path.join(config.dirs.user_data_dir, 'programs', '*.yaml')
         for filename in glob(program_glob):
             basename = path.basename(filename)
             name = path.splitext(basename)[0]
-            yield cls(name)
+            yield cls(name, force=force)
 
 
     @classmethod
