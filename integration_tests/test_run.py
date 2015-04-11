@@ -71,7 +71,7 @@ class Test(unittest.TestCase):
         self.assertIn('This is LRP', out)
 
         out = self.cli.list()
-        self.assertIn('PAUSED', out)
+        self.assertIn('OFF', out)
 
         print('> done')
 
@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
         self.assertIn('This is LRP', out)
         self.assertIn('KeyboardInterrupt', out)
         out = self.cli.list()
-        self.assertIn('PAUSED', out)
+        self.assertIn('OFF', out)
 
         print('> done')
 
