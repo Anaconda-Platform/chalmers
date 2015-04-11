@@ -68,7 +68,10 @@ class CronService(object):
                    "(upstart, systemd or sysv)")
             raise errors.ChalmersError(msg)
         self.target_user = target_user
-        self.log = logging.getLogger('chalmers.cron_service')
+        log = logging.getLogger('chalmers.cron_service')
+
+        log.info('Using posix crontab for current user (does not require root)')
+
 
     @classmethod
     def use_if_not_root(cls, subcls, target_user):
@@ -85,15 +88,15 @@ class CronService(object):
         tab_lines = get_crontab()
 
         if chalmers_tab_entry in tab_lines:
-            self.log.warn("Chalmers crontab instruction already exists")
+            log.warn("Chalmers crontab instruction already exists")
             return True
         else:
-            self.log.info("Adding chalmers instruction to crontab")
+            log.info("Adding chalmers instruction to crontab")
             tab_lines.append(chalmers_tab_entry)
 
             set_crontab(tab_lines)
 
-            self.log.info("All chalmers programs will now run on boot")
+            log.info("All chalmers programs will now run on boot")
             return True
 
 
@@ -101,14 +104,14 @@ class CronService(object):
 
         tab_lines = get_crontab()
         if chalmers_tab_entry in tab_lines:
-            self.log.info("Removing chalmers instruction from crontab")
+            log.info("Removing chalmers instruction from crontab")
             tab_lines.remove(chalmers_tab_entry)
 
             set_crontab(tab_lines)
             return True
 
         else:
-            self.log.info("Chalmers crontab instruction does not exist")
+            log.info("Chalmers crontab instruction does not exist")
             return False
 
     def status(self):
@@ -116,9 +119,9 @@ class CronService(object):
         tab_lines = get_crontab()
 
         if chalmers_tab_entry in tab_lines:
-            self.log.info("Chalmers is setup to start on boot")
+            log.info("Chalmers is setup to start on boot")
             return True
         else:
-            self.log.info("Chalmers will not start on boot")
+            log.info("Chalmers will not start on boot")
             return False
 

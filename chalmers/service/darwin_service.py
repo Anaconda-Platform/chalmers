@@ -32,6 +32,12 @@ log = logging.getLogger('chalmers.service')
 class DarwinService(object):
     def __init__(self, target_user):
         self.target_user = target_user
+        if target_user:
+            log.info('Using OSX launchd for user %s (requires root)' % self.target_user)
+        elif target_user is False:
+            log.info('Using OSX launchd for current user (does not require root)')
+        else:
+            log.info('Using OSX launchd for root user')
 
     @property
     def label(self):
@@ -121,7 +127,6 @@ class DarwinService(object):
 
     def status(self):
         """Check if chalmers will be started at reboot"""
-
         launchd_lines = self.get_launchd()
         if launchd_lines:
             log.info("Chalmers is setup to start on boot")
