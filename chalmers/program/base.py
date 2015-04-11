@@ -127,7 +127,7 @@ class ProgramBase(EventDispatcher):
 
         try:
             self.state = PersistentDict(state_filename)
-        except yaml.parser.ParserError:
+        except yaml.error.YAMLError:
             log.error("Yaml parser error. could not parse state file %s" % state_filename)
             if force:
                 log.warn("Removing state file and continuing")
@@ -136,7 +136,16 @@ class ProgramBase(EventDispatcher):
             else:
                 raise errors.ChalmersError("Invalid state file. run `chalmers stop --force` to clear the state file")
 
-        self.raw_data = PersistentDict(defn_filename)
+        try:
+            self.raw_data = PersistentDict(defn_filename)
+        except yaml.error.YAMLError:
+            log.error("Yaml parser error. could not parse definition file %s" % defn_filename)
+            if force:
+                self.raw_data = PersistentDict(defn_filename, load=False)
+            else:
+                raise errors.ChalmersError("Invalid definition file. Run `chalmers edit %s` to fix the definition file" % (defn_filename))
+
+
         self.data = {}
         self.mk_data()
 
