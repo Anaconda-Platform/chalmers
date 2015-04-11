@@ -3,15 +3,23 @@
 
 For all platforms you can install the service either to the system or locally
 
-When installing For some platforms osx and win32, chalmers will only run at login 
+When installing For some platforms osx and win32, 
+chalmers will only run at login 
 
-Local service install. Admin is not required::
+Local service install. Admin is not - on some systems (windows) 
+this may limit chalmers to starting on login, not boot::
 
     chalmers service install
 
-Root service install (posix)::
+This command will install chalmers server to start on 
+boot for the current user (posix)::
 
-    sudo chalmers service install --system 
+    sudo chalmers service install
+     
+This command will install chalmers server to start on 
+boot for the root user (posix)::
+
+    sudo chalmers service install --root 
 
 Root service install (windows)::
     
@@ -55,13 +63,14 @@ def add_parser(subparsers):
     else:
         sytem_default = False
 
-    group.add_argument('--system', dest='system', nargs='?', default=sytem_default,
+    group.add_argument('--system', '--system-user', dest='system', default=sytem_default, metavar='USERNAME',
                        help='Install Chalmers as a service to the system for a given user (requires admin). '
                             'If no user is given it will launch chalmers as root (default: %(default)s)')
-    group.add_argument('--no-system', dest='system', action='store_false',
+    group.add_argument('--local', '--no-system', dest='system', action='store_false',
                        help='Always install chalmers service assuming no admin access')
     group.add_argument('--root', '--admin', dest='system', action='store_const', const=None,
-                       help='Install Chalmers as a service to the system for the root/admin user')
+                       help='Install Chalmers as a service to the system for the root/admin user '
+                       'this argument implies `--system root on unix`')
 
     if os.name == 'nt':
         parser.add_argument('-u', '--username', default=getpass.getuser(),
