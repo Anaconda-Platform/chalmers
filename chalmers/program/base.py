@@ -360,8 +360,13 @@ class ProgramBase(EventDispatcher):
                 cwd = self.data.get('cwd') or os.path.abspath(os.curdir)
 
                 env_str = '\n'.join('\t%s: %r' % item for item in update_env.items())
-                log.info("Setting Environment: \n%s" % env_str)
-                log.info("Setting Working Directory: %s" % cwd)
+
+                if env_str:
+                    log.info("Setting Environment: \n%s" % env_str)
+
+                if cwd:
+                    log.info("Setting Working Directory: %s" % cwd)
+
                 log.info("Running Command: %s" % ' '.join(self.data['command']))
                 try:
                     self._p0 = Popen(self.data['command'],

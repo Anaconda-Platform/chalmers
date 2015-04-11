@@ -46,7 +46,7 @@ def main(args):
                 print_colors('[  {=OK!c:green}  ]')
 
     else:
-        pool = MultiPlexIOPool(stream=args.stream, color=args.color)
+        pool = MultiPlexIOPool(stream=args.stream, use_color=args.color)
 
         for prog in programs:
             pool.append(prog)

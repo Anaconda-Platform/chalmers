@@ -65,7 +65,7 @@ class EventDispatcher(object):
             if self.FAMILY == 'AF_UNIX' and os.path.exists(self.addr):
                 os.unlink(self.addr)
             try:
-                log.info("Listening to events from: %s" % self.addr)
+                log.debug("Listening to events from: %s" % self.addr)
                 self._listener = Listener(self.addr, family=self.FAMILY)
             except socket.error as err:
                 if err.errno == 48:
