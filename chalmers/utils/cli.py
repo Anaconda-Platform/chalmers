@@ -30,9 +30,10 @@ def select_programs(args, filter_paused=True, force=False):
         raise  SystemExit(1)
 
     if args.all:
-        programs = Program.find_for_user(force=force)
+        programs = list(Program.find_for_user(force=force))
         if filter_paused:
             programs = [prog for prog in programs if not prog.is_paused]
+
     else:
         programs = [Program(name, force=force) for name in args.names]
 
