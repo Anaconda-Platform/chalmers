@@ -6,9 +6,9 @@ class PersistentDict(dict):
     """
     A class that persists a dict to a file  
     """
-    def __init__(self, filename):
+    def __init__(self, filename, load=True):
         self._filename = os.path.abspath(filename)
-        self._load()
+        if load: self._load()
 
     @property
     def filename(self):
