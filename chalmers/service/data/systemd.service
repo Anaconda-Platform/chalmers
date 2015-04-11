@@ -1,0 +1,16 @@
+# Chlamers service for systemd
+# by Continuum Analytics (https://github.com/binstar/chalmers)
+#
+# /etc/systemd/system/chalmers.service
+#
+[Unit]
+Description=Chalmers process control
+
+[Service]
+ExecStart={launch} -c "{python_exe} {chalmers} start --all"
+ExecStop={launch} -c "{python_exe} {chalmers} stop --all"
+ExecReload={launch} -c "{python_exe} {chalmers} restart --all"
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
