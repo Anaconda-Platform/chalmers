@@ -87,8 +87,13 @@ Posix Only Config values:
   * `user`: User to run the program as. May be a username or UID. This option is only valid when 
     chalmers is run as the root user 
 
+# Example of seting up a server
 
-## Chalmers commands
+```
+chalmers add --run-later -n web -- python my_server.py
+chalmers set 
+```
+## Chalmers command reference 
 
 | Command | Description |
 | ------- | ----------- |
