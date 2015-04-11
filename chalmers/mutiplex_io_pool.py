@@ -3,6 +3,11 @@ from __future__ import print_function, absolute_import, unicode_literals
 from multiprocessing import Process, Queue
 from threading import Thread
 import sys
+import time
+from os import path
+from clyent import print_colors
+from random import shuffle
+from itertools import cycle
 
 class stdq(object):
     def __init__(self, name, queue, out):
@@ -16,7 +21,7 @@ class stdq(object):
         self.out.write('-- traceback.print_stack --\n')
         traceback.print_stack(file=self.out)
         self.out.write('-- traceback.print_stack --\n')
-        afd
+
         if data:
             self.out.write('X %r' % repr(data))
             self.queue.put([self.name, data])
@@ -38,39 +43,87 @@ class MultiPlexIOPool(object):
 
 
 
-    def __init__(self):
+    def __init__(self, stream=False, color=False):
+        self.stream = stream
+        self.color = color
+
         self.processes = []
+        self.programs = []
 
         self.queue = Queue()
         self.finished = False
+        self.watched = []
+        self.creating = []
 
-        self.printer = Thread(target=self.printer_loop)
-        self.printer.daemon = True
-        self.printer.start()
-        self.queue.put(['main', 'staring io loop\n'])
 
 
 
     def printer_loop(self):
-        while not self.finished:
-            name, data = self.queue.get()
-            if data:
-                end = '' if data.endswith('\n') else '\n'
-                print('[%s] %s' % (name, data), end=end)
 
+        colors = cycle(['blue', 'green', 'red', 'bold', 'yello'])
+        color = iter(colors)
+        color_map = {}
 
-    def append(self, name, target, *args, **kwargs):
+        try:
+            while not self.finished:
+                seen_data = False
+                for name, fd in self.watched:
+                    if self.color and name not in color_map:
+                        color_map[name] = next(color)
 
+                    data = fd.readline()
+                    while data:
+                        seen_data = True
+                        if self.color:
+                            print_colors("[{name!c:{color}}] ", end='', color=color_map[name], name=name)
+                        else:
+                            print("[{%s}] " % name, end='')
 
-        if sys.stdout.isatty():
-            target = iotarget(name, target)
-            kwargs['queue'] = self.queue
+                        print(data, end='')
+                        data = fd.readline()
 
-        proc = Process(target=target, args=args, kwargs=kwargs)
+                if not seen_data:
+                    time.sleep(.1)
+                if self.creating:
+                    program = self.creating[-1]
+                    stdout_file = program.data.get('stdout')
+                    if path.isfile(stdout_file):
+                        fd = open(stdout_file)
+                        self.watched.append([program.name, fd])
+                        self.creating.pop()
+
+        finally:
+            for _, fd in self.watched:
+                try:
+                    fd.close()
+                except IOError: pass
+
+    def append(self, program):
+        stdout_file = program.data.get('stdout')
+
+        if stdout_file:
+            if path.isfile(stdout_file):
+                fd = open(stdout_file)
+                fd.seek(0, 2)
+                self.watched.append([program.name, fd])
+            else:
+                self.creating.append(program)
+
+        proc = Process(target=program.start, kwargs={'daemon': False})
         proc.start()
         self.processes.append(proc)
+        self.programs.append(program)
+
+
 
     def join(self):
-        for proc in self.processes:
-            proc.join()
-        self.finished = True
+
+        if self.stream:
+            self.printer = Thread(target=self.printer_loop)
+            self.printer.start()
+
+        try:
+            for proc in self.processes:
+                proc.join()
+        finally:
+            self.finished = True
