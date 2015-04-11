@@ -97,10 +97,10 @@ def add_parser(subparsers):
     group = parser.add_argument_group('Starting State') \
                   .add_mutually_exclusive_group()
 
-    group.add_argument('--off/--paused', action='store_true', dest='paused',
+    group.add_argument('--off', '--paused', action='store_true', dest='paused',
                        help="Don't start program automatically at system start (exclude from `chalmers start --all`)",
                        default=False)
-    group.add_argument('--on/--un-paused', action='store_false', dest='paused',
+    group.add_argument('--on', '--un-paused', action='store_false', dest='paused',
                        help="Start program automatically at system start (include in `chalmers start --all`)")
 
     group.add_argument('-r', '--run-now', action='store_true', default=False, dest='run_now',
