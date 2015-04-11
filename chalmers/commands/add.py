@@ -6,7 +6,10 @@ eg:
 or:
     chalmers add --name server1 -c "python /path/to/myserver.py"
 
+Note that this does not run the program by default. To run your program,
 
+run `chalmers start NAME` or use the run-now option eg. `chalmers add --run-now ...`
+ 
 '''
 from __future__ import unicode_literals, print_function
 
@@ -76,7 +79,7 @@ def main(args):
     program.raw_data.update(definition)
     program.state.update(state)
 
-    if not args.paused:
+    if args.run_now:
         program.start()
 
     log.info('Added program {args.name}'.format(args=args))
@@ -99,6 +102,11 @@ def add_parser(subparsers):
                        default=False)
     group.add_argument('--on/--un-paused', action='store_false', dest='paused',
                        help="Start program automatically at system start (include in `chalmers start --all`)")
+
+    group.add_argument('-r', '--run-now', action='store_true', default=False, dest='run_now',
+                       help="Start program Right now (default: %(default)s)")
+    group.add_argument('-l', '--dont-run-now', '--run-later', action='store_false', dest='run_now',
+                       help="Start the program later with `chalmers start ...`")
 
     #===========================================================================
     #
