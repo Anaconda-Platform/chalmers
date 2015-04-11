@@ -12,14 +12,13 @@ from argparse import RawDescriptionHelpFormatter
 import logging
 import sys
 import time
-from multiprocessing import Process
+
 from clyent import print_colors
 
 from chalmers import errors
+from chalmers.mutiplex_io_pool import MultiPlexIOPool
 from chalmers.utils.cli import add_selection_group, select_programs, \
     filter_programs
-
-
 
 
 log = logging.getLogger('chalmers.start')
@@ -48,12 +47,12 @@ def main(args):
                 print_colors('[  {=OK!c:green}  ]')
 
     else:
-        processes = [Process(target=prog.start, kwargs={'daemon':False}) for prog in programs]
-        for proc in processes:
-            proc.start()
+        pool = MultiPlexIOPool(stream=args.stream, color=args.color)
 
-        for proc in processes:
-            proc.join()
+        for prog in programs:
+            pool.append(prog)
+
+        pool.join()
 
 
 def restart_main(args):
@@ -112,6 +111,10 @@ def add_parser(subparsers):
                         help='Wait for program to exit')
     parser.add_argument('-d', '--daemon', action='store_true', dest='daemon', default=True,
                         help='Run program as daemon')
+    parser.add_argument('--stream', action='store_true', default=sys.stdout.isatty(),
+                        help='Multiplex stdout of programs to stdout')
+    parser.add_argument('--no-stream', action='store_false', dest='stream',
+                        help='Don\'t pip stdout of programs to stdout')
 
     parser.set_defaults(main=main)
 

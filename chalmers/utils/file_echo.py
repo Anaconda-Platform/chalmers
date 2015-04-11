@@ -1,7 +1,7 @@
 from threading import Thread
 import os
 import time
-
+import sys
 import logging
 log = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class FileEcho(Thread):
             pos = fd.tell()
 
             while self._running:
-                if pos <= os.fstat(fd.fileno()).st_size:
+                if pos < os.fstat(fd.fileno()).st_size:
                     fd.seek(pos)
                     data = fd.read()
                     if isinstance(data, bytes):
