@@ -1,7 +1,7 @@
 Superintendent Chalmers
 ========================
 
-Chalmers is an application that allows its users to monitor and control a 
+Chalmers is an application that allows its users to monitor and control a
 number of processes on ***any*** operating system (Posix and Win32 included)
 
 [![Binstar Badge](https://binstar.org/binstar/chalmers/badges/build.svg)](https://binstar.org/binstar/chalmers/builds)
@@ -21,7 +21,8 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 
 #### Adding a Program
 
-    chalmers run -- sleep 10
+    chalmers add --name sleep -- sleep 10
+    chlamers start sleep
 
 
 #### Check the program status
@@ -43,8 +44,8 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 | start              | Start a program |
 | restart            | Restart a program |
 | stop               | Stop running a command |
-| pause              | Pause program (don't run on system boot) |
-| unpause            | Unpause program (run on system boot) |
+| off                | Don't run a program on system boot) |
+| on                 | Run a program |
 | remove             | Remove a program definition from chalmers |
 | **Reporting** | |
 | list               | List registered programs |
@@ -61,27 +62,27 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 
 
   * Supervisord does not run on windows, Chalmers runs on all platforms.
-  * Supervisord does not start at system boot. 
+  * Supervisord does not start at system boot.
     Chalmers does this for all platforms with `chalmers install-service`.
-  * Managing Supervisord config files can be a pain. 
+  * Managing Supervisord config files can be a pain.
     Chalmers allows command line controll of the addition and removal of programs with `chalmers run|start|stop|remove`
 
- 
+
 #### Forever [github.com/nodejitsu/forever](https://github.com/nodejitsu/forever)
 
   * Forever only supports nodejs applications
-  * Forever does not start at system boot. 
+  * Forever does not start at system boot.
     Chalmers does this for all platforms with `chalmers install-service`.
   * Forever does have windows support, but it can not daemoninze windows processes.
-   
-  
+
+
 #### Honcho [honcho.readthedocs.org](https://honcho.readthedocs.org)
 
   * Currently chalmers does not support Procfile-based applications (coming soon)
 
 #### Posix init.d and Windows services
 
-  * These utilities require admin privleges to run.  Chalmers does not 
+  * These utilities require admin privleges to run.  Chalmers does not
   * These utilities require custom wrappers around the scripts that you may need to run.
     Chalmers allows command line controll of the addition and removal of programs with `chalmers run|start|stop|remove`
 

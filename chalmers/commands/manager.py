@@ -8,7 +8,6 @@ from __future__ import unicode_literals, print_function
 from argparse import RawDescriptionHelpFormatter
 import logging
 import time
-from chalmers.event_dispatcher import send_action
 from chalmers.program_manager import ProgramManager
 from chalmers import errors
 
@@ -34,7 +33,7 @@ def main(args):
     log.info("Managing processes")
 
 
-    try: 
+    try:
         result = mgr.send("ping")
     except errors.ChalmersError:
         pass
@@ -44,7 +43,7 @@ def main(args):
     mgr.start_all()
     mgr.start_listener()
 
-    #Workaround so keyboard interupt works on win32
+    # Workaround so keyboard interupt works on win32
     try:
         while mgr.is_listening:
             time.sleep(1)

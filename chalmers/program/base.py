@@ -438,7 +438,7 @@ class ProgramBase(EventDispatcher):
             return 'RUNNING'
         elif self.is_ok:
             if self.is_paused:
-                return 'PAUSED'
+                return 'OFF'
             else:
                 return 'STOPPED'
         else:
