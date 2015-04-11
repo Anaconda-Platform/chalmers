@@ -18,8 +18,7 @@ from clyent import print_colors
 from chalmers import errors
 from chalmers.utils.cli import add_selection_group, select_programs, \
     filter_programs
-
-
+from chalmers.mutiplex_io_pool import MultiPlexIOPool
 
 
 log = logging.getLogger('chalmers.start')
@@ -48,12 +47,13 @@ def main(args):
                 print_colors('[  {=OK!c:green}  ]')
 
     else:
-        processes = [Process(target=prog.start, kwargs={'daemon':False}) for prog in programs]
-        for proc in processes:
-            proc.start()
+        pool = MultiPlexIOPool()
 
-        for proc in processes:
-            proc.join()
+        for prog in programs:
+            prog.pipe_output = True
+            pool.append(prog.name, prog.start, daemon=False)
+
+        pool.join()
 
 
 def restart_main(args):
