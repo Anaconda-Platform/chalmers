@@ -125,7 +125,8 @@ chalmers set
   * Supervisord does not start at system boot.
     Chalmers does this for all platforms with `chalmers service install`.
   * Managing Supervisord config files can be a pain.
-    Chalmers allows command line control of the addition and removal of programs with `chalmers add|start|stop|remove`
+    Chalmers allows command line control of the addition and removal of programs with 
+    `chalmers add|start|stop|remove`
 
 
 #### Forever [github.com/nodejitsu/forever](https://github.com/nodejitsu/forever)
@@ -146,6 +147,7 @@ chalmers set
   * Chalmers utilizes all of these services by selecting the correct one 
     when `chalmers service install` is run.
   * These utilities require custom wrappers around the scripts that you may need to run.
-    Chalmers allows non-root command line control of the addition and removal of programs with `chalmers run|start|stop|remove`
+    Chalmers allows non-root command line control of the addition and removal of 
+    programs with `chalmers run|start|stop|remove`
 
 

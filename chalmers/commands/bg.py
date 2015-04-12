@@ -4,7 +4,7 @@ Allow a program to run in the background
 Example:
     From a terminal 'window 1' run::
     
-      $ chalmers start -w server1
+      $ chalmers start --wait server1
     
     program output ...
     program output ...
