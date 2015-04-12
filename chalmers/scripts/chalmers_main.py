@@ -29,6 +29,9 @@ def main(args=None, exit=True):
     setup_logging(logger, args.log_level, use_color=args.color,
                   show_tb=args.show_traceback, logfile=logfile)
 
+    if not hasattr(args, 'main'):
+        parser.error('too few arguments')
+
     run_command(args, exit=exit)
 
 if __name__ == "__main__":
