@@ -18,6 +18,7 @@ from clyent import print_colors
 from chalmers import errors
 from chalmers.utils import cli
 from chalmers.utils.mutiplex_io_pool import MultiPlexIOPool
+import os
 
 
 log = logging.getLogger('chalmers.start')
@@ -46,7 +47,7 @@ def main(args):
                 print_colors('[  {=OK!c:green}  ]')
 
     else:
-        pool = MultiPlexIOPool(stream=args.stream, use_color=args.color)
+        pool = MultiPlexIOPool(stream=args.stream, use_color=args.color and os.name == 'posix')
 
         for prog in programs:
             pool.append(prog)
