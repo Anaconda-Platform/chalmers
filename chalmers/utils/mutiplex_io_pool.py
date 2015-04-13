@@ -17,6 +17,17 @@ SLEEP_START = 0.1
 SLEEP_INC = 0.05
 SLEEP_MAX = 1.0
 
+def start_program(program):
+    # Remove base logging handlers, this is read from the log files that are
+    # set up after the start method
+    logger = logging.getLogger('chalmers')
+    logger.handlers = []
+    logger.handlers.append(logging.NullHandler())
+    try:
+        program.start(daemon=False)
+    except KeyboardInterrupt:
+        log.error('Program %s is shutting down' % program.name)
+
 class MultiPlexIOPool(object):
     """
     This class runs programs in a sub-process optionally it watches their 
@@ -59,8 +70,6 @@ class MultiPlexIOPool(object):
 
                         print(data, end='')
                         data = fd.readline()
-                    else:
-                        print('self.finished')
 
                 if not seen_data:
                     time.sleep(sleep_time)
@@ -75,19 +84,6 @@ class MultiPlexIOPool(object):
                 try:
                     fd.close()
                 except IOError: pass
-
-    def start_program(self, program):
-        def setup_program():
-            # Remove base logging handlers, this is read from the log files that are
-            # set up after the start method
-            logger = logging.getLogger('chalmers')
-            logger.handlers = []
-            logger.handlers.append(logging.NullHandler())
-            try:
-                program.start(daemon=False)
-            except KeyboardInterrupt:
-                log.error('Program %s is shutting down' % program.name)
-        return setup_program
 
     def manage_logs(self):
         if not self.creating:
@@ -112,7 +108,7 @@ class MultiPlexIOPool(object):
 
     def append(self, program):
 
-        proc = Process(target=self.start_program(program))
+        proc = Process(target=start_program, args=(program,))
         self.programs.append(program)
         self.processes.append(proc)
 
