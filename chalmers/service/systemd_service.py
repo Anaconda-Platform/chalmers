@@ -60,7 +60,7 @@ class SystemdService(object):
     @property
     def launch_command(self):
         if self.target_user:
-            return '/usr/bin/su - %s' % self.target_user
+            return '/bin/su - %s' % self.target_user
         else:  # Run as root
             return '/bin/sh'
 

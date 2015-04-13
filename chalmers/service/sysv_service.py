@@ -60,9 +60,9 @@ class SysVService(object):
     @property
     def launch_command(self):
         if self.target_user:
-            return 'su - %s' % self.target_user
+            return '/bin/su - %s' % self.target_user
         else:  # Run as root
-            return 'bash'
+            return '/bin/sh'
 
     def check_output(self, command):
         log.info('Running command: %s' % ' '.join(command))
