@@ -54,9 +54,9 @@ class UpstartService(object):
     @property
     def launch_command(self):
         if self.target_user:
-            return 'su - %s' % self.target_user
+            return '/usr/bin/su - %s' % self.target_user
         else:  # Run as root
-            return 'bash'
+            return '/bin/sh'
 
     def install(self):
 
