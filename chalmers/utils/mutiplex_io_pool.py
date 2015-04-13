@@ -4,6 +4,7 @@
 from __future__ import print_function, absolute_import, unicode_literals
 
 from chalmers.utils.color_picker import ColorPicker
+from chalmers.program import Program
 import logging
 from multiprocessing import Process, Queue
 from os import path
@@ -17,7 +18,8 @@ SLEEP_START = 0.1
 SLEEP_INC = 0.05
 SLEEP_MAX = 1.0
 
-def start_program(program):
+def start_program(name):
+    program = Program(name)
     # Remove base logging handlers, this is read from the log files that are
     # set up after the start method
     logger = logging.getLogger('chalmers')
@@ -108,7 +110,7 @@ class MultiPlexIOPool(object):
 
     def append(self, program):
 
-        proc = Process(target=start_program, args=(program,))
+        proc = Process(target=start_program, args=(program.name,))
         self.programs.append(program)
         self.processes.append(proc)
 
