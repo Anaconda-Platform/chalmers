@@ -3,16 +3,17 @@ import logging
 import traceback
 
 import servicemanager
-import win32event, win32serviceutil, win32service, win32api
-from win32file import ReadFile, WriteFile
-from win32pipe import CreateNamedPipe, ConnectNamedPipe, DisconnectNamedPipe
-from win32pipe import PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE, PIPE_WAIT, PIPE_UNLIMITED_INSTANCES
+import win32event, win32service, win32api
 from win32serviceutil import ServiceFramework
 
 
 log = logging.getLogger(__name__)
 
 class WindowsService(object, ServiceFramework):
+    """
+    Base windows service class that provides all the nice things that a python
+    service needs
+    """
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, args):

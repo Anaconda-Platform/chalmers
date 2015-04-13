@@ -1,4 +1,4 @@
-'''List the all the defined programs
+'''List the all the defined programs and their state
 
 eg: 
 

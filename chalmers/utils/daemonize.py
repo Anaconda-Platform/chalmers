@@ -1,4 +1,5 @@
 '''
+Uitility for deamonizing linux processes
 '''
 import logging
 import os

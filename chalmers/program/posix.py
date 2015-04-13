@@ -1,3 +1,6 @@
+"""
+
+"""
 import logging
 import os
 import signal
@@ -21,6 +24,9 @@ def stop_process(signum, frame):
     raise errors.StopProcess()
 
 class PosixProgram(ProgramBase):
+    """
+    Program that implements ProgramBase's abstract methods for posix platforms
+    """
 
     @property
     def is_running(self):

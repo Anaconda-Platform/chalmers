@@ -1,3 +1,9 @@
+"""
+TODO: this may also be obsolete
+
+    This could also replace some of the functionality in `commands/*` and
+    let them be more about user interaction.
+"""
 from contextlib import contextmanager
 import itertools
 import logging

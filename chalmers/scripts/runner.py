@@ -1,5 +1,10 @@
 """
-Chalmers program manager (for windows)
+Chalmers program runner (for windows)
+
+Instead of daemonizing the process like posix,
+win32 runs this run script with Popen
+
+Chalmers runs this programm hidden by default
 """
 
 from argparse import ArgumentParser

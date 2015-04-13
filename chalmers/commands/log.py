@@ -4,7 +4,7 @@ Show log output of program:
 To show the stdout of a run::
 
     chalmers log server1
-    
+
 To show the chalmers program control log, run::
 
     chalmers log server1 -3
@@ -12,6 +12,11 @@ To show the chalmers program control log, run::
 To show the global chalmers deamon log run::
 
     chalmers log
+
+
+You can allso  follow a file (like `tail -f`)
+
+    chalmers log -f
 '''
 
 from __future__ import unicode_literals, print_function

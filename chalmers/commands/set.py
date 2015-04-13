@@ -55,7 +55,7 @@ from chalmers.utils import try_eval, set_nested_key
 log = logging.getLogger('chalmers.set')
 
 def split_try_eval(item):
-
+    'split key=value pairs, then eval the value'
     if '=' not in item:
         raise TypeError("Chalmers can not set '%s' as a definition variable\n"
                         "The parameter must contain an '='" % (item))

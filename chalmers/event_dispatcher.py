@@ -1,3 +1,7 @@
+"""
+Event listener based on unix domain sockets or win32 named pipes
+
+"""
 from __future__ import print_function
 
 import abc

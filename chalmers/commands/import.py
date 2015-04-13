@@ -1,4 +1,9 @@
 '''
+[Advanced] [In-development]
+
+import a file exported with `chalmers export`
+
+
 '''
 from __future__ import unicode_literals, print_function
 

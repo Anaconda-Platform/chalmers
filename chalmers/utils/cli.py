@@ -1,3 +1,7 @@
+"""
+Contains client functions to help select and filter programs
+from argparse
+"""
 import logging
 
 from chalmers.program import Program

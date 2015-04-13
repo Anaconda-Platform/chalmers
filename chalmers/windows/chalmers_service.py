@@ -1,3 +1,10 @@
+"""
+Windows win32service class overloaded to run chalmers processes
+
+This service will exit almost immediatly, all processes are
+'daemonized' (win32 compatible) and the service will exit while
+the processes are still running
+"""
 from chalmers.program import Program
 from chalmers.windows.service_base import WindowsService
 

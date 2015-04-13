@@ -1,47 +1,21 @@
+"""
+
+"""
 from __future__ import print_function, absolute_import, unicode_literals
 
-from itertools import cycle
+from chalmers.utils.color_picker import ColorPicker
+import logging
 from multiprocessing import Process, Queue
 from os import path
 from threading import Thread
 import time
 
-from clyent import color
 
-import logging
 log = logging.getLogger(__name__)
 
-
-class ColorPicker(object):
-
-    light_fg_colors = ['yello', 'white']
-    light_bg_colors = [43, 46, 47, 103, 107]
-    dark_fg_colors = ['blue', 'red', 'green', 30]
-    dark_bg_colors = [40, 41, 42, 44, 45, 100, 102, 104, 105, 106]
-
-    def next_color(self):
-        yield color(None, (6,))
-        yield color(None, (7,))
-
-        for fg in self.light_fg_colors:
-            for bg in self.dark_bg_colors:
-                yield color(None, (fg, bg))
-
-        for fg in self.dark_fg_colors:
-            for bg in self.light_bg_colors:
-                yield color(None, (fg, bg))
-
-    def __init__(self):
-        self.color_map = {}
-        self.color_iter = iter(cycle(self.next_color()))
-
-    def __getitem__(self, name):
-        if name not in self.color_map:
-            self.color_map[name] = next(self.color_iter)
-
-        return self.color_map[name]
-
-
+SLEEP_START = 0.1
+SLEEP_INC = 0.05
+SLEEP_MAX = 1.0
 
 class MultiPlexIOPool(object):
     """
@@ -67,12 +41,12 @@ class MultiPlexIOPool(object):
     def printer_loop(self):
 
         colors = ColorPicker()
+        sleep_time = SLEEP_START
 
         try:
             while not self.finished:
                 seen_data = False
-                for name, fd in self.watched:
-
+                for name, fd in list(self.watched):
                     data = fd.readline()
                     while data:
                         seen_data = True
@@ -85,16 +59,16 @@ class MultiPlexIOPool(object):
 
                         print(data, end='')
                         data = fd.readline()
+                    else:
+                        print('self.finished')
 
                 if not seen_data:
-                    time.sleep(.1)
-                if self.creating:
-                    program = self.creating[-1]
-                    stdout_file = program.data.get('stdout')
-                    if path.isfile(stdout_file):
-                        fd = open(stdout_file)
-                        self.watched.append([program.name, fd])
-                        self.creating.pop()
+                    time.sleep(sleep_time)
+                    sleep_time = SLEEP_MAX if sleep_time >= SLEEP_MAX else sleep_time + SLEEP_INC
+                else:
+                    sleep_time = SLEEP_START
+
+                self.manage_logs()
 
         finally:
             for _, fd in self.watched:
@@ -104,28 +78,49 @@ class MultiPlexIOPool(object):
 
     def start_program(self, program):
         def setup_program():
+            # Remove base logging handlers, this is read from the log files that are
+            # set up after the start method
+            logger = logging.getLogger('chalmers')
+            logger.handlers = []
+            logger.handlers.append(logging.NullHandler())
             try:
                 program.start(daemon=False)
             except KeyboardInterrupt:
                 log.error('Program %s is shutting down' % program.name)
         return setup_program
 
-    def append(self, program):
-        stdout_file = program.data.get('stdout')
+    def manage_logs(self):
+        if not self.creating:
+            return
+        name, filename = self.creating[-1]
+        if path.isfile(filename):
+            fd = open(filename)
+            self.watched.append([name, fd])
+            self.creating.pop()
 
-        if stdout_file:
-            if path.isfile(stdout_file):
-                fd = open(stdout_file)
+
+    def add_log_streams(self, name, filename):
+
+        if filename:
+            if path.isfile(filename):
+                fd = open(filename)
                 fd.seek(0, 2)
-                self.watched.append([program.name, fd])
+                self.watched.append([name, fd])
             else:
-                self.creating.append(program)
+                self.creating.append([name, filename])
+
+
+    def append(self, program):
 
         proc = Process(target=self.start_program(program))
-        proc.start()
-        self.processes.append(proc)
         self.programs.append(program)
+        self.processes.append(proc)
 
+        if self.stream:
+            self.add_log_streams(program.name, program.data.get('daemon_log'))
+            self.add_log_streams(program.name, program.data.get('stdout'))
+
+        proc.start()
 
 
     def join(self):
@@ -137,5 +132,10 @@ class MultiPlexIOPool(object):
         try:
             for proc in self.processes:
                 proc.join()
+
         finally:
             self.finished = True
+
+
+        log.info("All programs exited")
+

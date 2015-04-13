@@ -1,22 +1,25 @@
 import logging
 import os
+import signal
 import subprocess
 import sys
-import signal
 
 from pywintypes import error as Win32Error
-from win32api import OpenProcess, SetConsoleCtrlHandler
+from win32api import OpenProcess
 from win32event import SYNCHRONIZE
 from win32file import CloseHandle
 
+from .base import ProgramBase
 from chalmers import errors
 
-from .base import ProgramBase
 
 log = logging.getLogger(__name__)
 
 class NTProgram(ProgramBase):
-
+    """
+    Program that implements ProgramBase's abstract
+    methods for the win32 platform
+    """
 
     @property
     def is_running(self):

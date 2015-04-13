@@ -1,5 +1,12 @@
 '''
+[Advanced] [In-development]
+
+Export a program list to a single yaml file.
+
+The export may contain machine specific paths.
+and may need to be edited for portability
 '''
+
 from __future__ import unicode_literals, print_function
 
 from argparse import FileType

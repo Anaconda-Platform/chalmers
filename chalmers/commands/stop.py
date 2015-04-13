@@ -1,11 +1,17 @@
 '''
-Stop or toggle a program on/off
+Stop a program from running:
 
-Stopping a program will send a signal to the program. The signal can be set by:
+    chalmers stop server1
+
+Stopping a program will send a signal to the program. The signal can be set beforehand by:
 
     chalmers set server1 stopsignal=SIGTERM
  
-When off, a program will not be started at system boot 
+Stop differs from off, off will not stop the program.
+When off a program will not be started at system boot (or `start --all`)
+
+When a program is *on* it will still start at system boot
+even if you manually stop it before a reboot.
 '''
 
 from __future__ import unicode_literals, print_function
@@ -17,17 +23,16 @@ import sys
 from clyent import print_colors
 
 from chalmers import errors
-from chalmers.utils.cli import add_selection_group, select_programs, \
-    filter_programs
+from chalmers.utils import cli
 
 
 log = logging.getLogger('chalmers.stop')
 
 def main(args):
 
-    programs = select_programs(args, filter_paused=False, force=args.force)
+    programs = cli.select_programs(args, filter_paused=False, force=args.force)
 
-    programs = filter_programs(programs, lambda p: not p.is_running, 'Stopping', 'stopped')
+    programs = cli.filter_programs(programs, lambda p: not p.is_running, 'Stopping', 'stopped')
     if not programs:
         return
     for prog in programs:
@@ -46,8 +51,8 @@ def main(args):
 
 def pause_main(args):
 
-    programs = select_programs(args, filter_paused=False)
-    programs = filter_programs(programs, lambda p: p.is_paused, 'Pausing', 'paused')
+    programs = cli.select_programs(args, filter_paused=False)
+    programs = cli.filter_programs(programs, lambda p: p.is_paused, 'Pausing', 'paused')
     if not programs:
         return
 
@@ -60,8 +65,8 @@ def pause_main(args):
 
 def unpause_main(args):
 
-    programs = select_programs(args, filter_paused=False)
-    programs = filter_programs(programs, lambda p: not p.is_paused, 'Unpausing', 'unpaused')
+    programs = cli.select_programs(args, filter_paused=False)
+    programs = cli.filter_programs(programs, lambda p: not p.is_paused, 'Unpausing', 'unpaused')
 
     if not programs:
         return
@@ -79,7 +84,7 @@ def add_parser(subparsers):
                                    description=__doc__,
                                    formatter_class=RawDescriptionHelpFormatter)
 
-    add_selection_group(parser)
+    cli.add_selection_group(parser)
     parser.add_argument('--force', action='store_true',
                         help='Force kill a program (stopsignal will be ignored)'
                         )
@@ -91,7 +96,7 @@ def add_parser(subparsers):
                                    description=__doc__,
                                    formatter_class=RawDescriptionHelpFormatter)
 
-    add_selection_group(parser)
+    cli.add_selection_group(parser)
 
     parser.set_defaults(main=pause_main)
 
@@ -100,6 +105,6 @@ def add_parser(subparsers):
                                    description=__doc__,
                                    formatter_class=RawDescriptionHelpFormatter)
 
-    add_selection_group(parser)
+    cli.add_selection_group(parser)
 
     parser.set_defaults(main=unpause_main)

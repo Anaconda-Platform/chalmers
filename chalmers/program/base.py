@@ -384,8 +384,6 @@ class ProgramBase(EventDispatcher):
                                       reason='There was an unknown exception opening command (check logs)')
                     return
 
-
-
                 log.info('Program started with pid %s' % self._p0.pid)
                 self.state.update(child_pid=self._p0.pid, reason=None, exit_status=None,
                                   start_time=time.time())

@@ -1,11 +1,16 @@
-from threading import Thread
-import os
-import time
-import sys
 import logging
+import os
+from threading import Thread
+import time
+
+
 log = logging.getLogger(__name__)
 
 class FileEcho(Thread):
+    """
+    Perhaps obsolete class that echos the stdout logfile
+    for a program
+    """
 
     def __init__(self, filename, stream):
         self.filename = filename

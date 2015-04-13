@@ -6,7 +6,10 @@ from chalmers import errors
 
 class PersistentDict(dict):
     """
-    A class that persists a dict to a file  
+    A class that persists a dict to a file
+
+    This class behaves like a dict and adds new functionality to store the dict
+    to a file when writing.
     """
     def __init__(self, filename, load=True):
         self._filename = os.path.abspath(filename)
@@ -15,20 +18,25 @@ class PersistentDict(dict):
 
     @property
     def filename(self):
+        'The filepath to write'
         return self._filename
 
     def exists(self):
+        'test if the filename exists'
         return os.path.exists(self._filename)
 
     def reload(self):
+        'perform a load/store'
         self._load()
         self._store()
 
     def delete(self):
+        'remove the file from disk'
         if os.path.isfile(self._filename):
             os.unlink(self._filename)
 
     def _load(self):
+        'load dict data into the current object'
         if os.path.isfile(self._filename):
             with open(self._filename) as fd:
                 dict.clear(self)
@@ -37,6 +45,7 @@ class PersistentDict(dict):
                     dict.update(self, data)
 
     def _store(self):
+        'store dict data into the current object'
         dir = os.path.dirname(self._filename)
         if dir and not os.path.isdir(dir):
             os.makedirs(dir)
@@ -46,6 +55,7 @@ class PersistentDict(dict):
 
 
     def _mk_lockfile(self):
+        'TODO: not implemented'
         lockfile = self._filename + '.lock'
         try:
             if self.exists():
@@ -61,6 +71,7 @@ class PersistentDict(dict):
             raise
 
     def _rm_lockfile(self):
+        'TODO: not implemented'
         lockfile = self._filename + '.lock'
         if os.path.isdir(lockfile):
             os.rmdir(lockfile)
@@ -69,7 +80,7 @@ class PersistentDict(dict):
 
     @contextmanager
     def file_lock(self):
-
+        'TODO: not implemented'
         transact = self._transact
         self._transact = True
 
@@ -86,6 +97,14 @@ class PersistentDict(dict):
 
     @contextmanager
     def transaction(self):
+        """
+        Signify that an atomic transaction will occurr
+        when the transaction context manager exits then
+        all the data is stored to a file
+
+        This is save to use in a nested way. the top level manager will be the only
+        on that stores the data
+        """
         # TODO: lock the file while the transation is going on
         # with self.file_lock() as transact:
 

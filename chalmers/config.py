@@ -1,3 +1,6 @@
+"""
+chalmes global config vars
+"""
 from __future__ import unicode_literals, print_function
 
 from chalmers.utils import appdirs

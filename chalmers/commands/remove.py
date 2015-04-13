@@ -1,4 +1,5 @@
 '''
+Remove a program definition from chalmers
 '''
 from __future__ import unicode_literals, print_function
 
@@ -7,9 +8,8 @@ import logging
 import sys
 
 from chalmers import errors
-from chalmers.program import Program
-from clyent.logs.colors.printer import print_colors
 from chalmers.utils.cli import add_selection_group, select_programs
+from clyent.logs.colors.printer import print_colors
 
 
 log = logging.getLogger('chalmers.remove')

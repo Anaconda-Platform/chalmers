@@ -1,6 +1,7 @@
 '''
-Chalmers process manager
+Chalmers main script
 
+This script loads all of the chalmers commands
 '''
 from __future__ import print_function, unicode_literals
 

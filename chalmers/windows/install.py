@@ -1,3 +1,6 @@
+"""
+Install a win32 service using the win32api
+"""
 import getpass
 import logging
 import os
@@ -19,6 +22,11 @@ def InstallService(serviceName, displayName, startType=win32service.SERVICE_DEMA
                     errorControl=win32service.SERVICE_ERROR_NORMAL,
                     userName=None, password=None,
                     description=None):
+    """
+    This is a copy of a more advanced usecase.
+    For chalmers serviceName and displayName are required and the
+    defaults should be sufficient
+    """
     serviceType = win32service.SERVICE_WIN32_OWN_PROCESS
 
     script = abspath(service_script.__file__)
@@ -105,7 +113,7 @@ def instart(userName, password):
         log.warn('Chalmers service %s is already installed' % svc_name)
     else:
         log.info('Installed chalmers service %s to windows services' % svc_name)
-    
+
     try:
         win32serviceutil.StartService(svc_name)
     except Win32Error as err:
