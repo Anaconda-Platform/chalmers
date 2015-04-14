@@ -7,17 +7,18 @@ if os.name == 'nt':
     install_requires.append('pywin32')
 
 
-ctx = {}
-try:
-    with open('chalmers/_version.py') as fd:
-        exec(open('chalmers/_version.py').read(), ctx)
-    version = ctx.get('__version__', 'dev')
-except IOError:
-    version = 'dev'
+import versioneer
+versioneer.VCS = 'git'
+versioneer.versionfile_source = 'chalmers/_version.py'
+versioneer.versionfile_build = 'chalmers/_version.py'
+versioneer.tag_prefix = ''  # tags are like 1.2.0
+versioneer.parentdir_prefix = 'chalmers-'  # dirname like 'myproject-1.2.0'
+
 
 setup(
     name='chalmers',
-    version=version,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author='Continuum Analytics',
     author_email='srossross@gmail.com',
     url='http://github.com/binstar/chalmers',
