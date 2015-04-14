@@ -46,7 +46,7 @@ class SysVService(object):
     def __init__(self, target_user):
         self.target_user = target_user
 
-        log.info('Platform: %s' % platform.linux_distribution()[0] or 'Unknown')
+        log.info('Platform: %s' % (platform.linux_distribution()[0] or 'Unknown'))
         log.info('Using Linux sysv chkconfig')
         if target_user:
             log.info('Chalmers service for target user' % target_user)

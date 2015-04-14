@@ -11,13 +11,20 @@ In that order
 """
 from __future__ import unicode_literals, print_function
 
-# Fix for AWS Linux
-import platform
-platform._supported_dists += ('system',)
-
 import logging
+import platform
+import sys
 
 from . import cron_service, sysv_service, upstart_service, systemd_service
+
+
+# Fix for AWS Linux
+if sys.version_info.major == 3:
+    system_dist = ('system',)
+else:
+    system_dist = (b'system',)
+
+platform._supported_dists += system_dist
 
 
 log = logging.getLogger('chalmers.service')
