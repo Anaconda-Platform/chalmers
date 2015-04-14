@@ -24,8 +24,10 @@ setup(
     description='Process Control System',
     packages=find_packages(),
     install_requires=install_requires,
-    include_package_data=True,
-    package_data={'':['*.sh', '*.conf']},
+    package_data={
+       'chlamers.service': ['data/*'],
+    },
+
     entry_points={
           'console_scripts': [
               'chalmers = chalmers.scripts.chalmers_main:main',
