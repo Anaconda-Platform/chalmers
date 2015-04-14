@@ -11,6 +11,10 @@ In that order
 """
 from __future__ import unicode_literals, print_function
 
+# Fix for AWS Linux
+import platform
+platform._supported_dists += ('system',)
+
 import logging
 
 from . import cron_service, sysv_service, upstart_service, systemd_service

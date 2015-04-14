@@ -12,6 +12,7 @@ from subprocess import check_call, check_output, CalledProcessError, PIPE
 import sys
 
 from chalmers.service.cron_service import CronService
+import platform
 
 
 python_exe = sys.executable
@@ -40,6 +41,13 @@ class UpstartService(object):
 
     def __init__(self, target_user):
         self.target_user = target_user
+
+        log.info('Platform: %s' % platform.linux_distribution()[0] or 'Unknown')
+        log.info('Using Linux upstart')
+        if target_user:
+            log.info('Chalmers service for target user' % target_user)
+        else:
+            log.info('Chalmers service for root user')
 
     @property
     def script_name(self):

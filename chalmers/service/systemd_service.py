@@ -14,6 +14,7 @@ import sys
 
 from chalmers.service.cron_service import CronService
 import subprocess as sp
+import platform
 
 
 log = logging.getLogger('chalmers.service')
@@ -46,6 +47,14 @@ class SystemdService(object):
 
     def __init__(self, target_user):
         self.target_user = target_user
+
+        log.info('Platform: %s' % platform.linux_distribution()[0] or 'Unknown')
+        log.info('Using Linux systemd service')
+        if target_user:
+            log.info('Chalmers service for target user %s' % target_user)
+        else:
+            log.info('Chalmers service for root user')
+
 
     @property
     def script_name(self):

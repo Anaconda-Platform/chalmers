@@ -19,6 +19,7 @@ import sys
 
 from chalmers import errors
 import os
+import platform
 
 
 python_exe = sys.executable
@@ -71,7 +72,9 @@ class CronService(object):
         self.target_user = target_user
         log = logging.getLogger('chalmers.cron_service')
 
-        log.info('Using posix crontab for current user (does not require root)')
+        log.info('Platform: %s' % platform.linux_distribution()[0] or 'Unknown')
+        log.info('Using posix crond @reboot command')
+        log.info('Chalmers service for current user (does not require root)')
 
 
     @classmethod
