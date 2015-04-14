@@ -58,7 +58,7 @@ class SysVService(object):
         return path.join(INIT_D_DIR, self.script_name)
 
     @property
-    def launch_command(self):
+    def launch(self):
         if self.target_user:
             return '/bin/su - %s' % self.target_user
         else:  # Run as root
@@ -78,7 +78,7 @@ class SysVService(object):
 
     def install(self):
 
-        data = self.format(python_exe=python_exe,
+        data = self.template.format(python_exe=python_exe,
                            chalmers=chalmers_script,
                            launch=self.launch,
                            script_name=self.script_name)

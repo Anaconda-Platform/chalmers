@@ -20,10 +20,10 @@ log = logging.getLogger('chalmers.service')
 
 if systemd_service.check():
     PosixService = systemd_service.SystemdService
-elif upstart_service.check():
-    PosixService = upstart_service.UpstartService
 elif sysv_service.check():
     PosixService = sysv_service.SysVService
+elif upstart_service.check():
+    PosixService = upstart_service.UpstartService
 else:
     PosixService = cron_service.CronService
 
