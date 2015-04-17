@@ -4,6 +4,15 @@ Superintendent Chalmers
 Chalmers is an application that allows its users to monitor and control a
 number of processes on ***any*** operating system (Posix and Win32 included)
 
+## Features 
+
+ * **Process control**: Chalmers lets you add remove and monitor programs
+ * **System Init**: Chalmers easily allows you to start up your programs at system 
+   boot or user login with `chalmers @startup` and `chalmers @login`
+ * **Keep Alive**: Chlalmers will relaunch your programs if they fail unexpectedly 
+ * **Logging**: Chlalmers will manage store all logs from stdout/stderr and provides easy eaccess with `chalmers log`
+
+
 [![Binstar Badge](https://binstar.org/binstar/chalmers/badges/build.svg)](https://binstar.org/binstar/chalmers/builds)
 [![Binstar Badge](https://binstar.org/binstar/chalmers/badges/version.svg)](https://binstar.org/binstar/chalmers)
 [![Binstar Badge](https://binstar.org/binstar/chalmers/badges/installer/conda.svg)](https://conda.binstar.org/binstar)
