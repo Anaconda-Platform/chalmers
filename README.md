@@ -128,12 +128,12 @@ chalmers start server
 | @startup    | enable/disable/status chalmers to run at startup |
 | @login    | enable/disable/status chalmers to run at login |
 | **Process Control** | |
-| run                | Manage a command to run |
+| add                | Add a program to manage |
 | start              | Start a program |
 | restart            | Restart a program |
 | stop               | Stop running a command |
-| off                | Don't run a program on system boot) |
-| on                 | Run a program |
+| off                | Don't run a program on startup or login) |
+| on                 | Run a program on startup or login |
 | remove             | Remove a program definition from chalmers |
 | **Reporting** | |
 | list               | List registered programs |
