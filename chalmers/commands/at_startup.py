@@ -1,30 +1,27 @@
 '''
-[Un]Install chalmers so that it will run at system boot.
+Enable/Disable chalmers so that it will run at machine startup.
 
-For all platforms you can install the service either to the system or locally
+This command requires root/admin access for all platforms.
 
-When installing For some platforms osx and win32, 
-chalmers will only run at login 
+If you need to enable chalmers as a service without admin try::
 
-Local service install. Admin is not - on some systems (windows) 
-this may limit chalmers to starting on login, not boot::
+    chalmers @login --help
 
-    chalmers service install
-
-This command will install chalmers server to start on 
+This command will install chalmers server to start on
 boot for the current user (posix)::
 
-    sudo chalmers service install
-     
-This command will install chalmers server to start on 
-boot for the root user (posix)::
+    sudo chalmers @starup enable
 
-    sudo chalmers service install --root 
+This command will install chalmers server to start on
+boot for a target user (posix)::
+
+    sudo chalmers service install --root
 
 Root service install (windows)::
     
-    runas /user:.\Administrator "chalmers service install --system" 
+    runas /user:.\Administrator "chalmers @startup enable"
 '''
+
 from __future__ import unicode_literals, print_function
 
 from argparse import RawDescriptionHelpFormatter
