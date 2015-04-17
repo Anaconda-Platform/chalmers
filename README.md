@@ -14,27 +14,12 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 
 ## Quickstart
 
-#### Running chalmers on system boot
-
-    sudo chalmers service install
-
-This will setup chalmers to start as the current user using the os native init scripts. 
-On windows, you can use `runas` if you are not administrator. 
-
-To run chalmers as the root user run
-
-    sudo chalmers service install --root
-
-You may also run the chalmers service locally without requiring root privleges
-
-    chalmers service install
-
-#### Running chalmers on system boot (All platforms)
-
 #### Adding a Program
 
-    chalmers add --name sleep -- sleep 10
-    chlamers start sleep
+This will start the sleep program and keep it running.
+
+    chalmers add --name myprogram -- sleep 1000
+    chlamers start myprogram
 
 
 #### Check the program status
@@ -50,6 +35,37 @@ chalmers set program-name key1=value1 [key2=value2 ...]
 ```
 
 See the list below for a list of usefull keys
+
+
+#### Running chalmers on system startup 
+
+This will setup chalmers to start as the current user using the os native init scripts. 
+On windows, you can use `runas` instead of `sudo` if you are not administrator. 
+
+    sudo chalmers @startup enable
+
+
+You can also select the user you want enable at startup:
+
+    sudo chalmers @startup enable --user USER
+
+You will need to start chalmers 
+
+#### Running chalmers on system login
+ 
+Sometimes you may not have root or admin privileges. You can also set up chalmers to run at 
+login: 
+
+    chalmers @login enable
+
+#### Turning on and off scripts to be run at login or startup
+
+When chalmers starts at login or startup it will launch all of the programs marked as **on**.
+
+To toggle a single program as on or off run
+
+    chalmers [on|off] myprogram  
+
 
 ### Common Config values:
 
@@ -90,15 +106,18 @@ Posix Only Config values:
 # Example of seting up a server
 
 ```
-chalmers add --run-later -n web -- python my_server.py
-chalmers set 
+chalmers add --run-later -n server -- python my_server.py
+chalmers set server env.PORT=3030
+chalmers start server
 ```
+
 ## Chalmers command reference 
 
 | Command | Description |
 | ------- | ----------- |
 | **Meta Management** | |
-| service    | Install/Uninstall/Status chalmers as a service |
+| @startup    | enable/disable/status chalmers to run at startup |
+| @login    | enable/disable/status chalmers to run at login |
 | **Process Control** | |
 | run                | Manage a command to run |
 | start              | Start a program |

@@ -16,6 +16,7 @@ import platform
 import sys
 
 from . import cron_service, sysv_service, upstart_service, systemd_service
+from chalmers import errors
 
 
 # Fix for AWS Linux
@@ -29,12 +30,21 @@ platform._supported_dists += system_dist
 
 log = logging.getLogger('chalmers.service')
 
+class NoPosixSystemService(object):
+
+    def __init__(self, target_user=None):
+        supported_dists = platform._supported_dists + system_dist
+        linux = platform.linux_distribution(supported_dists=supported_dists)
+        raise errors.ChalmersError("Could not detect system service for platform %s (tried systemd, sysv init and upstart)" % linux[0])
+
 if systemd_service.check():
-    PosixService = systemd_service.SystemdService
+    PosixSystemService = systemd_service.SystemdService
 elif sysv_service.check():
-    PosixService = sysv_service.SysVService
+    PosixSystemService = sysv_service.SysVService
 elif upstart_service.check():
-    PosixService = upstart_service.UpstartService
+    PosixSystemService = upstart_service.UpstartService
 else:
-    PosixService = cron_service.CronService
+    PosixSystemService = NoPosixSystemService
+
+PosixLocalService = cron_service.CronService
 

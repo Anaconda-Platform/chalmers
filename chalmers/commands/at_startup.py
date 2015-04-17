@@ -28,21 +28,30 @@ Root service install (windows)::
 from __future__ import unicode_literals, print_function
 
 from argparse import RawDescriptionHelpFormatter
-import argparse
-import getpass
 import os
 
 from chalmers import errors
+from chalmers.service import SystemService
 
-from chalmers.service import Service
+
 def main(args):
-    service = Service(args.system)
+
+
+    if os.name == 'nt':
+        from win32com.shell import shell
+        if not shell.IsUserAnAdmin():
+            raise errors.ChalmersError('You must be an administrator to run this command')
+    else:
+        if os.getuid() != 0:
+            raise errors.ChalmersError('You must be root to run this command')
+
+    service = SystemService(args.target_user)
 
     if args.action == 'status':
         service.status()
-    elif args.action == 'install':
+    elif args.action == 'enable':
         service.install()
-    elif args.action == 'uninstall':
+    elif args.action == 'disable':
         service.uninstall()
 
     else:
@@ -50,33 +59,22 @@ def main(args):
 
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser('service',
+    parser = subparsers.add_parser('@startup',
                                    help='Install chalmers as a service',
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
-    parser.add_argument('action', choices=['install', 'uninstall', 'status'], nargs='?', default='status')
+    parser.add_argument('action', choices=['enable', 'disable', 'status'], nargs='?', default='status')
     group = parser.add_argument_group('Service Type').add_mutually_exclusive_group()
 
     if os.name == 'posix':
-        sytem_default = os.environ.get('SUDO_USER') if os.getuid() == 0 else False
+        sytem_default = os.environ.get('SUDO_USER') if os.getuid() == 0 else None
     else:
-        sytem_default = False
+        sytem_default = None
 
-    group.add_argument('--system', '--system-user', dest='system', default=sytem_default, metavar='USERNAME',
+    group.add_argument('--user', dest='target_user', default=sytem_default, metavar='USERNAME',
                        help='Install Chalmers as a service to the system for a given user (requires admin). '
                             'If no user is given it will launch chalmers as root (default: %(default)s)')
-    group.add_argument('--local', '--no-system', dest='system', action='store_false',
-                       help='Always install chalmers service assuming no admin access')
-    group.add_argument('--root', '--admin', dest='system', action='store_const', const=None,
-                       help='Install Chalmers as a service to the system for the root/admin user '
-                       'this argument implies `--system root on unix`')
-
-    if os.name == 'nt':
-        parser.add_argument('-u', '--username', default=getpass.getuser(),
-                            help=argparse.SUPPRESS)
-        parser.add_argument('--wait', action='store_true', help=argparse.SUPPRESS)
-
 
     parser.set_defaults(main=main)
 
