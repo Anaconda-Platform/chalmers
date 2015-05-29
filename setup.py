@@ -25,7 +25,7 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     package_data={
-       'chlamers.service': ['data/*'],
+       'chalmers.service': ['data/*'],
     },
 
     entry_points={

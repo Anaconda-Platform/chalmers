@@ -16,8 +16,8 @@ Features
  * **Process control**: Chalmers lets you add remove and monitor programs
  * **System Init**: Chalmers easily allows you to start up your programs at system
    boot or user login with `chalmers @startup` and `chalmers @login`
- * **Keep Alive**: Chlalmers will relaunch your programs if they fail unexpectedly
- * **Logging**: Chlalmers will manage store all logs from stdout/stderr and provides easy eaccess with `chalmers log`
+ * **Keep Alive**: Chalmers will relaunch your programs if they fail unexpectedly
+ * **Logging**: Chalmers will manage store all logs from stdout/stderr and provides easy eaccess with `chalmers log`
 
 
 .. image:: https://binstar.org/binstar/chalmers/badges/build.svg
@@ -42,7 +42,7 @@ Adding a Program
 This will start the sleep program and keep it running.::
 
     chalmers add --name myprogram -- sleep 1000
-    chlamers start myprogram
+    chalmers start myprogram
 
 
 Check the program status

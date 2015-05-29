@@ -9,13 +9,13 @@ number of processes on ***any*** operating system (Posix and Win32 included)
  * **Process control**: Chalmers lets you add remove and monitor programs
  * **System Init**: Chalmers easily allows you to start up your programs at system 
    boot or user login with `chalmers @startup` and `chalmers @login`
- * **Keep Alive**: Chlalmers will relaunch your programs if they fail unexpectedly 
- * **Logging**: Chlalmers will manage store all logs from stdout/stderr and provides easy eaccess with `chalmers log`
+ * **Keep Alive**: Chalmers will relaunch your programs if they fail unexpectedly
+ * **Logging**: Chalmers will manage store all logs from stdout/stderr and provides easy access with `chalmers log`
 
 
-[![Binstar Badge](https://binstar.org/binstar/chalmers/badges/build.svg)](https://binstar.org/binstar/chalmers/builds)
-[![Binstar Badge](https://binstar.org/binstar/chalmers/badges/version.svg)](https://binstar.org/binstar/chalmers)
-[![Binstar Badge](https://binstar.org/binstar/chalmers/badges/installer/conda.svg)](https://conda.binstar.org/binstar)
+[![Binstar Badge](https://anaconda.org/binstar/chalmers/badges/build.svg)](https://anaconda.org/binstar/chalmers/builds)
+[![Binstar Badge](https://anaconda.org/binstar/chalmers/badges/version.svg)](https://anaconda.org/binstar/chalmers)
+[![Binstar Badge](https://anaconda.org/binstar/chalmers/badges/installer/conda.svg)](https://conda.anaconda.org/binstar)
 
 <center>
     <img src=https://raw.githubusercontent.com/Binstar/chalmers/master/img/chalmers.gif style="margin-left: auto; margin-right: auto;" align="middle" width="100px">
@@ -28,7 +28,7 @@ number of processes on ***any*** operating system (Posix and Win32 included)
 This will start the sleep program and keep it running.
 
     chalmers add --name myprogram -- sleep 1000
-    chlamers start myprogram
+    chalmers start myprogram
 
 
 #### Check the program status
