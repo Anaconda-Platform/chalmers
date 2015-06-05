@@ -21,7 +21,7 @@ number of processes on ***any*** operating system (Posix and Win32 included)
     <img src=https://raw.githubusercontent.com/Binstar/chalmers/master/img/chalmers.gif style="margin-left: auto; margin-right: auto;" align="middle" width="100px">
 </center>
 
-## Quickstart
+## Quick Start
 
 #### Adding a Program
 
@@ -43,7 +43,7 @@ To set an option for a program run `chalmers set` eg.
 chalmers set program-name key1=value1 [key2=value2 ...]
 ```
 
-See the list below for a list of usefull keys
+See the list below for a list of useful keys
 
 
 #### Running chalmers on system startup 
@@ -100,7 +100,7 @@ Log file config values:
  * `stdout`: filename to pipe the program's stdout
  * `stderr`: filename to pipe the program's stderr
  * `log_dir`: The base directory to output logs
- * `daemon_log`: filename to pipe the programs conrol log 
+ * `daemon_log`: filename to pipe the programs control log 
  * env.PYTHONUNBUFFERED: Set this value to 1 if you want are running a 
    python program and want realtime logging 
    See: https://docs.python.org/2/using/cmdline.html#envvar-PYTHONUNBUFFERED 
@@ -112,7 +112,7 @@ Posix Only Config values:
   * `user`: User to run the program as. May be a username or UID. This option is only valid when 
     chalmers is run as the root user 
 
-# Example of seting up a server
+# Example of setting up a server
 
 ```
 chalmers add --run-later -n server -- python my_server.py
@@ -162,7 +162,7 @@ chalmers start server
   * Forever only supports nodejs applications
   * Forever does not start at system boot.
     Chalmers does this for all platforms with `chalmers service install`.
-  * Forever does have windows support, but it can not daemoninze windows processes.
+  * Forever does have windows support, but it can not daemonize windows processes.
 
 
 #### Honcho [honcho.readthedocs.org](https://honcho.readthedocs.org)
@@ -171,7 +171,7 @@ chalmers start server
 
 #### Posix sysv-init, upstart, systemd , launchd (osx) and Windows services
 
-  * These utilities require admin privleges to run.  Chalmers does not
+  * These utilities require admin privileges to run.  Chalmers does not
   * Chalmers utilizes all of these services by selecting the correct one 
     when `chalmers service install` is run.
   * These utilities require custom wrappers around the scripts that you may need to run.
