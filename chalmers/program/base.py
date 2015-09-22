@@ -134,7 +134,8 @@ class ProgramBase(EventDispatcher):
                 os.unlink(state_filename)
                 self.state = PersistentDict(state_filename)
             else:
-                raise errors.ChalmersError("Invalid state file. run `chalmers stop --force` to clear the state file")
+                msg = "Invalid state file. run `chalmers stop --force` to clear the state file"
+                raise errors.ChalmersError(msg)
 
         try:
             self.raw_data = PersistentDict(defn_filename)
@@ -143,7 +144,8 @@ class ProgramBase(EventDispatcher):
             if force:
                 self.raw_data = PersistentDict(defn_filename, load=False)
             else:
-                raise errors.ChalmersError("Invalid definition file. Run `chalmers edit %s` to fix the definition file" % (defn_filename))
+                msg = "Invalid definition file. Run `chalmers edit %s` to fix the definition file"
+                raise errors.ChalmersError(msg % (defn_filename))
 
 
         self.data = {}
