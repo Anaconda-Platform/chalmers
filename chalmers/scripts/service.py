@@ -1,6 +1,7 @@
 """
 TODO: determine if this is still required
 """
+from __future__ import print_function, unicode_literals, absolute_import
 
 import getpass
 import sys, os
@@ -21,8 +22,8 @@ def main():
     else:
         sys.stdout = sys.stderr = logfd
 
-    print '---'
-    print "Starting Chalmers Service", time.ctime()
+    print('---')
+    print("Starting Chalmers Service", time.ctime())
     sys.stdout.flush()
     try:
         from chalmers.windows.chalmers_service import ChalmersService
@@ -31,7 +32,7 @@ def main():
         servicemanager.PrepareToHostSingle(ChalmersService)
         servicemanager.StartServiceCtrlDispatcher()
     finally:
-        print "Exiting Chalmers Service", time.ctime()
+        print("Exiting Chalmers Service", time.ctime())
         sys.stdout.flush()
 
 

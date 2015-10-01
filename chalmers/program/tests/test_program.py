@@ -50,19 +50,19 @@ class TestBase(unittest.TestCase):
     def test_stopsignal(self):
         p = TestProgram('name')
         self.addCleanup(p.delete)
-        self.assertEqual(p.stopsignal, signal.SIGTERM)
+        self.assertEqual(p.stopsignal, int(signal.SIGTERM))
 
         p.raw_data.update(stopsignal='foobar')
         p.mk_data()
-        self.assertEqual(p.stopsignal, signal.SIGTERM)
+        self.assertEqual(p.stopsignal, int(signal.SIGTERM))
 
         p.raw_data.update(stopsignal='SIGINT')
         p.mk_data()
-        self.assertEqual(p.stopsignal, signal.SIGINT)
+        self.assertEqual(p.stopsignal, int(signal.SIGINT))
 
-        p.raw_data.update(stopsignal=signal.SIGINT)
+        p.raw_data.update(stopsignal=int(signal.SIGINT))
         p.mk_data()
-        self.assertEqual(p.stopsignal, signal.SIGINT)
+        self.assertEqual(p.stopsignal, int(signal.SIGINT))
 
     def test_is_ok(self):
 

@@ -3,8 +3,8 @@ Install "SysV-style" init services definition with chkconfig command
 
 http://en.wikipedia.org/wiki/Init
 
-Note: chkconfig only soft links the /etc/inid.d/ script to the proper /etc/rc files. 
-We could check if this could be done manually. chkconfig behaves strange on some systems.  
+Note: chkconfig only soft links the /etc/inid.d/ script to the proper /etc/rc files.
+We could check if this could be done manually. chkconfig behaves strange on some systems.
 """
 
 from __future__ import unicode_literals, print_function
@@ -96,7 +96,7 @@ class SysVService(object):
             fd.write(data)
 
         log.info('Write file: %s' % self.script_path)
-        os.chmod(self.script_path, 0754)
+        os.chmod(self.script_path, 0o754)
         log.info('Running command chmod 754 %s' % self.script_path)
 
         # Redhat, CentOS
