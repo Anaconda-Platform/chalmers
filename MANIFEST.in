@@ -1,0 +1,2 @@
+include versioneer.py
+include chalmers/_version.py

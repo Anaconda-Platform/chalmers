@@ -4,7 +4,6 @@
 .pydevproject
 *.egg-info/
 .DS_Store
-chalmers/_version.py
 __conda_*__.txt
 docs/_build
 MANIFEST
