@@ -293,7 +293,7 @@ class ProgramBase(EventDispatcher):
             log.info("psutil.NoSuchProcess %s" % self._p0.pid)
             return
 
-        children = parent.get_children(recursive=True)
+        children = parent.children(recursive=True)
 
         log.info('Sending signal %s to process %s' % (self.stopsignal, self._p0.pid))
         self._send_signal(self._p0.pid, self.stopsignal)

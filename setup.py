@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import versioneer
 
-install_requires = ['psutil>=2.1.3', 'clyent', 'pyyaml']
+install_requires = ['psutil>=3', 'clyent', 'pyyaml']
 
 if os.name == 'nt':
     install_requires.append('pywin32')
