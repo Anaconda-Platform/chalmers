@@ -45,7 +45,7 @@ class UpstartService(object):
         log.info('Platform: %s' % (platform.linux_distribution()[0] or 'Unknown'))
         log.info('Using Linux upstart')
         if target_user:
-            log.info('Chalmers service for target user' % target_user)
+            log.info('Chalmers service for target user: {0}'.format(target_user))
         else:
             log.info('Chalmers service for root user')
 
