@@ -27,7 +27,7 @@ import os
 import sys
 import time
 
-from chalmers import config
+from chalmers import config, errors
 from chalmers.program import Program
 
 
@@ -41,6 +41,9 @@ def main(args):
     else:
         logfile = config.main_logfile()
         prog = None
+
+    if prog and not prog.exists():
+        raise errors.ProgramNotFound("program '{}' not found".format(args.name))
 
 
     if args.showfile:

@@ -6,6 +6,7 @@ from __future__ import unicode_literals, print_function
 import logging
 
 from chalmers.program import Program
+from chalmers import errors
 from chalmers.utils import print_opts
 from argparse import RawDescriptionHelpFormatter
 
@@ -14,6 +15,9 @@ log = logging.getLogger('chalmers.show')
 def main(args):
 
     prog = Program(args.name)
+
+    if not prog.exists():
+        raise errors.ProgramNotFound("program '{}' not found".format(args.name))
 
     if args.definition:
         print(prog.raw_data.filename)

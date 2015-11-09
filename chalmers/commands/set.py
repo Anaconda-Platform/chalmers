@@ -66,6 +66,9 @@ def main(args):
 
     proc = Program(args.name)
 
+    if not proc.exists():
+        raise errors.ProgramNotFound("program '{}' not found".format(args.name))
+
     if proc.is_running:
         log.warning("Program is running: Updates will not be reflected until a restart is done")
     with proc.raw_data.transaction():

@@ -31,6 +31,9 @@ def main(args):
 
     prog = Program(args.name, force=True)
 
+    if prog and not prog.exists():
+        raise errors.ProgramNotFound("program '{}' not found".format(args.name))
+
     cmd = '%s %s' % (EDITOR, pipes.quote(prog.raw_data.filename))
 
     print(cmd)
