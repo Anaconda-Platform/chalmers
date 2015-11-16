@@ -94,7 +94,7 @@ def add_parser(subparsers):
                        help='The -f option causes log to not stop when end of file is reached, '
                             'but rather to wait for additional data to be appended')
 
-    parser.add_argument('--tail', type=lambda arg:-int(arg), dest='n', metavar='N',
+    parser.add_argument('-n', '--tail', type=lambda arg:-int(arg), dest='n', metavar='N',
                         default=-10,
                        help='Tail lines at end of file (default: %(default)s)',)
     parser.add_argument('--head', type=int, dest='n', metavar='N',
