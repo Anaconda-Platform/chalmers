@@ -63,12 +63,9 @@ class MultiPlexIOPool(object):
                     data = fd.readline()
                     while data:
                         seen_data = True
-                        if self.use_color:
-                            with colors[name]:
-                                print('[%s]' % name, end='')
-                            print(" ", end='')
-                        else:
-                            print("[%s]" % name, end='')
+                        with colors[name]:
+                            print('[%s]' % name, end='')
+                        print(" ", end='')
 
                         print(data, end='')
                         data = fd.readline()

@@ -5,7 +5,9 @@ Provide a sudo random default dict of colors
 It pics a new color for each lookup that is not already in the colorpicker
 """
 from itertools import cycle
-from clyent import color
+from clyent.colors import Color
+
+
 
 class ColorPicker(object):
     """
@@ -17,16 +19,18 @@ class ColorPicker(object):
     dark_bg_colors = [40, 41, 42, 44, 45, 100, 102, 104, 105, 106]
 
     def next_color(self):
-        yield color(None, (6,))
-        yield color(None, (7,))
+        yield Color(6)
+        yield Color(7)
 
         for fg in self.light_fg_colors:
             for bg in self.dark_bg_colors:
-                yield color(None, (fg, bg))
+                yield Color(fg)
+#                 yield color(None, (fg, bg))
 
         for fg in self.dark_fg_colors:
             for bg in self.light_bg_colors:
-                yield color(None, (fg, bg))
+                yield Color(fg)
+#                 yield color(None, (fg, bg))
 
     def __init__(self):
         self.color_map = {}

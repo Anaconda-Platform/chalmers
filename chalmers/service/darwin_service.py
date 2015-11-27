@@ -131,7 +131,11 @@ class DarwinService(object):
 
     def status(self):
         """Check if chalmers will be started at reboot"""
-        launchd_lines = self.get_launchd()
+        try:
+            launchd_lines = self.get_launchd()
+        except sp.CalledProcessError:
+            launchd_lines = None
+
         if launchd_lines:
             log.info("Chalmers is setup to start on boot")
             return True

@@ -14,7 +14,7 @@ import shlex
 
 import yaml
 
-from chalmers import config
+from chalmers import config, errors
 from chalmers.program import Program
 from chalmers.utils import cli
 from chalmers.utils.mutiplex_io_pool import MultiPlexIOPool
@@ -27,8 +27,10 @@ split = lambda item: shlex.split(item, posix=os.name == 'posix')
 def main(args):
 
     config.set_relative_dirs(path.abspath('.chalmers'))
+    if not os.path.isfile(args.procfile):
+        raise errors.ChalmersError("procfile '{}' does not exist".format(args.procfile))
 
-    with open('Procfile') as fd:
+    with open(args.procfile) as fd:
         procs = yaml.load(fd)
     print('procs', procs)
     programs = []
@@ -58,6 +60,9 @@ def add_parser(subparsers):
                                       description=__doc__,
                                       formatter_class=RawDescriptionHelpFormatter)
 
+    parser.add_argument('-f', '--procfile',
+                        default='Procfile',
+                        help='procfile path (default: %(default)s)')
     cli.add_selection_group(parser)
 
     parser.set_defaults(main=main)
