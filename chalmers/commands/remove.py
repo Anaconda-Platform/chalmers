@@ -28,6 +28,7 @@ def main(args):
         try:
             prog.delete()
         except errors.ChalmersError as err:
+
             print_colors("[{=ERROR!c:red} ] %s" % err.message, stream=sys.stdout, end='\n')
             continue
 
