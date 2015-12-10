@@ -23,38 +23,9 @@ from chalmers.program import Program
 
 log = logging.getLogger('chalmers.add')
 
-def create_definition(args):
-
-    env = {}
-    for env_var in args.save_env:
-        if env_var in os.environ:
-            env[env_var] = os.environ[env_var]
-        else:
-            log.warn("Environment variable %s does not exist (from -e/--save-env)" % env_var)
-
-    definition = {
-                    'name': args.name,
-                    'command': args.command,
-                    'cwd': os.path.abspath(args.cwd),
-                    'env': env,
-    }
-
-    if args.stdout:
-        definition['stdout'] = args.stdout
-
-    if args.daemon_log:
-        definition['daemon_log'] = args.daemon_log
-
-    if args.redirect_stderr is not None:
-        definition['redirect_stderr'] = args.redirect_stderr
-
-    if args.stderr is not None:
-        definition['stderr'] = args.stderr
-
-    return definition
-
 
 def main(args):
+
     if args.cmd and args.command:
         raise errors.ChalmersError('Unknow arguments %r' % args.command)
     elif not (args.cmd or args.command):
@@ -65,24 +36,27 @@ def main(args):
     if not args.name:
         args.name = args.command[0]
 
-    program = Program(args.name)
+    env = {}
+    for env_var in args.save_env:
+        if env_var in os.environ:
+            env[env_var] = os.environ[env_var]
+        else:
+            log.warn("Environment variable %s does not exist (from -e/--save-env)" % env_var)
 
-    if program.exists():
-        raise errors.ChalmersError("Program with name '{args.name}' already exists.  \n"
-                                   "Use the -n/--name option to change the name or \n"
-                                   "Run 'chalmers remove {args.name}' to remove it \n"
-                                   "or 'chalmers set' to update the parameters".format(args=args))
-
-    state = {'paused': args.paused}
-    definition = create_definition(args)
-
-    program.raw_data.update(definition)
-    program.state.update(state)
-
-    if args.run_now:
-        program.start()
+    program = Program.add(
+        args.name, args.command,
+        paused=args.paused, cwd=args.cwd,
+        stdout=args.stdout, stderr=args.stderr,
+        daemon_log=args.daemon_log, redirect_stderr=args.redirect_stderr,
+        env=env
+    )
 
     log.info('Added program {args.name}'.format(args=args))
+
+    if args.run_now:
+        log.info('Running program {args.name}'.format(args=args))
+        program.start(daemon=not args.wait)
+
 
 def add_parser(subparsers):
     description = 'Add a command to run'
@@ -129,6 +103,9 @@ def add_parser(subparsers):
     #===========================================================================
     parser.add_argument('-n', '--name',
                         help='Set the name of this program for future chalmers commands')
+
+    parser.add_argument('-w', '--wait', action='store_true', default=False, dest='wait',
+                       help="Wait until program exits to return (default: %(default)s) (--run-now is implyed)")
 
     parser.add_argument('--cwd', default=os.curdir,
                         help='Set working directory of the program (default: %(default)s)')

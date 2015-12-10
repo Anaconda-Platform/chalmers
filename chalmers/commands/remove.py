@@ -28,10 +28,11 @@ def main(args):
         try:
             prog.delete()
         except errors.ChalmersError as err:
-            print_colors("[{=ERROR!c:red} ] %s" % err.message, stream=sys.stdout)
+
+            print_colors("[{=ERROR!c:red} ] %s" % err.message, stream=sys.stdout, end='\n')
             continue
 
-        print_colors("[  {=OK!c:green}  ]", stream=sys.stdout)
+        print_colors("[  {=OK!c:green}  ]", stream=sys.stdout, end='\n')
 
 def add_parser(subparsers):
 

@@ -20,6 +20,10 @@ if os.name == 'nt':
 elif platform.system() == 'Darwin':
     from .darwin_service import DarwinService as SystemService
     LocalService = SystemService
+
 else:
-    from .posix_service import PosixSystemService as SystemService, PosixLocalService as LocalService
+    from .posix_service import (
+        PosixSystemService as SystemService,
+        PosixLocalService as LocalService
+    )
 

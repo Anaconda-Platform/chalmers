@@ -1,19 +1,12 @@
 """
-TODO: this may also be obsolete
-
-    This could also replace some of the functionality in `commands/*` and
-    let them be more about user interaction.
+This could also replace some of the functionality in `commands/*` and
+let them be more about user interaction.
 """
 from contextlib import contextmanager
-import itertools
 import logging
 from multiprocessing import Process, Manager
 import random
 import sys
-
-from clyent.logs.colors import color
-from clyent.logs.formatters import FormatterWrapper
-from clyent.logs.handlers import ColorStreamHandler
 
 from chalmers.event_dispatcher import EventDispatcher
 from chalmers.program import Program
@@ -40,11 +33,7 @@ class ProgramManager(EventDispatcher):
         self.processes = []
 
         self.setup_logging = setup_logging
-        if use_color is None:
-            use_color = sys.stdout.isatty()
 
-        self.use_color = use_color
-        self.bg_colors = itertools.cycle(color.BACKGROUND_COLORS)
         self.exit_on_first_failure = exit_on_first_failure
 
 
@@ -57,8 +46,7 @@ class ProgramManager(EventDispatcher):
         p = Process(target=start_program,
                     name='start_program:%s' % name,
                     args=(name,),
-                    kwargs={'color_id': self.use_color and next(self.bg_colors),
-                            'setup_logging':self.setup_logging})
+                    kwargs={'setup_logging':self.setup_logging})
 
         p.start()
         self.processes.append(p)
@@ -80,33 +68,44 @@ class ProgramManager(EventDispatcher):
             if not prog.is_ok:
                 log.info("Program manager letting program fail")
 
+class FormatterWrapper(object):
+    def __init__(self, prefix, fmt):
+        if fmt is None:
+            fmt = logging.Formatter()
+        self.prefix = prefix
+        self.fmt = fmt
 
-def start_program(name, color_id=None, setup_logging=True):
+    def format(self, record):
+        record.msg = '{}{}'.format(self.prefix, record.msg)
+        return self.fmt.format(record)
+
+    @classmethod
+    def wrap(cls, prefix, hndlr):
+        hndlr.formatter = cls(prefix, hndlr.formatter)
+
+
+def start_program(name, setup_logging=True):
 
     logger = logging.getLogger('chalmers')
     logger.setLevel(logging.INFO)
 
-    prefix = '[%s]' % name
-    if color_id is not None:
-        prefix = color(prefix, [color_id, color.WHITE])
+    prefix = '[%s] ' % name
 
     if setup_logging and not logger.handlers:
-        shndlr = ColorStreamHandler(color_id is not None)
+        shndlr = logging.StreamHandler()
         shndlr.setLevel(logging.INFO)
         logger.setLevel(logging.INFO)
         logger.addHandler(shndlr)
 
     if setup_logging:
         for h in logger.handlers:
-            FormatterWrapper.wrap(h, prefix=prefix)
-
-
+            FormatterWrapper.wrap(prefix, h)
 
     sys.excepthook = log_unhandled_exception(logger)
 
-
-
     prog = Program(name)
+
+    assert prog.exists()
 
     prog.start_sync()
 

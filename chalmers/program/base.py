@@ -24,6 +24,7 @@ from chalmers.event_dispatcher import EventDispatcher, send_action
 from chalmers.utils.file_echo import FileEcho
 from chalmers.utils.kill_tree import kill_tree
 from chalmers.utils.persistent_dict import PersistentDict
+from chalmers.program.utils import create_definition
 
 
 log = logging.getLogger(__name__)
@@ -433,7 +434,7 @@ class ProgramBase(EventDispatcher):
 
         log.debug("Exiting keep alive function")
 
-    def delete(self):
+    def remove(self):
         """
         Remove this program definition
         """
@@ -442,6 +443,10 @@ class ProgramBase(EventDispatcher):
 
         self.state.delete()
         self.raw_data.delete()
+
+    def delete(self):
+        log.warn("program.delete() has been depricated, pleaese use program.remove()")
+        self.remove()
 
     @property
     def is_ok(self):
@@ -557,5 +562,34 @@ class ProgramBase(EventDispatcher):
             basename = path.basename(filename)
             name = path.splitext(basename)[0]
             yield cls(name, force=force)
+
+    @classmethod
+    def add(cls, name, command, paused=False,
+            cwd=None, stdout=None, stderr=None,
+            daemon_log=None, redirect_stderr=None,
+            env=None):
+        """
+        Add a new program to run, 
+        
+        This will not start the program, to start it run prog.start()
+        """
+
+        program = cls(name)
+
+        if program.exists():
+            raise errors.ChalmersError("Program with name '{name}' already exists.  \n"
+                                       "Use the -n/--name option to change the name or \n"
+                                       "Run 'chalmers remove {name}' to remove it \n"
+                                       "or 'chalmers set' to update the parameters".format(name=name))
+
+        state = {'paused': paused}
+        definition = create_definition(name, command)
+
+        program.raw_data.update(definition)
+        program.state.update(state)
+        # Updated the data attribute from the raw data
+        program.mk_data()
+
+        return program
 
 
