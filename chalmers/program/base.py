@@ -57,8 +57,8 @@ def str_replace(data):
 class ProgramBase(EventDispatcher):
     """
     Object that represents a long running process
-    
-    This program option may represent a program that is 
+
+    This program option may represent a program that is
     running in another process
     or a program that is running in the current process.
     """
@@ -84,9 +84,9 @@ class ProgramBase(EventDispatcher):
                 'log_dir': config.dirs.user_log_dir,
 
                 'redirect_stderr': True,
-                'stdout': '{log_dir}/{name}.stdout.log',
-                'stderr': '{log_dir}/{name}.stderr.log',
-                'daemon_log': '{log_dir}/{name}.daemon.log',
+                'stdout': '{log_dir}' + os.path.sep + '{name}.stdout.log',
+                'stderr': '{log_dir}' + os.path.sep + '{name}.stderr.log',
+                'daemon_log': '{log_dir}' + os.path.sep + '{name}.daemon.log',
                 }
 
     #===============================================================================
@@ -104,7 +104,7 @@ class ProgramBase(EventDispatcher):
     def start_as_service(self):
         """
         Run this program in a new background process
-        
+
         chalmers manager must be running
         """
         pass
@@ -217,9 +217,9 @@ class ProgramBase(EventDispatcher):
 
     def start(self, daemon=True):
         """
-        Start this process 
+        Start this process
         :param daemon: if true, start the process as a background process
-        
+
         this will fail if the process is already running
         """
         if self.is_running:
@@ -277,10 +277,10 @@ class ProgramBase(EventDispatcher):
 
     def _stop(self):
         """
-        Terminate this process, 
+        Terminate this process,
         This function may only be called by the process that called 'start_sync'
-        
-         
+
+
         """
         self._running = False
         self._terminating = True
@@ -525,7 +525,7 @@ class ProgramBase(EventDispatcher):
 
     def wait_for_start(self):
         """
-        Wait for program to start, 
+        Wait for program to start,
         returns True if the program started successfully
         """
         time.sleep(.5)
@@ -569,8 +569,8 @@ class ProgramBase(EventDispatcher):
             daemon_log=None, redirect_stderr=None,
             env=None):
         """
-        Add a new program to run, 
-        
+        Add a new program to run,
+
         This will not start the program, to start it run prog.start()
         """
 
