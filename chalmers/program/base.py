@@ -372,7 +372,8 @@ class ProgramBase(EventDispatcher):
 
                 log.info("Running Command: %s" % ' '.join(self.data['command']))
                 try:
-                    self._p0 = Popen(self.data['command'],
+                    self._p0 = Popen(' '.join(self.data['command']),
+                                     shell=True,
                                      stdout=stdout, stderr=stderr,
                                      env=env, cwd=cwd, bufsize=self.data.get('bufsize', 0),
                                      preexec_fn=self.preexec_fn)
@@ -383,7 +384,7 @@ class ProgramBase(EventDispatcher):
                     return
                 except:
                     log.exception('Exception in keep_alive')
-                    self.steate.update(child_pid=None, exit_status=1,
+                    self.state.update(child_pid=None, exit_status=1,
                                       reason='There was an unknown exception opening command (check logs)')
                     return
 
