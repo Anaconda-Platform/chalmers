@@ -31,7 +31,7 @@ def main():
 
 
     logfile = config.main_logfile()
-    setup_logging(logger, logging.INFO, use_color=False, logfile=logfile, show_tb=True)
+    setup_logging(logger, logging.INFO, use_color='never', logfile=logfile, show_tb=True)
     cli_logger.error("Starting program: %s" % args.name)
     prog = Program(args.name)
     prog.start_sync()
