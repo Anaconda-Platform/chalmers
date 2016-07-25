@@ -45,7 +45,7 @@ class Win32SystemService(object):
 
         log.info("Your password is required by the windows service manager to launch "
                  "the chalmers service at startup")
-        password = getpass.getpass(b"Password for %s: " % self.target_user)
+        password = getpass.getpass("Password for {}: ".format(self.target_user))
 
         instart('.\\%s' % self.target_user, password)
 
@@ -56,32 +56,32 @@ class Win32SystemService(object):
                                        "run this command as an administrator")
 
         if is_running(self.target_user):
-            log.info("Service is running, stopping service %s" % self.service_name)
+            log.info("Service is running, stopping service {}".format(self.service_name))
             StopService(self.service_name)
 
         if is_installed(self.target_user):
             RemoveService(self.service_name)
-            log.info("Uninstalled windows service '%s'" % self.service_name)
+            log.info("Uninstalled windows service '%s'".format(self.service_name))
         else:
-            log.error("Windows service '%s' is not installed" % self.service_name)
+            log.error("Windows service '%s' is not installed".format(self.service_name))
 
     def status(self):
 
-        log.info("Status for service '%s'" % self.service_name)
+        log.info("Status for service '%s'".format(self.service_name))
 
         if is_installed(self.target_user):
-            log.info("service '%s' is installed" % self.service_name)
+            log.info("service '{}' is installed".format(self.service_name))
         else:
-            log.error("service '%s' is not installed" % self.service_name)
+            log.error("service '{}' is not installed".format(self.service_name))
             return
 
         if is_running(self.target_user):
-            log.info("service '%s' is running" % self.service_name)
+            log.info("service '{}' is running".format(self.service_name))
         else:
-            log.error("service '%s' is not running" % self.service_name)
+            log.error("service '{}' is not running".format(self.service_name))
             return
 
         pid = send_action(ProgramManager.NAME, "ping")
-        log.info("Chalmers manger pid is %s" % pid)
+        log.info("Chalmers manger pid is {}".format(pid))
 
 
