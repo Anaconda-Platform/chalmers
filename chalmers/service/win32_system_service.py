@@ -47,7 +47,7 @@ class Win32SystemService(object):
                  "the chalmers service at startup")
         password = getpass.getpass("Password for {}: ".format(self.target_user))
 
-        instart('.\\%s' % self.target_user, password)
+        instart('.\\{}'.format(self.target_user), password)
 
 
     def uninstall(self):
@@ -61,13 +61,13 @@ class Win32SystemService(object):
 
         if is_installed(self.target_user):
             RemoveService(self.service_name)
-            log.info("Uninstalled windows service '%s'".format(self.service_name))
+            log.info("Uninstalled windows service '{}'".format(self.service_name))
         else:
-            log.error("Windows service '%s' is not installed".format(self.service_name))
+            log.error("Windows service '{}' is not installed".format(self.service_name))
 
     def status(self):
 
-        log.info("Status for service '%s'".format(self.service_name))
+        log.info("Status for service '{}'".format(self.service_name))
 
         if is_installed(self.target_user):
             log.info("service '{}' is installed".format(self.service_name))
